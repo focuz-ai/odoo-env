@@ -31,6 +31,17 @@ git clone git@github.com:focuzai/odoo_vsc.git
 cd odoo_vsc
 cp .env.example .env
 ```
+
+**Copiar launch de VSC para ejecutar y depurar Odoo**
+```bash
+cp .vscode/launch.json.example .vscode/launch.json
+```
+
+**Copiar odoo.conf por proyecto**
+```bash
+cp config/odoo.conf.example config/odoo.conf
+```
+
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
 
@@ -43,10 +54,25 @@ ODOO_TAG=16.0
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
+# Instalar Python 3.11
+
+Ejecutar comandos para instalar Python 3.11.
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.11 -y
+sudo apt install python3.11-distutils -y
+sudo apt install python3.11-dev python3.11-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+```
+
 # Preparar entorno de desarrollo
 Ejecutar el script `setup_env.sh` para preparar el entorno de desarrollo local. 
 
-*Instalador preparado para Ubuntu 20.04, Ubuntu 22.04 y Ubuntu 24.04.*
+*Instalador preparado para Ubuntu 22.04 y Ubuntu 24.04.*
 
 ## Script para preparar entorno de desarrollo automaticamente
 
@@ -81,8 +107,8 @@ Inicia instalando las dependencias de Odoo oficial. Si al instalar las librerias
 
 **Odoo**
 ```bash
-sudo apt-get install -y python3 python3-pip -y
-sudo apt-get install -y git build-essential libsasl2-dev python3-cffi python3-dev python3-venv python3-wheel libldap2-dev libssl-dev libpq-dev libxml2-dev
+sudo apt-get install -y python3 python3-pip python3-cffi python3-dev python3-venv python3-wheel
+sudo apt-get install -y git build-essential libsasl2-dev libldap2-dev libssl-dev libpq-dev libxml2-dev libxslt1-dev libevent-dev
 ```
 
 **Rafnixg**
@@ -107,16 +133,15 @@ chmod +x clone-addons.sh
 ```
 ## Crear un entorno virtual
 
-Para crear un entorno virtual de Python para Odoo (>= python3.8), ejecute el siguiente comando:
+Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
 ```bash
-python3 -m venv venv
+python3.11 -m venv venv
 ```
-Este comando creará un entorno virtual para Odoo en la carpeta `venv`, puede configurar de este modo `venv-16`, el número 16 hace referencia a la versión de odoo utilizado.
 
 ### Instalar las dependencias de Odoo
 Para instalar las dependencias de python para Odoo, ejecute los siguientes comandos:
 
-Activar entorno virtual `venv` o el que allá creado, por ejemplo, el mostrado arriba `env-16`.
+Activar entorno virtual `venv`.
 
 ```bash
 source venv/bin/activate
@@ -134,7 +159,7 @@ Instalar las librerias de Odoo:
 pip3 install -r odoo/requirements.txt --no-cache-dir
 ```
 
-Instalas las librerias para la Localización Peruana:
+Instalas las librerias adicionales:
 ```bash
 pip3 install -r requirements.txt --no-cache-dir
 ```

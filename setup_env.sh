@@ -7,8 +7,8 @@ sudo apt-get update
 sudo apt-get upgrade -y
 
 echo -e "\e[32m\nInstalación de dependencias de Odoo...\e[0m"
-sudo apt-get install -y python3 python3-pip -y
-sudo apt-get install -y git build-essential libsasl2-dev python3-cffi python3-dev python3-venv python3-wheel libldap2-dev libssl-dev libpq-dev
+sudo apt-get install -y python3 python3-pip python3-cffi python3-dev python3-venv python3-wheel
+sudo apt-get install -y git build-essential libsasl2-dev libldap2-dev libssl-dev libpq-dev libxml2-dev libxslt1-dev libevent-dev
 
 echo -e "\e[32m\nInstalación Postgre SQL...\e[0m"
 sudo apt-get install gnupg gnupg2 gnupg1 -y
