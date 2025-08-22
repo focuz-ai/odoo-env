@@ -194,8 +194,9 @@ Si ves “>>>”, entonces ya te encuentras en la línea de comandos de Odoo
 
 Ejemplo de como cambiar la clave del administrador:
 
-    >>> self.env[“res.users”].browse(2).password = "admin"
-    >>> selv.env.cr.commit()
+    >>> self.env["res.users"].browse(2).login = "sadmin"
+    >>> self.env["res.users"].browse(2).password = "sadmin"
+    >>> self.env.cr.commit()
 
 ## Shell para usar IPython como REPL
 
