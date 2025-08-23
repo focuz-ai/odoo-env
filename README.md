@@ -48,7 +48,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=16.0
+ODOO_TAG=17.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -151,7 +151,6 @@ Actualiza las librerias pip, setuptools y wheel:
 
 ```bash
 pip3 install --upgrade pip setuptools wheel --no-cache-dir
-pip3 install pydevd-odoo nox
 ```
 
 Instalar las librerias de Odoo:
@@ -167,6 +166,7 @@ pip3 install -r requirements.txt --no-cache-dir
 Si desea desactivar el entorno virtual, ejecuta:
 
 **_Solo si deseas cambiar de entorno virtual._**
+Desactivar el actual entorno virtual de Python.
 ```bash
 deactivate
 ```

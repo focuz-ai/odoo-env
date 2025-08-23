@@ -78,3 +78,5 @@ coverage.lcov
 
 # static Lib
 !static/lib/
+
+# CLAUDE
