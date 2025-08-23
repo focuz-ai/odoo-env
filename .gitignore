@@ -8,6 +8,7 @@ _build/
 !.mailmap
 .vscode/*
 !.vscode/launch.json.example
+!.vscode/extensions.json
 # compiled python files
 *.py[co]
 __pycache__/
@@ -80,3 +81,4 @@ coverage.lcov
 !static/lib/
 
 # CLAUDE
+CLAUDE.md
