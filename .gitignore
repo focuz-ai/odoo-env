@@ -21,6 +21,8 @@ __pycache__/
 status
 # odoo filestore
 odoo/filestore
+odools.toml
+!odools.toml.example
 
 # window installation config file
 config/*
@@ -31,11 +33,9 @@ vendor/*
 src/*
 !src/.gitkeep
 # Developer files
-!src/dev/
 src/dev/*
 !src/dev/.gitkeep
 # Projects files
-!src/projects/
 src/projects/*
 !src/projects/.gitkeep
 
@@ -90,3 +90,6 @@ coverage.lcov
 
 # CLAUDE
 CLAUDE.md
+
+# WSL
+*.Identifier
