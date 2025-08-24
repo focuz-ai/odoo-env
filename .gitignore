@@ -30,6 +30,14 @@ vendor/*
 !vendor/.gitkeep
 src/*
 !src/.gitkeep
+# Developer files
+!src/dev/
+src/dev/*
+!src/dev/.gitkeep
+# Projects files
+!src/projects/
+src/projects/*
+!src/projects/.gitkeep
 
 # js tooling
 node_modules
