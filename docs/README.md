@@ -178,6 +178,7 @@ Abre el archivo .gitmodules y elimina la entrada correspondiente al submódulo q
 
 ### 6. Confirmar la eliminación del submódulo en el repositorio principal
 
+    git add .gitmodules
     git commit -m "Eliminada la configuración del submódulo: ruta_del_submodulo"
 
 ### 7. (Opcional) Empujar los cambios
