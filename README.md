@@ -27,9 +27,10 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone git@github.com:focuzai/odoo_vsc.git
-cd odoo_vsc
+git clone git@github.com:focuz-ai/odoo-env.git o17-env
+cd o17-env
 cp .env.example .env
+cp odools.toml.example odools.toml
 ```
 
 **Copiar launch de VSC para ejecutar y depurar Odoo**
@@ -37,10 +38,12 @@ cp .env.example .env
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
-**Copiar odoo.conf por proyecto**
+**Copiar odoo.conf por proyecto / cliente**
 ```bash
 cp config/odoo.conf.example config/odoo.conf
 ```
+
+Se recomienda crear una carpeta por cada cliente / proyecto. Y crear archivo dev.conf y main.conf. Cada uno apuntando a sus respectivas ramas para hacer pruebas en local.
 
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
