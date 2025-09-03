@@ -5,8 +5,12 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 
 <h1>Contenido</h1>
 
+- [Estructura](#estructura)
+    - [Estructura de config](#estructura-de-config)
+    - [Estructura de los módulos](#estructura-de-los-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
+- [Instalar Python 3.11](#instalar-python-311)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
   - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
@@ -18,12 +22,36 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Scaffold](#scaffold)
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
+  - [Modos de desarrollo](#modos-de-desarrollo)
 - [Errores comunes](#errores-comunes)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
-
+# Estructura
+### Estructura de config
+```
+config/
+├── client_1/                 # Client 1
+│   ├── dev.config            # Staging branch config
+│   ├── main.config           # Main branch config
+│   └── temp.config           # Temp branch config
+└── client_2/                 # Client 2
+```
+### Estructura de los módulos
+```
+src/
+├── dev/                      # Development Addons 
+│   └── focuz-ai/             # Organization
+│       ├── repository_1/     # repository 1
+│       └── repository_2/     # repository 2
+└── projects/                 # Client Project Addons
+    ├── client_1/             # Client 1
+    │   ├── dev/              # Staging branch
+    │   ├── main/             # Main branch
+    │   └── temp/             # Temp branch        
+    └── client_2/             # Client 2
+```
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
