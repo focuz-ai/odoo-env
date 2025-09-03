@@ -7,7 +7,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 
 - [Estructura](#estructura)
     - [Estructura de config](#estructura-de-config)
-    - [Estructura de los módulos](#estructura-de-los-módulos)
+    - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
 - [Instalar Python 3.11](#instalar-python-311)
@@ -38,7 +38,7 @@ config/
 │   └── temp.config           # Temp branch config
 └── client_2/                 # Client 2
 ```
-### Estructura de los módulos
+### Estructura de módulos
 ```
 src/
 ├── dev/                      # Development Addons 
