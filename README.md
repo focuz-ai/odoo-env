@@ -79,7 +79,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=17.0
+ODOO_TAG=18.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
