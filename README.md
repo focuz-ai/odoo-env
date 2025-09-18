@@ -7,6 +7,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
+- [Instalar Python 3.11](#instalar-python-311)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
   - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
@@ -18,6 +19,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Scaffold](#scaffold)
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
+  - [Modos de desarrollo](#modos-de-desarrollo)
 - [Errores comunes](#errores-comunes)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
 - [Documentación adicional](#documentación-adicional)
@@ -27,7 +29,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone git@github.com:focuz-ai/odoo-env.git o17-env
+git clone -b 17.0 git@github.com:focuz-ai/odoo-env.git o17-env
 cd o17-env
 cp .env.example .env
 cp odools.toml.example odools.toml
