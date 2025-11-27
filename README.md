@@ -55,7 +55,7 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone git@github.com:focuz-ai/odoo-env.git -b 18.1 o18-env
+git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
 cd o18-env
 cp .env.example .env
 cp odools.toml.example odools.toml
