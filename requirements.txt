@@ -1,7 +1,7 @@
 # The officially supported versions of the following packages are their
 # python3-* equivalent distributed in Ubuntu 22.04 and Debian 11
 ## ===============================================
-# Librerias Focuz.ai
+# Librerias Focuz AI
 ## ===============================================
 watchdog==3.* ; python_version >= '3.9'
 ipython==8.21.0 ; python_version >= '3.9'
