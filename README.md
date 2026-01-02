@@ -166,7 +166,7 @@ chmod +x clone-addons.sh
 
 Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
 ```bash
-python3.11 -m venv venv
+python3.12 -m venv .venv
 ```
 
 ### Instalar las dependencias de Odoo
@@ -175,7 +175,7 @@ Para instalar las dependencias de python para Odoo, ejecute los siguientes coman
 Activar entorno virtual `venv`.
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 Actualiza las librerias pip, setuptools y wheel:
