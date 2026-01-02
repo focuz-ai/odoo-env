@@ -1,0 +1,221 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+This is an Odoo 18 development environment (o18-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
+
+## Repository Structure
+
+```
+o18-env/
+├── odoo/              # Odoo Community (cloned)
+├── enterprise/        # Odoo Enterprise (cloned)
+├── themes/            # Odoo Themes (cloned)
+├── config/            # Per-client config files (dev.conf, main.conf)
+│   └── <client>/      # Client-specific configurations
+├── src/
+│   ├── dev/           # Development addons (focuz-ai, yellow-brain-labs)
+│   ├── projects/      # Client-specific addons organized by branch
+│   │   └── <client>/{dev,main,temp}/
+│   └── migrate/       # Migration work
+├── vendor/            # Third-party addons
+└── .venv/             # Python 3.12 virtual environment
+```
+
+## Python Environment
+
+**Python 3.12** (production-ready, stable)
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+```
+
+### Python Version Compatibility
+
+| Python | Status | Notes |
+|--------|--------|-------|
+| 3.10 | ✅ Supported | Minimum version |
+| 3.11 | ✅ Supported | Previous stable |
+| 3.12 | ✅ Recommended | Current stable, best compatibility |
+| 3.13 | ⚠️ Experimental | Wait for 3.13.2+ (Q2 2025) |
+
+## Development Commands
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run Odoo with config file
+python odoo/odoo-bin -c config/<client>/dev.conf
+
+# Install module
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -i <module_name>
+
+# Update module
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name>
+
+# Run tests for a module
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> --test-enable -i <module_name> --stop-after-init
+
+# Odoo shell
+python odoo/odoo-bin shell -d <database> -c config/<client>/dev.conf
+
+# Odoo shell with IPython
+python odoo/odoo-bin shell -d <database> -c config/<client>/dev.conf --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
+
+# Scaffold new module
+python odoo/odoo-bin scaffold <module_name> src/dev/<organization>/
+
+# Development mode with auto-reload
+python odoo/odoo-bin -c config/<client>/dev.conf --dev=all
+```
+
+## Dependencies Installation
+
+**Order matters**: Install Odoo requirements first to lock base versions.
+
+```bash
+# 1. Activate environment
+source .venv/bin/activate
+
+# 2. Install Odoo dependencies first (locks cryptography, Pillow, lxml, etc.)
+pip install -r odoo/requirements.txt
+
+# 3. Install project dependencies (respects Odoo versions)
+pip install -r requirements.txt
+
+# 4. Verify no conflicts
+pip check
+```
+
+### Key Library Versions by Python
+
+| Library | Python 3.10-3.11 | Python 3.12 | Python 3.13+ |
+|---------|------------------|-------------|--------------|
+| cryptography | 3.4.8 | 42.0.8 | 42.0.8 |
+| Pillow | 9.0.1 / 9.4.0 | 10.2.0 | 11.1.0 |
+| pdfminer.six | 20211012 | 20231228 | 20231228 |
+| signxml | 3.1.1 | 3.2.2+ | 3.2.2+ |
+| pandas | 1.3.5 | 2.2.3+ | 2.2.3+ |
+| numpy | 1.26.x | 1.26.x | 2.0.x+ |
+
+## Configuration Files
+
+- **`.env`**: Environment variables (ODOO_TAG, GITHUB_USER, GITHUB_ACCESS_TOKEN)
+- **`odools.toml`**: Defines addons paths for the project
+- **`config/<client>/<branch>.conf`**: Odoo configuration per client/branch
+- **`third-party-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
+
+## Initial Setup
+
+```bash
+# Clone and configure
+git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
+cd o18-env
+cp .env.example .env
+cp odools.toml.example odools.toml
+cp config/odoo.conf.example config/<client>/dev.conf
+cp .vscode/launch.json.example .vscode/launch.json
+
+# Clone Odoo repositories
+./clone-addons.sh
+
+# Create Python 3.12 virtual environment
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
+```
+
+## Database Configuration
+
+Default PostgreSQL settings:
+- Host: 127.0.0.1
+- Port: 5454 (non-standard to avoid conflicts)
+- User: odoo
+- Password: odoo
+
+## Odoo 18 Coding Guidelines
+
+- Use `@api.model_create_multi` instead of `@api.model` for create methods
+- All models require `_description` attribute
+- Boolean field attributes must be actual booleans (`readonly=True` not `readonly="True"`)
+- No `_()` translation wrapper in class-level Selection field definitions
+- Related fields don't need `selection` redefinition
+- FontAwesome `<i>` tags require `title` attribute for accessibility
+
+## Git Submodule Management
+
+This project uses git submodules for organization-specific module repositories.
+
+```bash
+# Update all submodules
+git submodule update --remote --merge
+
+# Update specific submodule
+git submodule update --remote --merge <submodule_path>
+
+# After pull with submodule changes
+git pull --recurse-submodules
+
+# Initialize submodules after clone
+git submodule update --init --recursive
+```
+
+## VSCode Integration
+
+Launch configurations in `.vscode/launch.json`:
+- **Development**: Standard Odoo with `--dev=all`
+- **Shell**: IPython shell for interactive debugging
+
+Both use debugpy for Python debugging with frozen_modules disabled.
+
+## Key Dependencies (requirements.txt)
+
+Beyond Odoo's requirements, this environment includes:
+
+| Category | Libraries |
+|----------|-----------|
+| XML/SOAP (Electronic Invoicing) | `signxml`, `xmlsig`, `suds-py3`, `PySimpleSOAP` |
+| PDF Processing | `pdfminer.six`, `img2pdf`, `fpdf`, `pdf417gen` |
+| Data Processing | `pandas`, `numpy`, `Pyarrow` |
+| Cryptography | `PyJWT`, `pycryptodome` |
+| Development | `ipython`, `pytest`, `pydevd-odoo`, `watchdog` |
+
+## Peruvian Localization Modules
+
+The environment is set up for Peruvian electronic invoicing and compliance:
+- `l10n_pe_base`: EDI, partner extensions, POS, detractions
+- `l10n_pe_accounting`: PLE books, SIRE with SUNAT API integration
+- `l10n_pe_hr_payroll`: Payroll with PLAME, AFP, Renta 5ta
+
+## Common Issues
+
+**OSError: [Errno 24] inotify instance limit reached**
+```bash
+sudo sh -c 'echo "fs.inotify.max_user_instances = 1100000" >> /etc/sysctl.conf'
+sudo sysctl -p
+```
+
+**Double parenthesis in prompt "((.venv))"**
+Fix the activate script:
+```bash
+# Edit .venv/bin/activate, find and replace:
+# PS1="("'(.venv) '") ${PS1:-}"
+# With:
+# PS1="(.venv) ${PS1:-}"
+```
+
+**Dependency conflicts after pip install**
+Always install in order: `odoo/requirements.txt` first, then `requirements.txt`.
+```bash
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
+pip check  # Verify no conflicts
+```
