@@ -48,10 +48,22 @@ PyJWT>=2.8.0,<3.0.0 ; python_version >= '3.10'
 pycryptodome>=3.20.0,<4.0.0 ; python_version >= '3.10'
 
 # Security updates - Override Odoo versions to fix CVEs
-# Werkzeug: CVE-2024-34069, CVE-2024-49767, CVE-2024-49766
-# Jinja2: CVE-2024-22195, CVE-2024-34064, CVE-2025-27516
+# High severity:
+# Werkzeug: CVE-2024-34069 (RCE), CVE-2024-49767 (DoS), CVE-2024-49766 (Path traversal)
+# Jinja2: CVE-2024-22195, CVE-2024-34064, CVE-2025-27516 (XSS/RCE)
 Werkzeug>=3.0.6,<4.0.0 ; python_version >= '3.10'
 Jinja2>=3.1.6,<4.0.0 ; python_version >= '3.10'
+
+# Moderate severity:
+# urllib3: CVE-2024-37891 (Proxy-Authorization header leak)
+# Note: Python <3.12 uses urllib3 1.x (Odoo constraint), Python >=3.12 uses 2.x
+urllib3>=1.26.19,<2.0.0 ; python_version >= '3.10' and python_version < '3.12'
+urllib3>=2.2.2,<3.0.0 ; python_version >= '3.12'
+
+# cryptography: CVE-2023-23931, CVE-2023-49083 (Memory corruption, DoS)
+# Note: Python <3.12 requires cryptography 3.x due to pyopenssl compatibility (Odoo constraint)
+# Python >=3.12 already uses cryptography 42.x which is patched
+cryptography>=42.0.8,<43.0.0 ; python_version >= '3.12'
 
 # Utilities
 docxtpl>=0.20.0,<1.0.0 ; python_version >= '3.10'
