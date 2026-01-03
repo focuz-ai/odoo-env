@@ -1,0 +1,26 @@
+
+{
+    "Odoo.selectedConfiguration": -1,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./src",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/odoo",
+        "${workspaceFolder}/odoo/addons",
+        "${workspaceFolder}/enterprise",
+        "${workspaceFolder}/themes"
+    ],
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+    "xml.symbols.enabled": false,
+    "python.languageServer": "None",
+    "claudeCode.environmentVariables": [],
+}
