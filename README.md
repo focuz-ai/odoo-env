@@ -55,8 +55,8 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
-cd o19-env
+git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
+cd o18-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 ```
@@ -79,7 +79,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=19.0
+ODOO_TAG=18.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -165,16 +165,16 @@ chmod +x clone-addons.sh
 
 Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
 ```bash
-python3.13 -m venv .venv
+python3.13 -m venv .venv --without-pip
 ```
 
 ### Instalar las dependencias de Odoo
 Para instalar las dependencias de python para Odoo, ejecute los siguientes comandos:
 
-Activar entorno virtual `venv`.
+Activar entorno virtual `venv` e instalar pip.
 
 ```bash
-source .venv/bin/activate
+source .venv/bin/activate && curl -sS https://bootstrap.pypa.io/get-pip.py | python
 ```
 
 Actualiza las librerias pip, setuptools y wheel:
