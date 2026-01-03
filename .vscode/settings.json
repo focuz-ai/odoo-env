@@ -1,6 +1,5 @@
 
 {
-    "Odoo.selectedConfiguration": -1,
     "python.testing.unittestArgs": [
         "-v",
         "-s",
