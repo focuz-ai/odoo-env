@@ -10,7 +10,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
     - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
-- [Instalar Python 3.11](#instalar-python-311)
+- [Instalar Python 3.13](#instalar-python-313)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
   - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
@@ -85,19 +85,18 @@ ODOO_TAG=18.0
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
-# Instalar Python 3.11
+# Instalar Python 3.13
 
-Ejecutar comandos para instalar Python 3.11.
+Ejecutar comandos para instalar Python 3.13.
 
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install software-properties-common -y
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install python3.11 -y
-sudo apt install python3.11-distutils -y
-sudo apt install python3.11-dev python3.11-venv -y
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+sudo apt install python3.13 -y
+sudo apt install python3.13-dev python3.13-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
 ```
 
 # Preparar entorno de desarrollo
@@ -166,7 +165,7 @@ chmod +x clone-addons.sh
 
 Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
 ```bash
-python3.12 -m venv .venv
+python3.13 -m venv .venv --without-pip
 ```
 
 ### Instalar las dependencias de Odoo
@@ -175,7 +174,7 @@ Para instalar las dependencias de python para Odoo, ejecute los siguientes coman
 Activar entorno virtual `venv`.
 
 ```bash
-source .venv/bin/activate
+source .venv/bin/activate && curl -sS https://bootstrap.pypa.io/get-pip.py | python
 ```
 
 Actualiza las librerias pip, setuptools y wheel:
