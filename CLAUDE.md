@@ -21,12 +21,12 @@ o18-env/
 │   │   └── <client>/{dev,main,temp}/
 │   └── migrate/       # Migration work
 ├── vendor/            # Third-party addons
-└── .venv/             # Python 3.12 virtual environment
+└── .venv/             # Python 3.13 virtual environment
 ```
 
 ## Python Environment
 
-**Python 3.12** (production-ready, stable)
+**Python 3.13** (current, stable)
 
 ```bash
 # Activate virtual environment
@@ -38,9 +38,9 @@ source .venv/bin/activate
 | Python | Status | Notes |
 |--------|--------|-------|
 | 3.10 | ✅ Supported | Minimum version |
-| 3.11 | ✅ Supported | Previous stable |
-| 3.12 | ✅ Recommended | Current stable, best compatibility |
-| 3.13 | ⚠️ Experimental | Wait for 3.13.2+ (Q2 2025) |
+| 3.11 | ✅ Supported | Legacy stable |
+| 3.12 | ✅ Supported | Previous stable |
+| 3.13 | ✅ Current | Recommended, latest features |
 
 ## Development Commands
 
@@ -100,7 +100,8 @@ pip check
 | pdfminer.six | 20211012 | 20231228 | 20231228 |
 | signxml | 3.1.1 | 3.2.2+ | 3.2.2+ |
 | pandas | 1.3.5 | 2.2.3+ | 2.2.3+ |
-| numpy | 1.26.x | 1.26.x | 2.0.x+ |
+| numpy | 1.26.x | 1.26.x | 2.4.x+ |
+| PyArrow | 15.x | 15.x | 18.x+ |
 
 ## Configuration Files
 
@@ -123,8 +124,8 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.12 virtual environment
-python3.12 -m venv .venv
+# Create Python 3.13 virtual environment
+python3.13 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
