@@ -9,6 +9,7 @@ _build/
 .vscode/*
 !.vscode/launch.json.example
 !.vscode/extensions.json
+!.vscode/settings.json
 # compiled python files
 *.py[co]
 __pycache__/
@@ -51,9 +52,10 @@ package.json
 .husky
 
 # Distribution / packaging
-# odoo/
-# themes/
-# enterprise/
+# Odoo source code (cloned dynamically with clone-addons.sh)
+odoo/
+enterprise/
+themes/
 env/
 env-*/
 .venv
