@@ -10,14 +10,11 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
     - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
-- [Instalar Python 3.13](#instalar-python-313)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
-  - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
-  - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
-    - [Instalación de requisitos en maquina local](#instalación-de-requisitos-en-maquina-local)
-  - [Clonar el repositorios de Odoo](#clonar-el-repositorios-de-odoo)
-  - [Crear un entorno virtual](#crear-un-entorno-virtual)
-    - [Instalar las dependencias de Odoo](#instalar-las-dependencias-de-odoo)
+  - [Script automático (Recomendado)](#script-automático-recomendado)
+  - [Instalación manual](#instalación-manual)
+- [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo)
+- [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias)
 - [Extras de Odoo](#extras-de-odoo)
   - [Scaffold](#scaffold)
   - [Shell](#shell)
@@ -85,118 +82,118 @@ ODOO_TAG=master
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
-# Instalar Python 3.13
-
-Ejecutar comandos para instalar Python 3.13.
-
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install software-properties-common -y
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.13 -y
-sudo apt install python3.13-dev python3.13-venv -y
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
-```
-
 # Preparar entorno de desarrollo
-Ejecutar el script `setup_env.sh` para preparar el entorno de desarrollo local. 
 
-*Instalador preparado para Ubuntu 22.04 y Ubuntu 24.04.*
+El script `setup_env.sh` prepara automáticamente el entorno de desarrollo, instalando Python, dependencias de Odoo y PostgreSQL client.
 
-## Script para preparar entorno de desarrollo automaticamente
+**Distribuciones soportadas:**
+- Ubuntu 22.04, 24.04
+- Debian 11, 12
+- Linux Mint, Pop!_OS (basados en Ubuntu)
+
+## Script automático (Recomendado)
 
 ```bash
 chmod +x setup_env.sh
 ./setup_env.sh
 ```
 
-## Forma manual para preparar entorno de desarrollo
+**Opciones disponibles:**
 
-**Si ha ejecutado el script `setup_env.sh` ir a [Clonar el repositorios de Odoo](#clonar-el-repositorios-de-odoo)**
+| Opción | Descripción |
+|--------|-------------|
+| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.13 |
+| `-h, --help` | Mostrar ayuda |
 
-### Instalación de requisitos en maquina local
-**Instalación de PostgreSQL**
+**Ejemplos:**
 ```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install gnupg gnupg2 gnupg1 -y
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-sudo wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+./setup_env.sh                  # Instalar con Python 3.13 (por defecto)
+./setup_env.sh -p 3.12          # Instalar con Python 3.12
+./setup_env.sh --python 3.11    # Instalar con Python 3.11
+```
+
+**El script instala automáticamente:**
+- Python (versión especificada) + pip + venv
+- Dependencias de compilación y librerías de Odoo
+- PostgreSQL client
+
+## Instalación manual
+
+Si prefieres instalar manualmente, sigue estos pasos:
+
+<details>
+<summary>Instalación de PostgreSQL client</summary>
+
+```bash
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install gnupg wget -y
+wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
 echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
 sudo apt-get update
 sudo apt-get install --no-install-recommends -y postgresql-client
 ```
-**Opcional instalar PostgreSQL completo:**
 
-    sudo apt-get install postgresql-16 -y
-
-**Instalación de dependencias:**
-
-Inicia instalando las dependencias de Odoo oficial. Si al instalar las librerias de Odoo ocurre algun problema recien migrar las depedencias de **Rafnixg** o **Yenthe666**.
-
-**Odoo**
+**Opcional - PostgreSQL servidor completo:**
 ```bash
-sudo apt-get install -y python3 python3-pip python3-cffi python3-dev python3-venv python3-wheel
-sudo apt-get install -y git build-essential libsasl2-dev libldap2-dev libssl-dev libpq-dev libxml2-dev libxslt1-dev libevent-dev
+sudo apt-get install postgresql-16 -y
+```
+</details>
+
+<details>
+<summary>Instalación de Python 3.13 (Ubuntu)</summary>
+
+```bash
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.13 python3.13-dev python3.13-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
+```
+</details>
+
+<details>
+<summary>Instalación de dependencias de Odoo</summary>
+
+```bash
+sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
+    libsasl2-dev libldap2-dev libssl-dev libpq-dev \
+    libxml2-dev libxslt1-dev libevent-dev libffi-dev \
+    libjpeg-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
+    liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev \
+    node-less
 ```
 
-**Rafnixg**
-```bash
-sudo apt install python3-dev python3-pip python3-venv libxml2-dev \
-    libxslt1-dev libldap2-dev libsasl2-dev libtiff5-dev \
-    libjpeg8-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
-    liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev libpq-dev libssl-dev
-```
+> **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`.
+</details>
 
-**Yenthe666**
-```bash
-sudo apt-get install python3 python3-pip -y
-sudo apt-get install git python3-cffi build-essential wget python3-dev python3-venv python3-wheel libxslt-dev libzip-dev libldap2-dev libsasl2-dev python3-setuptools node-less libpng-dev libjpeg-dev gdebi -y
-```
-## Clonar el repositorios de Odoo
+# Clonar repositorios de Odoo
 
 Para clonar el repositorio de Odoo Community, Odoo Enterprise y Themes:
 ```bash
 chmod +x clone-addons.sh
 ./clone-addons.sh
 ```
-## Crear un entorno virtual
 
-Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
+# Crear entorno virtual e instalar dependencias
+
+Crear entorno virtual con la versión de Python instalada:
 ```bash
 python3.13 -m venv .venv
 ```
 
-### Instalar las dependencias de Odoo
-Para instalar las dependencias de python para Odoo, ejecute los siguientes comandos:
-
-Activar entorno virtual `venv`.
-
+Activar entorno virtual:
 ```bash
 source .venv/bin/activate
 ```
 
-Actualiza las librerias pip, setuptools y wheel:
-
+Instalar dependencias:
 ```bash
-pip3 install --upgrade pip setuptools wheel --no-cache-dir
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
 ```
 
-Instalar las librerias de Odoo:
-```bash
-pip3 install -r odoo/requirements.txt --no-cache-dir
-```
-
-Instalas las librerias adicionales:
-```bash
-pip3 install -r requirements.txt --no-cache-dir
-```
-
-Si desea desactivar el entorno virtual, ejecuta:
-
-**_Solo si deseas cambiar de entorno virtual._**
-Desactivar el actual entorno virtual de Python.
+Desactivar entorno virtual (cuando sea necesario):
 ```bash
 deactivate
 ```
