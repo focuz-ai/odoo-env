@@ -47,6 +47,12 @@ PySimpleSOAP>=1.16.2 ; python_version >= '3.10'
 PyJWT>=2.8.0,<3.0.0 ; python_version >= '3.10'
 pycryptodome>=3.20.0,<4.0.0 ; python_version >= '3.10'
 
+# Security updates - Override Odoo versions to fix CVEs
+# Werkzeug: CVE-2024-34069, CVE-2024-49767, CVE-2024-49766
+# Jinja2: CVE-2024-22195, CVE-2024-34064, CVE-2025-27516
+Werkzeug>=3.0.6,<4.0.0 ; python_version >= '3.10'
+Jinja2>=3.1.6,<4.0.0 ; python_version >= '3.10'
+
 # Utilities
 docxtpl>=0.20.0,<1.0.0 ; python_version >= '3.10'
 phonenumbers>=8.12.1,<9.0.0 ; python_version >= '3.10'
