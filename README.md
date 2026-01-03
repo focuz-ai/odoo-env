@@ -52,8 +52,8 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
-cd o18-env
+git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
+cd omaster-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 ```
@@ -76,7 +76,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=18.0
+ODOO_TAG=master
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
