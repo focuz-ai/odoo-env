@@ -8,10 +8,10 @@
     "mtxr.sqltools",                      // Cliente SQL para PostgreSQL
     "mtxr.sqltools-driver-pg",            // Driver específico para PostgreSQL
     "eamodio.gitlens",                    // Git avanzado con historial y anotaciones
-    "streetsidesoftware.code-spell-checker", // Corrector ortográfico para documentación
+    // "streetsidesoftware.code-spell-checker", // Corrector ortográfico para documentación
     "esbenp.prettier-vscode",             // Formateo automático de código
     "ms-vscode.makefile-tools",           // Soporte para Makefiles (útil en Odoo)
-    "oderwat.indent-rainbow",             // Visualización de indentación
+    // "oderwat.indent-rainbow",             // Visualización de indentación
     "gruntfuggly.todo-tree",              // Gestión de TODOs en el código
     "alefragnani.project-manager",        // Navegación entre múltiples proyectos
     "formulahendry.code-runner",          // Ejecutar scripts rápidamente

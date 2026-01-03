@@ -21,15 +21,26 @@ __pycache__/
 status
 # odoo filestore
 odoo/filestore
+odools.toml
+!odools.toml.example
 
 # window installation config file
 config/*
 !config/odoo.conf.example
-# projects
+# Third Party Addons
 vendor/*
 !vendor/.gitkeep
 src/*
 !src/.gitkeep
+# Developer files addons
+src/dev/*
+!src/dev/.gitkeep
+# Projects files addons
+src/projects/*
+!src/projects/.gitkeep
+# Migrate files addons
+src/migrate/*
+!src/migrate/.gitkeep
 
 # js tooling
 node_modules
@@ -45,8 +56,10 @@ package.json
 # enterprise/
 env/
 env-*/
-venv/
-venv-*/
+.venv
+.venv-*
+venv
+venv-*
 .Python
 bin/
 build/
@@ -80,5 +93,9 @@ coverage.lcov
 # static Lib
 !static/lib/
 
-# CLAUDE
-CLAUDE.md
+# Claude Code cache/options directory
+.claude/*
+!.claude/agents
+
+# WSL
+*.Identifier

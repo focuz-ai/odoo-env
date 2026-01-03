@@ -7,7 +7,7 @@ public https://github.com/odoo/odoo true
 themes https://github.com/odoo/design-themes true
 
 # Enterprise addons
-enterprise https://github.com/focuzai/odoo-enterprise true
+enterprise https://github.com/focuz-ai/odoo-enterprise true
 
 # Odoocker repositories
 # public https://github.com/odoocker/odoocker-modules.git odoocker_base true

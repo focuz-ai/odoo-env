@@ -5,8 +5,12 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 
 <h1>Contenido</h1>
 
+- [Estructura](#estructura)
+    - [Estructura de config](#estructura-de-config)
+    - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
+- [Instalar Python 3.13](#instalar-python-313)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
   - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
@@ -18,18 +22,43 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Scaffold](#scaffold)
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
+  - [Modos de desarrollo](#modos-de-desarrollo)
 - [Errores comunes](#errores-comunes)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
-
+# Estructura
+### Estructura de config
+```
+config/
+├── client_1/                 # Client 1
+│   ├── dev.config            # Staging branch config
+│   ├── main.config           # Main branch config
+│   └── temp.config           # Temp branch config
+└── client_2/                 # Client 2
+```
+### Estructura de módulos
+```
+src/
+├── dev/                      # Development Addons 
+│   └── focuz-ai/             # Organization
+│       ├── repository_1/     # repository 1
+│       └── repository_2/     # repository 2
+└── projects/                 # Client Project Addons
+    ├── client_1/             # Client 1
+    │   ├── dev/              # Staging branch
+    │   ├── main/             # Main branch
+    │   └── temp/             # Temp branch        
+    └── client_2/             # Client 2
+```
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone git@github.com:focuzai/odoo_vsc.git
-cd odoo_vsc
+git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
+cd omaster-env
 cp .env.example .env
+cp odools.toml.example odools.toml
 ```
 
 **Copiar launch de VSC para ejecutar y depurar Odoo**
@@ -37,10 +66,12 @@ cp .env.example .env
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
-**Copiar odoo.conf por proyecto**
+**Copiar odoo.conf por proyecto / cliente**
 ```bash
 cp config/odoo.conf.example config/odoo.conf
 ```
+
+Se recomienda crear una carpeta por cada cliente / proyecto. Y crear archivo dev.conf y main.conf. Cada uno apuntando a sus respectivas ramas para hacer pruebas en local.
 
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
@@ -54,19 +85,18 @@ ODOO_TAG=master
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
-# Instalar Python 3.11
+# Instalar Python 3.13
 
-Ejecutar comandos para instalar Python 3.11.
+Ejecutar comandos para instalar Python 3.13.
 
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install software-properties-common -y
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install python3.11 -y
-sudo apt install python3.11-distutils -y
-sudo apt install python3.11-dev python3.11-venv -y
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+sudo apt install python3.13 -y
+sudo apt install python3.13-dev python3.13-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
 ```
 
 # Preparar entorno de desarrollo
@@ -135,7 +165,7 @@ chmod +x clone-addons.sh
 
 Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
 ```bash
-python3.11 -m venv venv
+python3.13 -m venv .venv
 ```
 
 ### Instalar las dependencias de Odoo
@@ -144,7 +174,7 @@ Para instalar las dependencias de python para Odoo, ejecute los siguientes coman
 Activar entorno virtual `venv`.
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 Actualiza las librerias pip, setuptools y wheel:
