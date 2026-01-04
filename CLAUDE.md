@@ -11,8 +11,8 @@ This is an Odoo 18 development environment (o18-env) configured for multi-client
 ```
 o18-env/
 ├── odoo/              # Odoo Community (cloned)
-├── enterprise/        # Odoo Enterprise (cloned)
-├── themes/            # Odoo Themes (cloned)
+├── odoo-ee/           # Odoo Enterprise (cloned)
+├── odoo-themes/       # Odoo Themes (cloned)
 ├── config/            # Per-client config files (dev.conf, main.conf)
 │   └── <client>/      # Client-specific configurations
 ├── src/
