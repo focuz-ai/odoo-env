@@ -41,6 +41,12 @@
         "*.xml": "xml"
     },
 
-    // Claude Code
-    "claudeCode.environmentVariables": []
+    // Claude Code - Environment variables for terminal commands
+    "claudeCode.environmentVariables": [
+        "ODOO_RC=${workspaceFolder}/config/dev.conf",
+        "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+        "LANG=es_PE.UTF-8",
+        "LC_ALL=es_PE.UTF-8",
+        "TZ=America/Lima"
+    ]
 }
