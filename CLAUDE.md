@@ -108,7 +108,7 @@ pip check
 - **`.env`**: Environment variables (ODOO_TAG, GITHUB_USER, GITHUB_ACCESS_TOKEN)
 - **`odools.toml`**: Defines addons paths for the project
 - **`config/<client>/<branch>.conf`**: Odoo configuration per client/branch
-- **`third-party-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
+- **`clone-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
 
 ## Initial Setup
 
@@ -136,7 +136,27 @@ pip install -r requirements.txt
 
 ## Clone Addons Script
 
-The `clone-addons.sh` script clones Odoo repositories and syncs focuz-ai forks with upstream Odoo.
+The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz-ai forks with upstream Odoo.
+
+### Usage
+
+```bash
+# Show help
+./clone-addons.sh --help
+
+# Clone repositories only (default)
+./clone-addons.sh
+
+# Clone and sync with upstream Odoo
+./clone-addons.sh --sync
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-s, --sync` | Sync focuz-ai forks with upstream Odoo (fetch, merge, push) |
+| `-h, --help` | Show help message |
 
 ### Repositories Managed
 
@@ -146,10 +166,10 @@ The `clone-addons.sh` script clones Odoo repositories and syncs focuz-ai forks w
 | `odoo-ee/` | focuz-ai/odoo-enterprise | odoo/enterprise |
 | `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
-### Sync Functionality
+### Sync Functionality (--sync)
 
-When executed, the script:
-1. Clones repositories from focuz-ai forks (configured in `third-party-addons.txt`)
+When executed with `--sync`, the script:
+1. Clones repositories from focuz-ai forks
 2. Adds upstream Odoo remotes automatically
 3. Fetches latest changes from upstream
 4. Creates missing branches from upstream if needed (e.g., 18.0)
@@ -158,22 +178,13 @@ When executed, the script:
 
 ### Requirements
 
-Configure `.env` with GitHub credentials for sync and push:
+Configure `.env` with GitHub credentials for private repos and sync:
 ```bash
 GITHUB_USER=your_username
 GITHUB_ACCESS_TOKEN=ghp_your_token
 ```
 
-### Usage
-
-```bash
-# Clone and sync all repositories
-./clone-addons.sh
-
-# The script reads third-party-addons.txt for repository configuration
-```
-
-### Configuration (third-party-addons.txt)
+### Configuration (clone-addons.txt)
 
 ```bash
 # Format: <type> <repo_url> <condition>

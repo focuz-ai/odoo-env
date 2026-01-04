@@ -1,4 +1,71 @@
 #!/bin/bash
+
+# =============================================================================
+# clone-addons.sh - Clone Odoo repositories and optionally sync with upstream
+# =============================================================================
+
+SCRIPT_NAME=$(basename "$0")
+CONFIG_FILE="clone-addons.txt"
+SYNC_ENABLED=false
+
+# Show help message
+show_help() {
+    cat << EOF
+Usage: ${SCRIPT_NAME} [OPTIONS]
+
+Clone Odoo repositories configured in ${CONFIG_FILE}.
+
+OPTIONS:
+    -s, --sync      Sync focuz-ai forks with upstream Odoo repositories
+                    (fetches latest changes, merges, and pushes to fork)
+    -h, --help      Show this help message and exit
+
+EXAMPLES:
+    ${SCRIPT_NAME}              Clone repositories only
+    ${SCRIPT_NAME} --sync       Clone and sync with upstream Odoo
+
+CONFIGURATION:
+    Repositories are configured in ${CONFIG_FILE} with the format:
+    <type> <repo_url> <condition>
+
+    Types:
+        public      - Public repository (no auth required)
+        private     - Private repository (requires GITHUB_USER/GITHUB_ACCESS_TOKEN)
+        enterprise  - Odoo Enterprise (requires ENTERPRISE_USER/ENTERPRISE_ACCESS_TOKEN)
+        themes      - Odoo Themes repository
+
+ENVIRONMENT VARIABLES (.env):
+    ODOO_TAG                    - Branch/tag to clone (e.g., 18.0)
+    GITHUB_USER                 - GitHub username for private repos
+    GITHUB_ACCESS_TOKEN         - GitHub token for private repos
+    ENTERPRISE_USER             - GitHub username for Enterprise repo
+    ENTERPRISE_ACCESS_TOKEN     - GitHub token for Enterprise repo
+    ENTERPRISE_ADDONS           - Local folder for Enterprise (default: odoo-ee)
+    THEMES_ADDONS               - Local folder for Themes (default: odoo-themes)
+    THIRD_PARTY_ADDONS          - Local folder for vendor addons (default: vendor)
+
+EOF
+    exit 0
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -s|--sync)
+            SYNC_ENABLED=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            echo -e "\e[31m❌ Unknown option: $1\e[0m"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 source .env
 set -e
 
@@ -156,8 +223,10 @@ clone_and_copy_modules() {
             delete_repository $ENTERPRISE_ADDONS
             $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
             echo -e "\e[32mClone repository ${ENTERPRISE_ADDONS} 🆗\e[0m"
-            # Sync fork with upstream Odoo and push to focuz-ai
-            sync_fork_with_upstream $ENTERPRISE_ADDONS
+            # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
+            if [ "$SYNC_ENABLED" = true ]; then
+                sync_fork_with_upstream $ENTERPRISE_ADDONS
+            fi
         fi
     else
         # Determine if any module has a true condition
@@ -186,8 +255,10 @@ clone_and_copy_modules() {
                 $clone_cmd --depth 1 --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
             fi
             echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
-            # Sync fork with upstream Odoo and push to focuz-ai
-            sync_fork_with_upstream $repo_name
+            # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
+            if [ "$SYNC_ENABLED" = true ]; then
+                sync_fork_with_upstream $repo_name
+            fi
         fi
 
         # Copy the modules if the condition is true
@@ -238,4 +309,4 @@ while IFS= read -r line; do
     echo $(expand_env_vars "$line")
     echo "=================================================="
     clone_and_copy_modules $(expand_env_vars "$line")
-done < "third-party-addons.txt"
+done < "$CONFIG_FILE"
