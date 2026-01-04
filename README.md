@@ -168,11 +168,36 @@ sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
 
 # Clonar repositorios de Odoo
 
-Para clonar el repositorio de Odoo Community, Odoo Enterprise y Themes:
+El script `clone-addons.sh` clona los repositorios de Odoo Community, Enterprise y Themes desde los forks de focuz-ai.
+
 ```bash
 chmod +x clone-addons.sh
 ./clone-addons.sh
 ```
+
+**Opciones disponibles:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
+| `-h, --help` | Mostrar ayuda del script |
+
+**Ejemplos:**
+```bash
+./clone-addons.sh              # Solo clonar repositorios
+./clone-addons.sh --sync       # Clonar y sincronizar con upstream Odoo
+./clone-addons.sh --help       # Mostrar ayuda
+```
+
+**Repositorios clonados:**
+
+| Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
+|---------------|-----------------|-----------------|
+| `odoo/` | focuz-ai/odoo | odoo/odoo |
+| `odoo-ee/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+
+> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
 
 # Crear entorno virtual e instalar dependencias
 
