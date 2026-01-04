@@ -450,6 +450,25 @@ The environment is set up for Peruvian electronic invoicing and compliance:
 
 ## Common Issues
 
+**InterfaceError: connection already closed**
+
+Occurs when editing Python code while Odoo runs with `--dev=all`:
+```
+psycopg2.InterfaceError: connection already closed
+  File "odoo/service/server.py", line 507, in _run_cron
+    pg_conn.poll()
+```
+
+**Cause:** When `max_cron_threads > 0` and using auto-reload, cron connections get closed abruptly.
+
+**Solution:** Disable cron in development config:
+```ini
+# config/<client>/dev.conf
+max_cron_threads = 0
+```
+
+> **Note:** Use `max_cron_threads = 1` only when testing cron jobs, without `--dev=all`.
+
 **OSError: [Errno 24] inotify instance limit reached**
 ```bash
 sudo sh -c 'echo "fs.inotify.max_user_instances = 1100000" >> /etc/sysctl.conf'
