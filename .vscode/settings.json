@@ -3,24 +3,92 @@
     "odoo.selectedProfile": "",
 
     // Python Language Server - "None" permite que Odoo IDE maneje la resolución
+    // Odoo IDE usa Pyright internamente para análisis
     "python.languageServer": "None",
 
-    // Python Analysis
+    // Python Analysis - typeCheckingMode para diagnósticos
     "python.analysis.typeCheckingMode": "standard",
-    // "python.analysis.extraPaths": [
-    //     "${workspaceFolder}/odoo",
-    //     "${workspaceFolder}/odoo/addons",
-    //     "${workspaceFolder}/odoo-enterprise",
-    //     "${workspaceFolder}/odoo-themes",
-    //     "${workspaceFolder}/src/dev/focuz-ai/odoo-l10n-pe-hr",
-    //     "${workspaceFolder}/src/projects/triada/dev/custom",
-    //     "${workspaceFolder}/src/projects/triada/dev/vendor",
-    // ],
+
+    // File Watcher - Incluir symbolic links para que Odoo IDE detecte cambios
+    // Útil si tienes addons enlazados simbólicamente
+    "files.watcherInclude": [
+        "**"
+    ],
 
     // Editor - Quick suggestions for Odoo XML IDs in strings
     "editor.quickSuggestions": {
         "strings": "on"
     },
+
+    // Editor - Límite de ancho de línea (rulers)
+    // PEP 8: 79, Black: 88, Odoo: 120
+    "editor.rulers": [88, 120],
+
+    // Python específico - Línea máxima y formato
+    "[python]": {
+        "editor.rulers": [88, 120],
+        "editor.wordWrapColumn": 120,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // Configuraciones estilo PyCharm para mejor productividad
+    // ═══════════════════════════════════════════════════════════════
+
+    // Bracket Pair Colorization - Colorear pares de paréntesis/llaves
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+
+    // Indent Guides - Guías de indentación mejoradas
+    "editor.guides.indentation": true,
+    "editor.guides.highlightActiveIndentation": true,
+
+    // Sticky Scroll - Mantener contexto de clase/función visible
+    "editor.stickyScroll.enabled": true,
+    "editor.stickyScroll.maxLineCount": 5,
+
+    // Trailing Whitespace - Eliminar espacios al final al guardar
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
+    // Inlay Hints - Mostrar tipos y nombres de parámetros (como PyCharm)
+    "editor.inlayHints.enabled": "onUnlessPressed",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+
+    // Parameter Hints - Mostrar nombres de parámetros en llamadas
+    "editor.parameterHints.enabled": true,
+
+    // Breadcrumbs - Navegación de ruta de código
+    "breadcrumbs.enabled": true,
+    "breadcrumbs.filePath": "on",
+    "breadcrumbs.symbolPath": "on",
+
+    // Minimap - Vista previa del código (opcional, puede desactivarse)
+    "editor.minimap.enabled": true,
+    "editor.minimap.maxColumn": 80,
+    "editor.minimap.renderCharacters": false,
+
+    // Auto Save - Guardar automáticamente (como PyCharm)
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+
+    // Smooth Scrolling y Cursor
+    "editor.smoothScrolling": true,
+    "editor.cursorBlinking": "smooth",
+    "editor.cursorSmoothCaretAnimation": "on",
+
+    // Highlight línea actual
+    "editor.renderLineHighlight": "all",
+
+    // Mostrar espacios en blanco
+    "editor.renderWhitespace": "boundary",
 
     // Python Testing
     "python.testing.pytestEnabled": false,
@@ -33,6 +101,15 @@
 
     // XML - Disable symbols for large Odoo XML files
     "xml.symbols.enabled": false,
+
+    // Auto Run Command - Ejecutar Odoo Reindex al abrir workspace
+    // Requiere extensión: gabrielgrinberg.auto-run-command
+    "auto-run-command.rules": [
+        {
+            "command": "odoo-ide.reindex",
+            "message": "Reindexing Odoo addons..."
+        }
+    ],
 
     // Claude Code - Environment variables for terminal commands
     "claudeCode.environmentVariables": [

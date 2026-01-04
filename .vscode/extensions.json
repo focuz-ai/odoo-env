@@ -16,7 +16,8 @@
     "alefragnani.project-manager",        // Navegación entre múltiples proyectos
     "formulahendry.code-runner",          // Ejecutar scripts rápidamente
     "tushortz.python-extended-snippets",   // Snippets útiles para Python
-    "trinhanhngoc.vscode-odoo",         // Extensión específica para Odoo  
-    "jigar-patel.OdooSnippets"          // Snippets específicos para Odoo
+    "trinhanhngoc.vscode-odoo",           // Extensión específica para Odoo
+    "jigar-patel.OdooSnippets",           // Snippets específicos para Odoo
+    "gabrielgrinberg.auto-run-command"    // Ejecutar comandos al abrir workspace
   ]
 }
