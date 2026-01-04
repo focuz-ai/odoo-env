@@ -36,9 +36,10 @@ fpdf>=1.7.2,<2.0.0 ; python_version >= '3.10'
 pdf417gen>=0.7.1,<1.0.0 ; python_version >= '3.10'
 
 # XML signing and SOAP (Electronic Invoicing Peru)
-# Versiones compatibles con cryptography y pyOpenSSL de Odoo
+# signxml 4.x requiere cryptography>=43 y lxml>=5.2.1 (solo Python >=3.12)
+# CVE-2025-48994, CVE-2025-48995: HMAC algorithm confusion/timing attacks
 signxml==3.1.1 ; python_version >= '3.10' and python_version < '3.12'
-signxml>=3.2.2,<4.0.0 ; python_version >= '3.12'
+signxml>=4.0.4,<5.0.0 ; python_version >= '3.12'
 xmlsig>=1.0.1,<2.0.0 ; python_version >= '3.10'
 suds-py3>=1.4.5.0 ; python_version >= '3.10'
 PySimpleSOAP>=1.16.2 ; python_version >= '3.10'
