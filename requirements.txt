@@ -71,7 +71,10 @@ Pillow>=11.1.0,<12.0.0 ; python_version >= '3.13'
 # cryptography: CVE-2023-23931, CVE-2023-49083 (Memory corruption, DoS)
 # cryptography: CVE-2024-12797 (Low - OpenSSL vulnerability)
 # Note: Python <3.12 requires cryptography 3.x due to pyopenssl compatibility (Odoo constraint)
-cryptography>=44.0.1,<45.0.0 ; python_version >= '3.12'
+cryptography>=44.0.1,<47.0.0 ; python_version >= '3.12'
+
+# pyopenssl: Actualizar para compatibilidad con cryptography>=45
+pyopenssl>=25.0.0,<26.0.0 ; python_version >= '3.12'
 
 # Utilities
 docxtpl>=0.20.0,<1.0.0 ; python_version >= '3.10'
