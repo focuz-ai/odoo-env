@@ -268,6 +268,29 @@ odoo/, odoo/addons/, odoo-enterprise/, odoo-themes/, vendor/, src/dev/, src/proj
 
 **Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo) - Resolución de imports `odoo.addons.*`, navegación de modelos
 
+### Claude Code Environment Variables
+
+Variables de entorno disponibles para comandos ejecutados por Claude Code:
+
+```json
+"claudeCode.environmentVariables": [
+    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "LANG=es_PE.UTF-8",
+    "LC_ALL=es_PE.UTF-8",
+    "TZ=America/Lima"
+]
+```
+
+| Variable | Descripción | Nota |
+|----------|-------------|------|
+| `ODOO_RC` | Archivo de configuración Odoo | **Cambiar `<client>` por nombre del cliente** |
+| `PYTHONPATH` | Rutas para imports Python | Odoo + Enterprise |
+| `LANG/LC_ALL` | Locale del sistema | Español Perú |
+| `TZ` | Zona horaria | America/Lima |
+
+> **Importante:** Modificar `ODOO_RC` según el cliente activo: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
+
 ## Key Dependencies (requirements.txt)
 
 Beyond Odoo's requirements, this environment includes:
