@@ -233,10 +233,23 @@ git submodule update --init --recursive
 ## VSCode Integration
 
 Launch configurations in `.vscode/launch.json`:
-- **Development**: Standard Odoo with `--dev=all`
-- **Shell**: IPython shell for interactive debugging
 
-Both use debugpy for Python debugging with frozen_modules disabled.
+| Configuration | Description | Key Args |
+|---------------|-------------|----------|
+| `Odoo: Development` | Run server with hot reload | `--dev=all` |
+| `Odoo: Install Module` | Install module and exit | `-i <module> --stop-after-init` |
+| `Odoo: Update Module` | Update module and exit | `-u <module> --stop-after-init` |
+| `Odoo: Run Tests` | Run module tests | `--test-enable --log-level=test` |
+| `Odoo: Shell (IPython)` | Interactive shell | `--shell-interface ipython` |
+| `Odoo: Scaffold Module` | Create new module structure | `scaffold <name> src/dev/` |
+
+All configurations use debugpy with `frozen_modules=off` for debugging support.
+
+### Setup
+```bash
+cp .vscode/launch.json.example .vscode/launch.json
+# Edit launch.json: replace <database> and <module_name> placeholders
+```
 
 ## Key Dependencies (requirements.txt)
 
