@@ -134,6 +134,54 @@ pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 ```
 
+## Clone Addons Script
+
+The `clone-addons.sh` script clones Odoo repositories and syncs focuz-ai forks with upstream Odoo.
+
+### Repositories Managed
+
+| Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
+|--------------|-----------------|-----------------|
+| `odoo/` | focuz-ai/odoo | odoo/odoo |
+| `odoo-ee/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+
+### Sync Functionality
+
+When executed, the script:
+1. Clones repositories from focuz-ai forks (configured in `third-party-addons.txt`)
+2. Adds upstream Odoo remotes automatically
+3. Fetches latest changes from upstream
+4. Creates missing branches from upstream if needed (e.g., 18.0)
+5. Merges upstream changes into the fork
+6. Pushes updates back to focuz-ai repositories
+
+### Requirements
+
+Configure `.env` with GitHub credentials for sync and push:
+```bash
+GITHUB_USER=your_username
+GITHUB_ACCESS_TOKEN=ghp_your_token
+```
+
+### Usage
+
+```bash
+# Clone and sync all repositories
+./clone-addons.sh
+
+# The script reads third-party-addons.txt for repository configuration
+```
+
+### Configuration (third-party-addons.txt)
+
+```bash
+# Format: <type> <repo_url> <condition>
+public https://github.com/focuz-ai/odoo true
+themes https://github.com/focuz-ai/odoo-design-themes true
+enterprise https://github.com/focuz-ai/odoo-enterprise true
+```
+
 ## Database Configuration
 
 Default PostgreSQL settings:
