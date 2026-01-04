@@ -1,7 +1,7 @@
 [options]
-addons_path = <ruta>/odoo_vsc/odoo/addons,
-            <ruta>/odoo_vsc/enterprise,
-            <ruta>/odoo_vsc/design-themes
+addons_path = <ruta>/o18-env/odoo/addons,
+            <ruta>/o18-env/odoo-enterprise,
+            <ruta>/o18-env/odoo-themes
 admin_passwd = odoo
 csv_internal_sep = ,
 # data_dir = <ruta>/odoo/filestore
