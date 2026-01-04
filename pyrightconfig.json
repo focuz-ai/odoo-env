@@ -32,5 +32,8 @@
     "reportGeneralTypeIssues": false,
     "reportOptionalMemberAccess": false,
     "reportOptionalSubscript": false,
-    "reportPrivateUsage": false
+    "reportPrivateUsage": false,
+    "reportAttributeAccessIssue": false,
+    "reportOperatorIssue": false,
+    "reportArgumentType": false
 }

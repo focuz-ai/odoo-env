@@ -44,3 +44,6 @@ reportOptionalMemberAccess = false
 reportOptionalSubscript = false
 reportPrivateUsage = false
 reportGeneralTypeIssues = false
+reportAttributeAccessIssue = false
+reportOperatorIssue = false
+reportArgumentType = false

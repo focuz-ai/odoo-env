@@ -78,6 +78,13 @@
         "E402",   // Module level import not at top of file (Odoo pattern)
         "B904"    // raise ... from err (UserError no debe exponer internals)
     ],
+    // Excluir código core de Odoo (solo analizar src/)
+    "ruff.exclude": [
+        "odoo/**",
+        "odoo-enterprise/**",
+        "odoo-themes/**",
+        "vendor/**"
+    ],
     // Deshabilitar reglas problemáticas para Odoo:
     // - I (isort): Conflicto con Odoo IDE y convenciones OCA
     // - UP009: UTF-8 declaration requerida por OCA
