@@ -42,11 +42,12 @@
     },
 
     // Claude Code - Environment variables for terminal commands
-    "claudeCode.environmentVariables": {
-        "ODOO_RC": "${workspaceFolder}/config/dev.conf",
-        "PYTHONPATH": "${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
-        "LANG": "es_PE.UTF-8",
-        "LC_ALL": "es_PE.UTF-8",
-        "TZ": "America/Lima"
-    }
+    // Format: ["KEY=value", "KEY2=value2"]
+    "claudeCode.environmentVariables": [
+        "ODOO_RC=${workspaceFolder}/config/dev.conf",
+        "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+        "LANG=es_PE.UTF-8",
+        "LC_ALL=es_PE.UTF-8",
+        "TZ=America/Lima"
+    ]
 }
