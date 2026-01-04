@@ -28,17 +28,19 @@ numpy>=1.26.4,<2.0.0 ; python_version >= '3.10' and python_version < '3.13'
 numpy>=2.0.0,<3.0.0 ; python_version >= '3.13'
 
 # PDF processing - versiones compatibles con cryptography de Odoo
-# Python <3.12: cryptography==3.4.8, Python >=3.12: cryptography==42.0.8
+# CVE-2025-64512: Arbitrary Code Execution via Crafted PDF
+# Python <3.12: cryptography==3.4.8 limita pdfminer.six
 pdfminer.six==20211012 ; python_version >= '3.10' and python_version < '3.12'
-pdfminer.six>=20231228,<20240000 ; python_version >= '3.12'
+pdfminer.six>=20251230,<20260000 ; python_version >= '3.12'
 img2pdf>=0.4.4,<0.6.0 ; python_version >= '3.10'
 fpdf>=1.7.2,<2.0.0 ; python_version >= '3.10'
 pdf417gen>=0.7.1,<1.0.0 ; python_version >= '3.10'
 
 # XML signing and SOAP (Electronic Invoicing Peru)
-# Versiones compatibles con cryptography y pyOpenSSL de Odoo
+# signxml 4.x requiere cryptography>=43 y lxml>=5.2.1 (solo Python >=3.12)
+# CVE-2025-48994, CVE-2025-48995: HMAC algorithm confusion/timing attacks
 signxml==3.1.1 ; python_version >= '3.10' and python_version < '3.12'
-signxml>=3.2.2,<4.0.0 ; python_version >= '3.12'
+signxml>=4.0.4,<5.0.0 ; python_version >= '3.12'
 xmlsig>=1.0.1,<2.0.0 ; python_version >= '3.10'
 suds-py3>=1.4.5.0 ; python_version >= '3.10'
 PySimpleSOAP>=1.16.2 ; python_version >= '3.10'
@@ -54,20 +56,25 @@ pycryptodome>=3.20.0,<4.0.0 ; python_version >= '3.10'
 Werkzeug>=3.0.6,<4.0.0 ; python_version >= '3.10'
 Jinja2>=3.1.6,<4.0.0 ; python_version >= '3.10'
 
-# Moderate severity:
+# Moderate/High severity:
 # urllib3: CVE-2024-37891 (Proxy-Authorization header leak)
+# urllib3: CVE-2025-66471, CVE-2025-66418 (High - streaming/decompression)
+# urllib3: CVE-2025-50181 (Medium - redirect handling)
 # Note: Python <3.12 uses urllib3 1.x (Odoo constraint), Python >=3.12 uses 2.x
 urllib3>=1.26.19,<2.0.0 ; python_version >= '3.10' and python_version < '3.12'
-urllib3>=2.2.2,<3.0.0 ; python_version >= '3.12'
+urllib3>=2.6.0,<3.0.0 ; python_version >= '3.12'
 
 # Pillow: CVE-2024-28219 (buffer overflow in _imagingcms.c)
 Pillow>=10.3.0,<11.0.0 ; python_version >= '3.12' and python_version < '3.13'
 Pillow>=11.1.0,<12.0.0 ; python_version >= '3.13'
 
 # cryptography: CVE-2023-23931, CVE-2023-49083 (Memory corruption, DoS)
+# cryptography: CVE-2024-12797 (Low - OpenSSL vulnerability)
 # Note: Python <3.12 requires cryptography 3.x due to pyopenssl compatibility (Odoo constraint)
-# Python >=3.12 already uses cryptography 42.x which is patched
-cryptography>=42.0.8,<43.0.0 ; python_version >= '3.12'
+cryptography>=44.0.1,<47.0.0 ; python_version >= '3.12'
+
+# pyopenssl: Actualizar para compatibilidad con cryptography>=45
+pyopenssl>=25.0.0,<26.0.0 ; python_version >= '3.12'
 
 # Utilities
 docxtpl>=0.20.0,<1.0.0 ; python_version >= '3.10'

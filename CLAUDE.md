@@ -168,6 +168,21 @@ The script automatically selects the correct wkhtmltopdf version based on `ODOO_
 
 The script handles fallback for distributions without official packages (e.g., noble → jammy).
 
+### Security Warning for Python <3.12
+
+When selecting Python versions below 3.12, the script displays a security warning and requires confirmation:
+
+| CVE | Package | Severity | Reason |
+|-----|---------|----------|--------|
+| CVE-2025-66471, CVE-2025-66418 | urllib3 | High | Requires urllib3 1.x |
+| CVE-2024-12797 | cryptography | Low | Requires cryptography 3.x |
+| CVE-2025-48994, CVE-2025-48995 | signxml | Medium | Requires lxml 4.x |
+| CVE-2025-64512 | pdfminer.six | High | Requires cryptography 3.x |
+
+These vulnerabilities cannot be patched in Python <3.12 due to Odoo's dependency constraints.
+
+**Recommendation:** Use Python 3.12 or higher for security-critical deployments.
+
 ## Clone Addons Script
 
 The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz-ai forks with upstream Odoo.
