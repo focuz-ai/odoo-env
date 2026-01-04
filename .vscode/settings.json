@@ -1,23 +1,21 @@
 {
-    // Python Language Server
-    // "Pylance" = IntelliSense avanzado (recomendado)
-    // "Jedi" = Alternativa ligera
-    // "None" = Desactiva autocompletado/diagnósticos
-    "python.languageServer": "Pylance",
+    // Deshabilitar extensión oficial Odoo (usa trinhanhngoc.vscode-odoo con odools.toml)
+    "odoo.selectedProfile": "",
+
+    // Python Language Server - "None" permite que Odoo IDE maneje la resolución
+    "python.languageServer": "None",
 
     // Python Analysis
-    "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.diagnosticMode": "openFilesOnly",
-    "python.analysis.autoImportCompletions": true,
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}/odoo",
-        "${workspaceFolder}/odoo/addons",
-        "${workspaceFolder}/odoo-enterprise",
-        "${workspaceFolder}/odoo-themes",
-        "${workspaceFolder}/vendor",
-        "${workspaceFolder}/src/dev",
-        "${workspaceFolder}/src/projects"
-    ],
+    "python.analysis.typeCheckingMode": "standard",
+    // "python.analysis.extraPaths": [
+    //     "${workspaceFolder}/odoo",
+    //     "${workspaceFolder}/odoo/addons",
+    //     "${workspaceFolder}/odoo-enterprise",
+    //     "${workspaceFolder}/odoo-themes",
+    //     "${workspaceFolder}/src/dev/focuz-ai/odoo-l10n-pe-hr",
+    //     "${workspaceFolder}/src/projects/triada/dev/custom",
+    //     "${workspaceFolder}/src/projects/triada/dev/vendor",
+    // ],
 
     // Editor - Quick suggestions for Odoo XML IDs in strings
     "editor.quickSuggestions": {
@@ -36,15 +34,9 @@
     // XML - Disable symbols for large Odoo XML files
     "xml.symbols.enabled": false,
 
-    // File Associations for Odoo
-    "files.associations": {
-        "*.xml": "xml"
-    },
-
     // Claude Code - Environment variables for terminal commands
-    // Format: ["KEY=value", "KEY2=value2"]
     "claudeCode.environmentVariables": [
-        "ODOO_RC=${workspaceFolder}/config/dev.conf",
+        "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
         "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
         "LANG=es_PE.UTF-8",
         "LC_ALL=es_PE.UTF-8",

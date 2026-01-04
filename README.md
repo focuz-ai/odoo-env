@@ -84,11 +84,16 @@ El archivo `.vscode/settings.json` ya viene preconfigurado con:
 
 | Setting | Valor | Descripción |
 |---------|-------|-------------|
-| `python.languageServer` | `Pylance` | IntelliSense y autocompletado |
-| `python.analysis.typeCheckingMode` | `basic` | Type checking sin falsos positivos |
+| `python.languageServer` | `None` | Permite que Odoo IDE maneje la resolución |
+| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial (evita conflictos) |
 | `editor.quickSuggestions.strings` | `on` | Autocompletado en strings (XML IDs) |
 
-**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+**Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+- Resolución de `_inherit` y navegación de modelos
+- Usa `odools.toml` para configuración de paths
+- Comando: `Ctrl+Shift+P` → "Odoo: Reindex Addons" después de cambios
+
+> **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace.
 
 **Variables de entorno para Claude Code:**
 

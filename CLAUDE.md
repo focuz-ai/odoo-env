@@ -302,18 +302,33 @@ cp .vscode/launch.json.example .vscode/launch.json
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| `python.languageServer` | `"Pylance"` | IntelliSense, autocompletado, diagnósticos |
-| `python.analysis.typeCheckingMode` | `"basic"` | Type checking sin falsos positivos |
-| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Performance (no analiza todo) |
-| `python.analysis.autoImportCompletions` | `true` | Sugiere imports automáticamente |
+| `python.languageServer` | `"None"` | Permite que Odoo IDE maneje la resolución |
+| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial (evita conflictos) |
+| `python.analysis.typeCheckingMode` | `"standard"` | Type checking |
 | `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
 
-**Extra Paths configurados:**
-```
-odoo/, odoo/addons/, odoo-enterprise/, odoo-themes/, vendor/, src/dev/, src/projects/
+**Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+- Resolución de `_inherit` y navegación de modelos
+- Autocompletado de campos y métodos
+- Usa `odools.toml` para configuración de paths
+
+**Configuración de Odoo IDE (`odools.toml`):**
+```toml
+[[config]]
+name = "Odoo 18.0"
+odoo_path = "${workspaceFolder}/odoo"
+addons_paths = [
+    "${workspaceFolder}/odoo/addons",
+    "${workspaceFolder}/odoo-enterprise",
+    "${workspaceFolder}/odoo-themes",
+]
 ```
 
-**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo) - Resolución de imports `odoo.addons.*`, navegación de modelos
+**Comandos útiles de Odoo IDE:**
+- `Ctrl+Shift+P` → "Odoo: Reindex Addons" - Reindexar después de cambios
+- `Ctrl+Shift+P` → "Odoo: Restart Language Server" - Reiniciar si hay problemas
+
+> **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace si hay problemas.
 
 ### Claude Code Environment Variables
 
