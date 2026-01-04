@@ -26,19 +26,44 @@ sync_fork_with_upstream() {
         return 1
     fi
 
+    # Skip sync if no GitHub credentials
+    if [ -z "$GITHUB_USER" ] || [ -z "$GITHUB_ACCESS_TOKEN" ]; then
+        echo -e "\e[33m⚠️  Skipping sync for ${repo_dir} (no GitHub credentials)\e[0m"
+        return 0
+    fi
+
     echo -e "\e[36m🔄 Syncing ${repo_dir} with upstream Odoo...\e[0m"
     pushd "$repo_dir" > /dev/null
 
-    # Unshallow repository if cloned with --depth 1
-    if [ -f .git/shallow ]; then
-        echo -e "\e[33m   Fetching full history from origin...\e[0m"
-        git fetch --unshallow origin ${ODOO_TAG} 2>/dev/null || git fetch origin ${ODOO_TAG}
+    # Configure origin remote with credentials for push (if not already set)
+    local origin_url=$(git remote get-url origin)
+    if [[ "$origin_url" != *"@github.com"* ]]; then
+        local auth_url="https://${GITHUB_USER}:${GITHUB_ACCESS_TOKEN}@${origin_url#https://}"
+        git remote set-url origin "$auth_url"
     fi
 
-    # Add upstream remote if not exists
+    # Add upstream remote if not exists (with credentials for private repos like enterprise)
     if ! git remote get-url upstream &>/dev/null; then
+        local auth_upstream_url="https://${GITHUB_USER}:${GITHUB_ACCESS_TOKEN}@${upstream_url#https://}"
         echo -e "\e[33m   Adding upstream: ${upstream_url}\e[0m"
-        git remote add upstream "$upstream_url"
+        git remote add upstream "$auth_upstream_url"
+    fi
+
+    # Check if target branch exists on origin
+    local branch_exists_on_origin=true
+    if ! git ls-remote --heads origin ${ODOO_TAG} | grep -q ${ODOO_TAG}; then
+        branch_exists_on_origin=false
+        echo -e "\e[33m   Branch ${ODOO_TAG} not found on origin, will create from upstream\e[0m"
+    fi
+
+    # Unshallow repository if cloned with --depth 1
+    if [ -f .git/shallow ]; then
+        echo -e "\e[33m   Fetching full history...\e[0m"
+        if [ "$branch_exists_on_origin" = true ]; then
+            git fetch --unshallow origin ${ODOO_TAG} 2>/dev/null || git fetch --unshallow origin 2>/dev/null || true
+        else
+            git fetch --unshallow origin 2>/dev/null || true
+        fi
     fi
 
     # Fetch upstream branch
@@ -49,17 +74,27 @@ sync_fork_with_upstream() {
         return 1
     }
 
-    # Merge upstream changes into current branch
-    echo -e "\e[36m   Merging upstream/${ODOO_TAG}...\e[0m"
-    git merge upstream/${ODOO_TAG} -m "chore: sync with upstream odoo/${ODOO_TAG}" --no-edit || {
-        echo -e "\e[31m❌ Merge conflict in ${repo_dir}. Resolve manually.\e[0m"
-        popd > /dev/null
-        return 1
-    }
+    # If branch doesn't exist on origin, create it from upstream
+    if [ "$branch_exists_on_origin" = false ]; then
+        echo -e "\e[36m   Creating branch ${ODOO_TAG} from upstream...\e[0m"
+        git checkout -b ${ODOO_TAG} upstream/${ODOO_TAG} || {
+            echo -e "\e[31m❌ Error creating branch from upstream\e[0m"
+            popd > /dev/null
+            return 1
+        }
+    else
+        # Merge upstream changes into current branch
+        echo -e "\e[36m   Merging upstream/${ODOO_TAG}...\e[0m"
+        git merge upstream/${ODOO_TAG} -m "chore: sync with upstream odoo/${ODOO_TAG}" --no-edit || {
+            echo -e "\e[31m❌ Merge conflict in ${repo_dir}. Resolve manually.\e[0m"
+            popd > /dev/null
+            return 1
+        }
+    fi
 
     # Push changes to focuz-ai fork
     echo -e "\e[36m   Pushing to focuz-ai fork (origin/${ODOO_TAG})...\e[0m"
-    git push origin ${ODOO_TAG} || {
+    git push -u origin ${ODOO_TAG} || {
         echo -e "\e[31m❌ Error pushing to focuz-ai. Check permissions.\e[0m"
         popd > /dev/null
         return 1
@@ -146,7 +181,10 @@ clone_and_copy_modules() {
         fi
         # Clone the repo if should_clone is true and it's not already cloned
         if [[ $should_clone == true && ! -d "$repo_name" ]]; then
-            $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
+            if ! $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags 2>/dev/null; then
+                echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, trying default branch...\e[0m"
+                $clone_cmd --depth 1 --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
+            fi
             echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
             # Sync fork with upstream Odoo and push to focuz-ai
             sync_fork_with_upstream $repo_name
