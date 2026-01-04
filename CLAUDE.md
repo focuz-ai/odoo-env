@@ -136,6 +136,38 @@ pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 ```
 
+## Setup Environment Script
+
+The `setup_env.sh` script prepares the development environment automatically.
+
+### Usage
+
+```bash
+./setup_env.sh                  # Install with Python 3.13 (default)
+./setup_env.sh -p 3.12          # Install with Python 3.12
+./setup_env.sh --help           # Show help
+```
+
+### What it installs
+
+| Component | Description |
+|-----------|-------------|
+| Python | Specified version (3.10-3.14) + pip + venv |
+| Odoo dependencies | Build tools, libraries (libsasl2, libldap2, etc.) |
+| PostgreSQL client | psql command-line tool |
+| wkhtmltopdf | PDF generation for Odoo reports |
+
+### wkhtmltopdf Version Selection
+
+The script automatically selects the correct wkhtmltopdf version based on `ODOO_TAG` in `.env`:
+
+| ODOO_TAG | wkhtmltox Version |
+|----------|-------------------|
+| 14.0 - 19.0, master | 0.12.6.1-3 |
+| 12.0 - 13.0 | 0.12.5-1 |
+
+The script handles fallback for distributions without official packages (e.g., noble → jammy).
+
 ## Clone Addons Script
 
 The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz-ai forks with upstream Odoo.
