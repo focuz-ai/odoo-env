@@ -2,12 +2,45 @@
     // Deshabilitar extensión oficial Odoo (usa trinhanhngoc.vscode-odoo con odools.toml)
     "odoo.selectedProfile": "",
 
-    // Python Language Server - "None" permite que Odoo IDE maneje la resolución
-    // Odoo IDE usa Pyright internamente para análisis
+    // ═══════════════════════════════════════════════════════════════
+    // Odoo IDE como único Language Server
+    // - Pylance deshabilitado (no interpreta bien tipos de Odoo)
+    // - Odoo IDE: Resolución de modelos, _inherit, fields, XML IDs
+    // - Configuración Pyright → pyrightconfig.json
+    //
+    // ⚠️ Si tienes Pyright (ms-pyright.pyright) instalada: Deshabilitarla
+    // ═══════════════════════════════════════════════════════════════
+
+    // Deshabilitar Pylance (Odoo IDE usa su propio Pyright)
     "python.languageServer": "None",
 
-    // Python Analysis - typeCheckingMode para diagnósticos
-    "python.analysis.typeCheckingMode": "standard",
+    // Python Analysis - Configuración de respaldo (Pylance deshabilitado)
+    // Odoo IDE lee pyrightconfig.json para su Pyright interno
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "python.analysis.autoSearchPaths": true,
+    // Usar código de librería para tipos cuando no hay stubs disponibles
+    "python.analysis.useLibraryCodeForTypes": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/odoo",
+        "${workspaceFolder}/odoo/addons",
+        "${workspaceFolder}/odoo-enterprise",
+        "${workspaceFolder}/odoo-themes"
+    ],
+    // Ignorar diagnósticos problemáticos para Odoo (librerías sin type stubs)
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingTypeStubs": "none",           // "Library stubs not installed"
+        "reportMissingModuleSource": "none",        // "Module source not found"
+        "reportMissingImports": "none",             // Imports no resueltos
+        "reportUnknownMemberType": "none",          // Campos Odoo dinámicos
+        "reportUnknownArgumentType": "none",        // Args dinámicos en Odoo
+        "reportUnknownVariableType": "none",        // Variables dinámicas
+        "reportUnknownParameterType": "none",       // Parámetros dinámicos
+        "reportOptionalMemberAccess": "none",       // Acceso a miembros opcionales
+        "reportOptionalSubscript": "none",          // Subscript en opcionales
+        "reportPrivateUsage": "none",               // Uso de miembros privados
+        "reportGeneralTypeIssues": "information"    // Reducir severidad
+    },
 
     // File Watcher - Incluir symbolic links para que Odoo IDE detecte cambios
     // Útil si tienes addons enlazados simbólicamente
@@ -24,16 +57,31 @@
     // PEP 8: 79, Black: 88, Odoo: 120
     "editor.rulers": [88, 120],
 
-    // Python específico - Línea máxima y formato
+    // Python específico - Línea máxima y formato con Ruff
     "[python]": {
         "editor.rulers": [88, 120],
         "editor.wordWrapColumn": 120,
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
+            "source.fixAll.ruff": "explicit"
+            // "source.organizeImports.ruff": "explicit"  // Deshabilitado para Odoo
         },
-        "editor.defaultFormatter": "ms-python.autopep8"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
+
+    // Ruff - Linter y Formatter ultra-rápido (reemplaza Black, isort, Flake8)
+    // Configurado para Odoo siguiendo convenciones OCA
+    "ruff.lineLength": 120,
+    "ruff.lint.select": ["E", "F", "W", "B", "C4", "SIM"],
+    "ruff.lint.ignore": [
+        "E501",   // Line too long (handled by lineLength)
+        "E402",   // Module level import not at top of file (Odoo pattern)
+        "B904"    // raise ... from err (UserError no debe exponer internals)
+    ],
+    // Deshabilitar reglas problemáticas para Odoo:
+    // - I (isort): Conflicto con Odoo IDE y convenciones OCA
+    // - UP009: UTF-8 declaration requerida por OCA
+    "ruff.organizeImports": false,
 
     // ═══════════════════════════════════════════════════════════════
     // Configuraciones estilo PyCharm para mejor productividad
@@ -60,6 +108,7 @@
     "editor.inlayHints.enabled": "onUnlessPressed",
     "python.analysis.inlayHints.functionReturnTypes": true,
     "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.inlayHints.callArgumentNames": "all",
     "python.analysis.inlayHints.pytestParameters": true,
 
     // Parameter Hints - Mostrar nombres de parámetros en llamadas
@@ -111,12 +160,66 @@
         }
     ],
 
-    // Claude Code - Environment variables for terminal commands
-    "claudeCode.environmentVariables": [
-        "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
-        "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
-        "LANG=es_PE.UTF-8",
-        "LC_ALL=es_PE.UTF-8",
-        "TZ=America/Lima"
-    ]
+    // ═══════════════════════════════════════════════════════════════
+    // Extensiones avanzadas estilo PyCharm Professional
+    // ═══════════════════════════════════════════════════════════════
+
+    // Error Lens - Mostrar errores inline (como PyCharm)
+    "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+    "errorLens.excludeBySource": [
+        "Pylance(reportMissingImports)",
+        "Pylance(reportMissingModuleSource)",
+        "Pylance(reportMissingTypeStubs)",
+        "Pylance(reportAttributeAccessIssue)",
+        "mypy"
+    ],
+    "errorLens.delay": 500,
+    "errorLens.fontStyleItalic": true,
+    "errorLens.messageMaxChars": 100,
+
+    // Mypy - DESHABILITADO para Odoo (conflicto con Odoo IDE, sin type stubs)
+    // Si necesitas Mypy habilitado, la configuración está en pyproject.toml
+    "mypy-type-checker.enabled": false,
+    "mypy-type-checker.args": [
+        "--ignore-missing-imports",
+        "--disable-error-code=import-untyped",
+        "--disable-error-code=import-not-found"
+    ],
+
+    // Better Comments - Comentarios coloreados por tipo
+    // * Importante (verde), ! Alerta (rojo), ? Pregunta (azul)
+    // TODO: Pendiente (naranja), // Tachado (gris)
+    "better-comments.tags": [
+        { "tag": "!", "color": "#FF2D00", "strikethrough": false, "underline": false, "bold": true },
+        { "tag": "?", "color": "#3498DB", "strikethrough": false, "underline": false, "bold": false },
+        { "tag": "//", "color": "#474747", "strikethrough": true, "underline": false, "bold": false },
+        { "tag": "TODO", "color": "#FF8C00", "strikethrough": false, "underline": false, "bold": true },
+        { "tag": "FIXME", "color": "#FF2D00", "strikethrough": false, "underline": false, "bold": true },
+        { "tag": "*", "color": "#98C379", "strikethrough": false, "underline": false, "bold": false }
+    ],
+
+    // Git Graph - Visualización de ramas
+    "git-graph.defaultColumnVisibility": {
+        "Date": true,
+        "Author": true,
+        "Commit": true
+    },
+
+    // Semantic Highlighting - Colores personalizados para Python
+    "editor.semanticHighlighting.enabled": true,
+    "editor.semanticTokenColorCustomizations": {
+        "rules": {
+            "magicFunction:python": "#DCDCAA",
+            "function.declaration:python": "#DCDCAA",
+            "*.decorator:python": "#D19A66",
+            "*.typeHint:python": "#4EC9B0",
+            "class:python": "#4EC9B0",
+            "enum:python": "#4EC9B0"
+        }
+    },
+
+    // Refactoring - Preview antes de renombrar
+    "editor.rename.enablePreview": true
+
+    // Environment variables → Ver .env y .env.example
 }
