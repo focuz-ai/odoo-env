@@ -35,7 +35,7 @@ CONFIGURATION:
         themes      - Odoo Themes repository
 
 ENVIRONMENT VARIABLES (.env):
-    ODOO_TAG                    - Branch/tag to clone (e.g., 16.0)
+    ODOO_TAG                    - Branch/tag to clone (e.g., master)
     GITHUB_USER                 - GitHub username for private repos
     GITHUB_ACCESS_TOKEN         - GitHub token for private repos
     ENTERPRISE_USER             - GitHub username for Enterprise repo
