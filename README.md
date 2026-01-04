@@ -178,6 +178,19 @@ chmod +x setup_env.sh
 | 14.0 - master | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
+**⚠️ Advertencia de seguridad para Python <3.12:**
+
+Al seleccionar versiones de Python inferiores a 3.12, el script muestra una advertencia y requiere confirmación:
+
+| CVE | Paquete | Severidad |
+|-----|---------|-----------|
+| CVE-2025-66471, CVE-2025-66418 | urllib3 | 🔴 High |
+| CVE-2025-64512 | pdfminer.six | 🔴 High |
+| CVE-2025-48994, CVE-2025-48995 | signxml | 🟡 Medium |
+| CVE-2024-12797 | cryptography | 🟢 Low |
+
+> **Recomendación:** Usar Python 3.12 o superior para entornos de producción.
+
 ## Instalación manual
 
 Si prefieres instalar manualmente, sigue estos pasos:
