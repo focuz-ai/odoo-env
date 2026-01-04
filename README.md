@@ -10,14 +10,11 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
     - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
-- [Instalar Python 3.11](#instalar-python-311)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
-  - [Script para preparar entorno de desarrollo automaticamente](#script-para-preparar-entorno-de-desarrollo-automaticamente)
-  - [Forma manual para preparar entorno de desarrollo](#forma-manual-para-preparar-entorno-de-desarrollo)
-    - [Instalación de requisitos en maquina local](#instalación-de-requisitos-en-maquina-local)
-  - [Clonar el repositorios de Odoo](#clonar-el-repositorios-de-odoo)
-  - [Crear un entorno virtual](#crear-un-entorno-virtual)
-    - [Instalar las dependencias de Odoo](#instalar-las-dependencias-de-odoo)
+  - [Script automático (Recomendado)](#script-automático-recomendado)
+  - [Instalación manual](#instalación-manual)
+- [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo)
+- [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias)
 - [Extras de Odoo](#extras-de-odoo)
   - [Scaffold](#scaffold)
   - [Shell](#shell)
@@ -55,23 +52,76 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone -b 17.0 git@github.com:focuz-ai/odoo-env.git o17-env
-cd o17-env
+git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
+cd omaster-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 ```
 
-**Copiar launch de VSC para ejecutar y depurar Odoo**
+**Copiar launch de VSCode para ejecutar y depurar Odoo**
 ```bash
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
-**Copiar odoo.conf por proyecto / cliente**
-```bash
-cp config/odoo.conf.example config/odoo.conf
+Editar `launch.json` y reemplazar los placeholders:
+- `<database>` → nombre de tu base de datos
+- `<module_name>` → nombre del módulo a instalar/actualizar/testear
+
+**Configuraciones disponibles en launch.json:**
+
+| Configuración | Descripción |
+|---------------|-------------|
+| `Odoo: Development` | Servidor con hot reload (`--dev=all`) |
+| `Odoo: Install Module` | Instalar módulo y salir |
+| `Odoo: Update Module` | Actualizar módulo y salir |
+| `Odoo: Run Tests` | Ejecutar tests del módulo |
+| `Odoo: Shell (IPython)` | Shell interactivo con IPython |
+| `Odoo: Scaffold Module` | Crear estructura de nuevo módulo |
+
+**Configuración del workspace (settings.json):**
+
+El archivo `.vscode/settings.json` ya viene preconfigurado con:
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `python.languageServer` | `Pylance` | IntelliSense y autocompletado |
+| `python.analysis.typeCheckingMode` | `basic` | Type checking sin falsos positivos |
+| `editor.quickSuggestions.strings` | `on` | Autocompletado en strings (XML IDs) |
+
+**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+
+**Variables de entorno para Claude Code:**
+
+Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
+
+```json
+"claudeCode.environmentVariables": [
+    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "LANG=es_PE.UTF-8",
+    "TZ=America/Lima"
+]
 ```
 
-Se recomienda crear una carpeta por cada cliente / proyecto. Y crear archivo dev.conf y main.conf. Cada uno apuntando a sus respectivas ramas para hacer pruebas en local.
+> Cambiar `<client>` por el nombre del cliente: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
+
+**Copiar configuración por proyecto / cliente**
+```bash
+# Para desarrollo local
+cp config/dev.conf.example config/<client>/dev.conf
+
+# Para producción (opcional)
+cp config/prod.conf.example config/<client>/prod.conf
+```
+
+**Archivos de configuración disponibles:**
+
+| Archivo | Uso | Características |
+|---------|-----|-----------------|
+| `dev.conf.example` | Desarrollo local | workers=0 (debug), logging verbose, límites relajados |
+| `prod.conf.example` | Producción | Multi-worker, logging mínimo, seguridad reforzada |
+
+Se recomienda crear una carpeta por cada cliente / proyecto con sus respectivos archivos de configuración.
 
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
@@ -79,125 +129,180 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=17.0
+ODOO_TAG=master
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
-# Instalar Python 3.11
-
-Ejecutar comandos para instalar Python 3.11.
-
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install software-properties-common -y
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.11 -y
-sudo apt install python3.11-distutils -y
-sudo apt install python3.11-dev python3.11-venv -y
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
-```
-
 # Preparar entorno de desarrollo
-Ejecutar el script `setup_env.sh` para preparar el entorno de desarrollo local. 
 
-*Instalador preparado para Ubuntu 22.04 y Ubuntu 24.04.*
+El script `setup_env.sh` prepara automáticamente el entorno de desarrollo, instalando Python, dependencias de Odoo y PostgreSQL client.
 
-## Script para preparar entorno de desarrollo automaticamente
+**Distribuciones soportadas:**
+- Ubuntu 22.04, 24.04
+- Debian 11, 12
+- Linux Mint, Pop!_OS (basados en Ubuntu)
+
+## Script automático (Recomendado)
 
 ```bash
 chmod +x setup_env.sh
 ./setup_env.sh
 ```
 
-## Forma manual para preparar entorno de desarrollo
+**Opciones disponibles:**
 
-**Si ha ejecutado el script `setup_env.sh` ir a [Clonar el repositorios de Odoo](#clonar-el-repositorios-de-odoo)**
+| Opción | Descripción |
+|--------|-------------|
+| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.13 |
+| `-h, --help` | Mostrar ayuda |
 
-### Instalación de requisitos en maquina local
-**Instalación de PostgreSQL**
+**Ejemplos:**
 ```bash
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install gnupg gnupg2 gnupg1 -y
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-sudo wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+./setup_env.sh                  # Instalar con Python 3.13 (por defecto)
+./setup_env.sh -p 3.12          # Instalar con Python 3.12
+./setup_env.sh --python 3.11    # Instalar con Python 3.11
+```
+
+**El script instala automáticamente:**
+- Python (versión especificada) + pip + venv
+- Dependencias de compilación y librerías de Odoo
+- PostgreSQL client
+- wkhtmltopdf (versión según `ODOO_TAG` en `.env`)
+
+**Versiones de wkhtmltopdf:**
+
+| ODOO_TAG | wkhtmltox |
+|----------|-----------|
+| 14.0 - master | 0.12.6.1-3 |
+| 12.0 - 13.0 | 0.12.5-1 |
+
+## Instalación manual
+
+Si prefieres instalar manualmente, sigue estos pasos:
+
+<details>
+<summary>Instalación de PostgreSQL client</summary>
+
+```bash
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install gnupg wget -y
+wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
 echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
 sudo apt-get update
 sudo apt-get install --no-install-recommends -y postgresql-client
 ```
-**Opcional instalar PostgreSQL completo:**
 
-    sudo apt-get install postgresql-16 -y
-
-**Instalación de dependencias:**
-
-Inicia instalando las dependencias de Odoo oficial. Si al instalar las librerias de Odoo ocurre algun problema recien migrar las depedencias de **Rafnixg** o **Yenthe666**.
-
-**Odoo**
+**Opcional - PostgreSQL servidor completo:**
 ```bash
-sudo apt-get install -y python3 python3-pip python3-cffi python3-dev python3-venv python3-wheel
-sudo apt-get install -y git build-essential libsasl2-dev libldap2-dev libssl-dev libpq-dev libxml2-dev libxslt1-dev libevent-dev
+sudo apt-get install postgresql-16 -y
+```
+</details>
+
+<details>
+<summary>Instalación de Python 3.13 (Ubuntu)</summary>
+
+```bash
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.13 python3.13-dev python3.13-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
+```
+</details>
+
+<details>
+<summary>Instalación de dependencias de Odoo</summary>
+
+```bash
+sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
+    libsasl2-dev libldap2-dev libssl-dev libpq-dev \
+    libxml2-dev libxslt1-dev libevent-dev libffi-dev \
+    libjpeg-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
+    liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev \
+    node-less
 ```
 
-**Rafnixg**
+> **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`.
+</details>
+
+<details>
+<summary>Instalación de wkhtmltopdf</summary>
+
+wkhtmltopdf es requerido por Odoo para generar reportes PDF. Odoo 14+ requiere la versión 0.12.6 con parches Qt.
+
 ```bash
-sudo apt install python3-dev python3-pip python3-venv libxml2-dev \
-    libxslt1-dev libldap2-dev libsasl2-dev libtiff5-dev \
-    libjpeg8-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
-    liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev libpq-dev libssl-dev
+# Ubuntu 22.04 (jammy) / amd64
+wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo dpkg -i wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo apt-get install -f -y
+
+# Ubuntu 24.04 (noble) - usar paquete de jammy
+wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo dpkg -i wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo apt-get install -f -y
+
+# Verificar instalación
+wkhtmltopdf --version
 ```
 
-**Yenthe666**
-```bash
-sudo apt-get install python3 python3-pip -y
-sudo apt-get install git python3-cffi build-essential wget python3-dev python3-venv python3-wheel libxslt-dev libzip-dev libldap2-dev libsasl2-dev python3-setuptools node-less libpng-dev libjpeg-dev gdebi -y
-```
-## Clonar el repositorios de Odoo
+> **Nota:** Para otras distribuciones, consulta [wkhtmltopdf releases](https://github.com/wkhtmltopdf/packaging/releases).
+</details>
 
-Para clonar el repositorio de Odoo Community, Odoo Enterprise y Themes:
+# Clonar repositorios de Odoo
+
+El script `clone-addons.sh` clona los repositorios de Odoo Community, Enterprise y Themes desde los forks de focuz-ai.
+
 ```bash
 chmod +x clone-addons.sh
 ./clone-addons.sh
 ```
-## Crear un entorno virtual
 
-Para crear un entorno virtual de Python para Odoo (>= python3.11), ejecute el siguiente comando:
+**Opciones disponibles:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
+| `-h, --help` | Mostrar ayuda del script |
+
+**Ejemplos:**
 ```bash
-python3.11 -m venv venv
+./clone-addons.sh              # Solo clonar repositorios
+./clone-addons.sh --sync       # Clonar y sincronizar con upstream Odoo
+./clone-addons.sh --help       # Mostrar ayuda
 ```
 
-### Instalar las dependencias de Odoo
-Para instalar las dependencias de python para Odoo, ejecute los siguientes comandos:
+**Repositorios clonados:**
 
-Activar entorno virtual `venv`.
+| Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
+|---------------|-----------------|-----------------|
+| `odoo/` | focuz-ai/odoo | odoo/odoo |
+| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
+> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
+
+# Crear entorno virtual e instalar dependencias
+
+Crear entorno virtual con la versión de Python instalada:
 ```bash
-source venv/bin/activate
+python3.13 -m venv .venv
 ```
 
-Actualiza las librerias pip, setuptools y wheel:
-
+Activar entorno virtual:
 ```bash
-pip3 install --upgrade pip setuptools wheel --no-cache-dir
+source .venv/bin/activate
 ```
 
-Instalar las librerias de Odoo:
+Instalar dependencias:
 ```bash
-pip3 install -r odoo/requirements.txt --no-cache-dir
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
 ```
 
-Instalas las librerias adicionales:
-```bash
-pip3 install -r requirements.txt --no-cache-dir
-```
-
-Si desea desactivar el entorno virtual, ejecuta:
-
-**_Solo si deseas cambiar de entorno virtual._**
-Desactivar el actual entorno virtual de Python.
+Desactivar entorno virtual (cuando sea necesario):
 ```bash
 deactivate
 ```

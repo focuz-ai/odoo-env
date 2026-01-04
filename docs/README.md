@@ -72,13 +72,13 @@ Si alguna vez el superproyecto cambia la URL del submódulo, se requiere un coma
 
 Este comando recuperará las últimas versiones de los submódulos según la rama configurada en el archivo `.gitmodules ` y los actualizará en tu repositorio.
 
-    git submodule update --remote
+    git submodule update --remote --merge
 
 ### Si quieres actualizar un submódulo específico
 
 Esto actualizará solo el submódulo con el nombre especificado.
 
-    git submodule update --remote nombre_submodulo
+    git submodule update --remote --merge nombre_submodulo
 
 ### Si también deseas cambiar a la rama principal de cada submódulo
 
@@ -183,6 +183,7 @@ Abre el archivo .gitmodules y elimina la entrada correspondiente al submódulo q
 
 ### 7. (Opcional) Empujar los cambios
 Si deseas aplicar estos cambios al repositorio remoto:
+Es recomendable hacer push luego de agregar / reemplazar por otro submodule o sub-repositorio.
 
     git push
 
@@ -236,7 +237,7 @@ git push <nombre-remoto> <rama-local>
 
 Ejemplo:
 
-    git push gitlab 17.0
+    git push gitlab 18.0
 
 #### Push de todas las ramas a un remoto específico:
 ```
@@ -264,7 +265,7 @@ git pull <nombre-remoto> <rama-remota>
 
 Ejemplo:
 
-    git pull gitlab 17.0
+    git pull gitlab 18.0
 
 Esto te permitirá trabajar con varios repositorios remotos simultáneamente.
 

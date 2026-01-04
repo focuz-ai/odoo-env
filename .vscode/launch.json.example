@@ -1,65 +1,133 @@
 {
-    // Use IntelliSense para saber los atributos posibles.
-    // Mantenga el puntero para ver las descripciones de los existentes atributos.
-    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    // VSCode Launch Configurations for Odoo 18 Development
+    // Copy to launch.json and customize paths as needed
+    // Docs: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Development",
+            "name": "Odoo: Development",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/odoo/odoo-bin",
             "args": [
-                "-c", "${workspaceFolder}/config/odoo.conf",
-                "--limit-time-real", "99999",
-                "--dev=all",
+                "-c", "${workspaceFolder}/config/dev.conf",
+                "--dev=all"
             ],
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/odoo/odoo-bin",
-                "OE_INTERNATIONAL": "False",
+                "PYTHONPATH": "${workspaceFolder}/odoo",
                 "LANG": "es_PE.UTF-8",
                 "LC_ALL": "es_PE.UTF-8",
-                "TZ": "America/Lima",
-                "ODOO_RC": "${workspaceFolder}/config/odoo.conf",
+                "TZ": "America/Lima"
             },
-            "stopOnEntry": false,
             "cwd": "${workspaceFolder}",
-            "showReturnValue": true,
             "console": "integratedTerminal",
             "justMyCode": true,
-            "pythonArgs": [
-                "-X frozen_modules=off"
-            ]
+            "pythonArgs": ["-X", "frozen_modules=off"]
         },
         {
-            "name": "Shell",
+            "name": "Odoo: Install Module",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/odoo/odoo-bin",
+            "args": [
+                "-c", "${workspaceFolder}/config/dev.conf",
+                "-d", "<database>",
+                "-i", "<module_name>",
+                "--stop-after-init"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/odoo",
+                "LANG": "es_PE.UTF-8",
+                "LC_ALL": "es_PE.UTF-8",
+                "TZ": "America/Lima"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "pythonArgs": ["-X", "frozen_modules=off"]
+        },
+        {
+            "name": "Odoo: Update Module",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/odoo/odoo-bin",
+            "args": [
+                "-c", "${workspaceFolder}/config/dev.conf",
+                "-d", "<database>",
+                "-u", "<module_name>",
+                "--stop-after-init"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/odoo",
+                "LANG": "es_PE.UTF-8",
+                "LC_ALL": "es_PE.UTF-8",
+                "TZ": "America/Lima"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "pythonArgs": ["-X", "frozen_modules=off"]
+        },
+        {
+            "name": "Odoo: Run Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/odoo/odoo-bin",
+            "args": [
+                "-c", "${workspaceFolder}/config/dev.conf",
+                "-d", "<database>",
+                "-i", "<module_name>",
+                "--test-enable",
+                "--stop-after-init",
+                "--log-level=test"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/odoo",
+                "LANG": "es_PE.UTF-8",
+                "LC_ALL": "es_PE.UTF-8",
+                "TZ": "America/Lima"
+            },
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "pythonArgs": ["-X", "frozen_modules=off"]
+        },
+        {
+            "name": "Odoo: Shell (IPython)",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/odoo/odoo-bin",
             "args": [
                 "shell",
-                "-c", "${workspaceFolder}/config/odoo.conf",
-                "-d", "",
+                "-c", "${workspaceFolder}/config/dev.conf",
+                "-d", "<database>",
+                "--shell-interface", "ipython",
                 "--xmlrpc-port", "8888",
-                "--gevent-port", "8899",
-                "--shell-interface", "ipython"
+                "--gevent-port", "8899"
             ],
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/odoo/odoo-bin",
-                "OE_INTERNATIONAL": "False",
+                "PYTHONPATH": "${workspaceFolder}/odoo",
                 "LANG": "es_PE.UTF-8",
                 "LC_ALL": "es_PE.UTF-8",
-                "TZ": "America/Lima",
-                "ODOO_RC": "${workspaceFolder}/config/odoo.conf",
+                "TZ": "America/Lima"
             },
-            "stopOnEntry": false,
             "cwd": "${workspaceFolder}",
-            "showReturnValue": true,
             "console": "integratedTerminal",
             "justMyCode": true,
-            "pythonArgs": [
-                "-X frozen_modules=off"
-            ]
+            "pythonArgs": ["-X", "frozen_modules=off"]
+        },
+        {
+            "name": "Odoo: Scaffold Module",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/odoo/odoo-bin",
+            "args": [
+                "scaffold",
+                "<module_name>",
+                "${workspaceFolder}/src/dev/"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
         }
     ]
 }

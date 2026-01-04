@@ -9,6 +9,7 @@ _build/
 .vscode/*
 !.vscode/launch.json.example
 !.vscode/extensions.json
+!.vscode/settings.json
 # compiled python files
 *.py[co]
 __pycache__/
@@ -26,18 +27,22 @@ odools.toml
 
 # window installation config file
 config/*
-!config/odoo.conf.example
-# projects
+!config/dev.conf.example
+!config/prod.conf.example
+# Third Party Addons
 vendor/*
 !vendor/.gitkeep
 src/*
 !src/.gitkeep
-# Developer files
+# Developer files addons
 src/dev/*
 !src/dev/.gitkeep
-# Projects files
+# Projects files addons
 src/projects/*
 !src/projects/.gitkeep
+# Migrate files addons
+src/migrate/*
+!src/migrate/.gitkeep
 
 # js tooling
 node_modules
@@ -48,13 +53,17 @@ package.json
 .husky
 
 # Distribution / packaging
-# odoo/
-# themes/
-# enterprise/
+# Odoo source code (cloned dynamically with clone-addons.sh)
+odoo/
+odoo-enterprise/
+odoo-themes/
+clone.log
 env/
 env-*/
-venv/
-venv-*/
+.venv
+.venv-*
+venv
+venv-*
 .Python
 bin/
 build/
@@ -88,8 +97,9 @@ coverage.lcov
 # static Lib
 !static/lib/
 
-# CLAUDE
-CLAUDE.md
+# Claude Code cache/options directory
+.claude/*
+!.claude/agents
 
 # WSL
 *.Identifier

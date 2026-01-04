@@ -1,0 +1,190 @@
+;==============================================================================
+; Odoo 18 - Production Configuration
+;==============================================================================
+; Optimized for production deployment behind reverse proxy (nginx)
+; Copy this file and rename to prod.conf, then customize for your environment
+;
+; IMPORTANT: Review all settings before deploying to production!
+;==============================================================================
+
+[options]
+
+;------------------------------------------------------------------------------
+; Paths - UPDATE THESE TO YOUR PRODUCTION PATHS
+;------------------------------------------------------------------------------
+addons_path = /opt/odoo/odoo/addons,
+              /opt/odoo/odoo-enterprise,
+              /opt/odoo/custom-addons
+
+data_dir = /opt/odoo/data
+
+;------------------------------------------------------------------------------
+; Database - Production PostgreSQL
+;------------------------------------------------------------------------------
+db_host = 127.0.0.1
+db_port = 5432
+db_user = odoo
+db_password = CHANGE_THIS_STRONG_PASSWORD
+db_name = False
+db_template = template0
+db_sslmode = prefer
+
+; Maximum database connections per worker
+; Formula: db_maxconn >= (workers * 2) + max_cron_threads + 4
+db_maxconn = 32
+
+; SECURITY: Disable database listing in production
+list_db = False
+
+; Database filter for multi-tenant (use specific pattern for your domain)
+; Example: ^mycompany$ for single DB, ^%d$ for subdomain-based multi-tenant
+dbfilter = ^%d$
+
+;------------------------------------------------------------------------------
+; Server - Multi-process mode for performance
+;------------------------------------------------------------------------------
+; Workers formula: (2 * CPU_cores) + 1
+; Example: 4-core server = 9 workers (adjust based on RAM: ~150MB per worker)
+;
+; Minimum recommended:
+;   - 4GB RAM: 4 workers
+;   - 8GB RAM: 8 workers
+;   - 16GB RAM: 12-16 workers
+workers = 4
+
+http_enable = True
+http_interface = 127.0.0.1
+http_port = 8069
+
+; Longpolling/WebSocket port (required when workers > 0)
+; Must be proxied separately in nginx
+gevent_port = 8072
+
+;------------------------------------------------------------------------------
+; Security - Hardened for production
+;------------------------------------------------------------------------------
+; CRITICAL: Change this to a strong, unique password
+admin_passwd = CHANGE_THIS_ADMIN_MASTER_PASSWORD
+
+; Enable when behind nginx/reverse proxy (required for correct IP detection)
+proxy_mode = True
+
+;------------------------------------------------------------------------------
+; Logging - Minimal for performance
+;------------------------------------------------------------------------------
+; Production: only warnings and errors
+log_level = warn
+log_handler = :WARNING
+
+; Log to file with rotation (configure logrotate externally)
+logfile = /var/log/odoo/odoo-server.log
+
+; Log to database (useful for monitoring, slight performance impact)
+log_db = True
+log_db_level = warning
+
+; Syslog integration (alternative to logfile)
+; syslog = True
+
+;------------------------------------------------------------------------------
+; Resource Limits - Strict for stability
+;------------------------------------------------------------------------------
+; CPU time limit per request (seconds)
+limit_time_cpu = 120
+
+; Real time limit per request (seconds) - includes I/O wait
+limit_time_real = 300
+
+; Cron job time limit (-1 = no limit, but consider setting a reasonable value)
+limit_time_real_cron = 600
+
+; Memory limits per worker
+; Hard limit: worker killed if exceeded (2.5GB)
+limit_memory_hard = 2684354560
+; Soft limit: worker recycled after request (2GB)
+limit_memory_soft = 2147483648
+
+; Maximum request body size (bytes) - 32MB for large imports
+limit_request = 33554432
+
+;------------------------------------------------------------------------------
+; Performance Tuning
+;------------------------------------------------------------------------------
+; Cron threads (1-2 recommended for production)
+max_cron_threads = 2
+
+; Transient records cleanup (hours)
+transient_age_limit = 1.0
+
+; OSV memory management (enable for high-traffic sites)
+osv_memory_age_limit = 1.0
+osv_memory_count_limit = 1000
+
+; Server-wide modules
+server_wide_modules = base,web
+
+;------------------------------------------------------------------------------
+; Demo & Testing - Disabled for production
+;------------------------------------------------------------------------------
+demo = {}
+without_demo = all
+test_enable = False
+test_tags = None
+
+;------------------------------------------------------------------------------
+; Email - Configure for your SMTP provider
+;------------------------------------------------------------------------------
+smtp_server = smtp.yourprovider.com
+smtp_port = 587
+smtp_user = your_smtp_user
+smtp_password = your_smtp_password
+smtp_ssl = False
+; smtp_ssl_certificate_filename = /path/to/cert.pem
+; smtp_ssl_private_key_filename = /path/to/key.pem
+
+email_from = noreply@yourdomain.com
+from_filter = .*@yourdomain\.com$
+
+;------------------------------------------------------------------------------
+; Miscellaneous
+;------------------------------------------------------------------------------
+csv_internal_sep = ,
+
+; Enable PostgreSQL unaccent extension for better search
+unaccent = True
+
+; GeoIP for visitor location (optional)
+geoip_database = /usr/share/GeoIP/GeoLite2-City.mmdb
+
+translate_modules = ['all']
+
+; PID file for process management
+pidfile = /var/run/odoo/odoo.pid
+
+;==============================================================================
+; NGINX CONFIGURATION NOTES
+;==============================================================================
+; Configure nginx as reverse proxy with the following locations:
+;
+; location / {
+;     proxy_pass http://127.0.0.1:8069;
+;     proxy_set_header Host $host;
+;     proxy_set_header X-Real-IP $remote_addr;
+;     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+;     proxy_set_header X-Forwarded-Proto $scheme;
+; }
+;
+; location /longpolling {
+;     proxy_pass http://127.0.0.1:8072;
+;     proxy_set_header Host $host;
+;     proxy_set_header X-Real-IP $remote_addr;
+;     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+;     proxy_set_header X-Forwarded-Proto $scheme;
+; }
+;
+; location /websocket {
+;     proxy_pass http://127.0.0.1:8072;
+;     proxy_set_header Upgrade $http_upgrade;
+;     proxy_set_header Connection "upgrade";
+; }
+;==============================================================================

@@ -1,0 +1,141 @@
+;==============================================================================
+; Odoo Master - Development Configuration
+;==============================================================================
+; Optimized for local development with debugging capabilities
+; Copy this file and rename to dev.conf, then customize paths
+;==============================================================================
+
+[options]
+
+;------------------------------------------------------------------------------
+; Paths - UPDATE THESE TO YOUR LOCAL PATHS
+;------------------------------------------------------------------------------
+addons_path = /home/user/omaster-env/odoo/addons,
+              /home/user/omaster-env/odoo-enterprise,
+              /home/user/omaster-env/odoo-themes,
+              /home/user/omaster-env/vendor,
+              /home/user/omaster-env/src/dev,
+              /home/user/omaster-env/src/projects
+
+; data_dir = /home/user/omaster-env/data
+
+;------------------------------------------------------------------------------
+; Database - Local PostgreSQL
+;------------------------------------------------------------------------------
+db_host = 127.0.0.1
+db_port = 5432
+db_user = odoo
+db_password = odoo
+db_name = False
+db_template = template0
+db_maxconn = 64
+db_sslmode = prefer
+
+; Allow listing all databases (convenient for development)
+list_db = True
+dbfilter = .*
+
+;------------------------------------------------------------------------------
+; Server - Single process mode for debugging
+;------------------------------------------------------------------------------
+; workers = 0: Single-threaded mode, required for debugger (debugpy/pdb)
+; This allows setting breakpoints and stepping through code
+workers = 0
+
+http_enable = True
+http_interface = 127.0.0.1
+http_port = 8069
+
+; Longpolling port for live chat/notifications (used when workers > 0)
+; gevent_port = 8072
+
+;------------------------------------------------------------------------------
+; Security - Relaxed for development
+;------------------------------------------------------------------------------
+admin_passwd = admin
+
+; No proxy in development (direct access)
+proxy_mode = False
+
+;------------------------------------------------------------------------------
+; Logging - Verbose for debugging
+;------------------------------------------------------------------------------
+; Available levels: debug, info, warning, error, critical
+log_level = info
+log_handler = :INFO
+
+; Uncomment for detailed debugging of specific modules:
+; log_handler = :DEBUG,werkzeug:WARNING,odoo.http:DEBUG
+; log_handler = :INFO,odoo.addons.your_module:DEBUG
+
+; Log SQL queries (very verbose, use sparingly)
+; log_handler = :INFO,odoo.sql_db:DEBUG
+
+; Log to database (useful for multi-process debugging)
+log_db = False
+log_db_level = warning
+
+; Log to file (leave empty for stdout - better for development)
+logfile =
+
+;------------------------------------------------------------------------------
+; Resource Limits - Relaxed for debugging sessions
+;------------------------------------------------------------------------------
+; High limits to prevent timeouts during debugging
+limit_time_cpu = 600
+limit_time_real = 1200
+limit_time_real_cron = -1
+
+; Memory limits (2.5GB hard, 2GB soft)
+limit_memory_hard = 2684354560
+limit_memory_soft = 2147483648
+
+; Request size limit (8MB)
+limit_request = 8192
+
+;------------------------------------------------------------------------------
+; Development Features
+;------------------------------------------------------------------------------
+; Server-wide modules loaded on startup
+server_wide_modules = base,web
+
+; Demo data - useful for testing
+demo = {}
+without_demo = False
+
+; Test configuration
+test_enable = False
+test_tags = None
+screenshots = /tmp/odoo_tests
+
+;------------------------------------------------------------------------------
+; Performance - Not optimized (development focus)
+;------------------------------------------------------------------------------
+; Cron threads (0 = disabled, useful when debugging non-cron code)
+max_cron_threads = 1
+
+; Transient records cleanup (hours)
+transient_age_limit = 1.0
+
+; OSV memory (False = no limit)
+osv_memory_age_limit = False
+osv_memory_count_limit = False
+
+;------------------------------------------------------------------------------
+; Email - Disabled for development
+;------------------------------------------------------------------------------
+smtp_server = localhost
+smtp_port = 25
+smtp_user = False
+smtp_password = False
+smtp_ssl = False
+email_from = False
+from_filter = False
+
+;------------------------------------------------------------------------------
+; Miscellaneous
+;------------------------------------------------------------------------------
+csv_internal_sep = ,
+unaccent = False
+geoip_database = /usr/share/GeoIP/GeoLite2-City.mmdb
+translate_modules = ['all']

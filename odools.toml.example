@@ -1,9 +1,8 @@
 [[config]]
-name = "Odoo 17.0"
+name = "Odoo Master"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/enterprise",
-    "${workspaceFolder}/themes",
-    "${workspaceFolder}/src/projects/biolife/dev",
+    "${workspaceFolder}/odoo-enterprise",
+    "${workspaceFolder}/odoo-themes",
 ]

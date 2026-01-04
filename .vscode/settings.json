@@ -1,0 +1,53 @@
+{
+    // Python Language Server
+    // "Pylance" = IntelliSense avanzado (recomendado)
+    // "Jedi" = Alternativa ligera
+    // "None" = Desactiva autocompletado/diagnósticos
+    "python.languageServer": "Pylance",
+
+    // Python Analysis
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/odoo",
+        "${workspaceFolder}/odoo/addons",
+        "${workspaceFolder}/odoo-enterprise",
+        "${workspaceFolder}/odoo-themes",
+        "${workspaceFolder}/vendor",
+        "${workspaceFolder}/src/dev",
+        "${workspaceFolder}/src/projects"
+    ],
+
+    // Editor - Quick suggestions for Odoo XML IDs in strings
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+
+    // Python Testing
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s", "./src",
+        "-p", "test_*.py"
+    ],
+
+    // XML - Disable symbols for large Odoo XML files
+    "xml.symbols.enabled": false,
+
+    // File Associations for Odoo
+    "files.associations": {
+        "*.xml": "xml"
+    },
+
+    // Claude Code - Environment variables for terminal commands
+    // Format: ["KEY=value", "KEY2=value2"]
+    "claudeCode.environmentVariables": [
+        "ODOO_RC=${workspaceFolder}/config/dev.conf",
+        "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+        "LANG=es_PE.UTF-8",
+        "LC_ALL=es_PE.UTF-8",
+        "TZ=America/Lima"
+    ]
+}
