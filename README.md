@@ -95,6 +95,83 @@ El archivo `.vscode/settings.json` ya viene preconfigurado con:
 
 > **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace.
 
+<details>
+<summary><b>Configuraciones estilo PyCharm (productividad)</b></summary>
+
+El archivo `.vscode/settings.json` incluye configuraciones para mejorar productividad:
+
+**Límites de línea y formato:**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
+| `[python].editor.formatOnSave` | `true` | Auto-formato al guardar |
+| `[python].editor.defaultFormatter` | `autopep8` | Formateador por defecto |
+
+**Navegación y contexto:**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `editor.stickyScroll.enabled` | `true` | Mantener clase/función visible |
+| `breadcrumbs.enabled` | `true` | Ruta de navegación de código |
+| `editor.minimap.enabled` | `true` | Vista previa del archivo |
+
+**Colorización y guías:**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `editor.bracketPairColorization.enabled` | `true` | Colorear pares de paréntesis |
+| `editor.guides.bracketPairs` | `active` | Resaltar par activo |
+| `editor.guides.indentation` | `true` | Guías de indentación |
+
+**Inlay hints (tipos y parámetros):**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `editor.inlayHints.enabled` | `onUnlessPressed` | Mostrar hints (Ctrl oculta) |
+| `python.analysis.inlayHints.functionReturnTypes` | `true` | Tipos de retorno |
+| `python.analysis.inlayHints.variableTypes` | `true` | Tipos de variables |
+
+**Auto-guardado y limpieza:**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `files.autoSave` | `afterDelay` | Guardar automáticamente |
+| `files.autoSaveDelay` | `1000` | Delay de 1 segundo |
+| `files.trimTrailingWhitespace` | `true` | Eliminar espacios al final |
+
+**Cursor y scrolling:**
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `editor.smoothScrolling` | `true` | Scroll suave |
+| `editor.cursorSmoothCaretAnimation` | `on` | Animación del cursor |
+| `editor.renderLineHighlight` | `all` | Resaltar línea actual |
+
+</details>
+
+<details>
+<summary><b>Auto-reindex de Odoo IDE al inicio</b></summary>
+
+Para ejecutar reindex automáticamente al abrir el workspace:
+
+1. Instalar extensión:
+```bash
+code --install-extension gabrielgrinberg.auto-run-command
+```
+
+2. Configuración ya incluida en `settings.json`:
+```json
+"auto-run-command.rules": [
+    {
+        "command": "odoo-ide.reindex",
+        "message": "Reindexing Odoo addons..."
+    }
+]
+```
+
+</details>
+
 **Variables de entorno para Claude Code:**
 
 Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
