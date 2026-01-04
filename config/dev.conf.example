@@ -23,7 +23,7 @@ addons_path = /home/user/o18-env/odoo/addons,
 ; Database - Local PostgreSQL
 ;------------------------------------------------------------------------------
 db_host = 127.0.0.1
-db_port = 5454
+db_port = 5432
 db_user = odoo
 db_password = odoo
 db_name = False
