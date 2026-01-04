@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Odoo Master development environment (omaster-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
+This is an Odoo 16.0 development environment (o16-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
 
 ## Repository Structure
 
 ```
-omaster-env/
+o16-env/
 ├── odoo/              # Odoo Community (cloned)
 ├── odoo-enterprise/   # Odoo Enterprise (cloned)
 ├── odoo-themes/       # Odoo Themes (cloned)
@@ -114,8 +114,8 @@ pip check
 
 ```bash
 # Clone and configure
-git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
-cd omaster-env
+git clone -b 16.0 git@github.com:focuz-ai/odoo-env.git o16-env
+cd o16-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 cp config/dev.conf.example config/<client>/dev.conf
@@ -163,7 +163,7 @@ The script automatically selects the correct wkhtmltopdf version based on `ODOO_
 
 | ODOO_TAG | wkhtmltox Version |
 |----------|-------------------|
-| 14.0 - 19.0, master | 0.12.6.1-3 |
+| 14.0 - 16.0 | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
 The script handles fallback for distributions without official packages (e.g., noble → jammy).
@@ -206,7 +206,7 @@ When executed with `--sync`, the script:
 1. Clones repositories from focuz-ai forks
 2. Adds upstream Odoo remotes automatically
 3. Fetches latest changes from upstream
-4. Creates missing branches from upstream if needed (e.g., master)
+4. Creates missing branches from upstream if needed (e.g., 16.0)
 5. Merges upstream changes into the fork
 6. Pushes updates back to focuz-ai repositories
 
@@ -235,7 +235,7 @@ Default PostgreSQL settings:
 - User: odoo
 - Password: odoo
 
-## Odoo 18 Coding Guidelines
+## Odoo 16 Coding Guidelines
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
