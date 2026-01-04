@@ -451,6 +451,28 @@ El parámetro ``--dev`` en Odoo se utiliza para habilitar diferentes modos de de
 - rpc: Muestra las llamadas RPC (Remote Procedure Call) en la consola.
 - pdb: Inicia un depurador interactivo (Python Debugger) en caso de errores.
 # Errores comunes
+
+## InterfaceError: connection already closed
+
+Este error ocurre al editar código Python mientras Odoo está corriendo con `--dev=all`:
+
+```
+psycopg2.InterfaceError: connection already closed
+  File "odoo/service/server.py", line 507, in _run_cron
+    pg_conn.poll()
+```
+
+**Causa:** Cuando `max_cron_threads > 0` y se usa auto-reload (`--dev=all`), el hilo de cron mantiene conexiones PostgreSQL que se cierran abruptamente al recargar el servidor.
+
+**Solución:** Deshabilitar cron en desarrollo:
+
+```ini
+# En config/<client>/dev.conf
+max_cron_threads = 0
+```
+
+> **Nota:** Si necesitas probar cron jobs, usa `max_cron_threads = 1` pero sin `--dev=all`.
+
 ## OSError: [Errno 24] inotify instance limit reached
 
 ```bash
