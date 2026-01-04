@@ -54,8 +54,8 @@ package.json
 # Distribution / packaging
 # Odoo source code (cloned dynamically with clone-addons.sh)
 odoo/
-enterprise/
-themes/
+odoo-ee/
+odoo-themes/
 env/
 env-*/
 .venv

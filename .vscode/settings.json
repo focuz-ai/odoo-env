@@ -13,8 +13,8 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/odoo",
         "${workspaceFolder}/odoo/addons",
-        "${workspaceFolder}/enterprise",
-        "${workspaceFolder}/themes"
+        "${workspaceFolder}/odoo-ee",
+        "${workspaceFolder}/odoo-themes"
     ],
     "editor.quickSuggestions": {
         "strings": "on"
