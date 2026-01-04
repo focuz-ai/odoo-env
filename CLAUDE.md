@@ -306,6 +306,7 @@ cp .vscode/launch.json.example .vscode/launch.json
 | `odoo.selectedProfile` | `""` | Deshabilita extensión oficial (evita conflictos) |
 | `python.analysis.typeCheckingMode` | `"standard"` | Type checking |
 | `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
+| `files.watcherInclude` | `["**"]` | Detectar cambios en symbolic links |
 
 **Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
 - Resolución de `_inherit` y navegación de modelos
@@ -329,6 +330,81 @@ addons_paths = [
 - `Ctrl+Shift+P` → "Odoo: Restart Language Server" - Reiniciar si hay problemas
 
 > **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace si hay problemas.
+
+### Configuraciones Estilo PyCharm
+
+Configuraciones para mejorar productividad, similares a PyCharm:
+
+#### Límites de Línea y Formato
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
+| `[python].editor.formatOnSave` | `true` | Auto-formato al guardar |
+| `[python].editor.defaultFormatter` | `ms-python.autopep8` | Formateador autopep8 |
+| `[python].editor.codeActionsOnSave` | `organizeImports: explicit` | Organizar imports |
+
+#### Navegación y Contexto
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.stickyScroll.enabled` | `true` | Mantener clase/función visible en header |
+| `editor.stickyScroll.maxLineCount` | `5` | Máximo de líneas sticky |
+| `breadcrumbs.enabled` | `true` | Ruta de navegación de código |
+| `editor.minimap.enabled` | `true` | Vista previa del archivo |
+
+#### Colorización y Guías
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.bracketPairColorization.enabled` | `true` | Colorear pares de paréntesis |
+| `editor.guides.bracketPairs` | `"active"` | Resaltar par activo |
+| `editor.guides.indentation` | `true` | Guías de indentación |
+| `editor.guides.highlightActiveIndentation` | `true` | Resaltar indentación activa |
+
+#### Inlay Hints (Tipos y Parámetros)
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.inlayHints.enabled` | `"onUnlessPressed"` | Mostrar hints (Ctrl para ocultar) |
+| `python.analysis.inlayHints.functionReturnTypes` | `true` | Tipos de retorno de funciones |
+| `python.analysis.inlayHints.variableTypes` | `true` | Tipos de variables |
+| `editor.parameterHints.enabled` | `true` | Nombres de parámetros en llamadas |
+
+#### Auto-guardado y Limpieza
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `files.autoSave` | `"afterDelay"` | Guardar automáticamente |
+| `files.autoSaveDelay` | `1000` | Delay de 1 segundo |
+| `files.trimTrailingWhitespace` | `true` | Eliminar espacios al final |
+| `files.insertFinalNewline` | `true` | Nueva línea al final |
+| `files.trimFinalNewlines` | `true` | Eliminar líneas vacías al final |
+
+#### Cursor y Scrolling
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.smoothScrolling` | `true` | Scroll suave |
+| `editor.cursorBlinking` | `"smooth"` | Parpadeo suave del cursor |
+| `editor.cursorSmoothCaretAnimation` | `"on"` | Animación del cursor |
+| `editor.renderLineHighlight` | `"all"` | Resaltar línea actual |
+| `editor.renderWhitespace` | `"boundary"` | Mostrar espacios en bordes |
+
+### Auto-Reindex de Odoo IDE
+
+Para ejecutar reindex automáticamente al abrir el workspace:
+
+1. Instalar extensión: `gabrielgrinberg.auto-run-command`
+2. Configuración en `settings.json`:
+```json
+"auto-run-command.rules": [
+    {
+        "command": "odoo-ide.reindex",
+        "message": "Reindexing Odoo addons..."
+    }
+]
+```
 
 ### Claude Code Environment Variables
 
