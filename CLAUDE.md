@@ -245,11 +245,28 @@ Launch configurations in `.vscode/launch.json`:
 
 All configurations use debugpy with `frozen_modules=off` for debugging support.
 
-### Setup
+### Launch Setup
 ```bash
 cp .vscode/launch.json.example .vscode/launch.json
 # Edit launch.json: replace <database> and <module_name> placeholders
 ```
+
+### Workspace Settings (`.vscode/settings.json`)
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `python.languageServer` | `"Pylance"` | IntelliSense, autocompletado, diagnósticos |
+| `python.analysis.typeCheckingMode` | `"basic"` | Type checking sin falsos positivos |
+| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Performance (no analiza todo) |
+| `python.analysis.autoImportCompletions` | `true` | Sugiere imports automáticamente |
+| `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
+
+**Extra Paths configurados:**
+```
+odoo/, odoo/addons/, odoo-enterprise/, odoo-themes/, vendor/, src/dev/, src/projects/
+```
+
+**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo) - Resolución de imports `odoo.addons.*`, navegación de modelos
 
 ## Key Dependencies (requirements.txt)
 
