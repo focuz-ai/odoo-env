@@ -302,11 +302,61 @@ cp .vscode/launch.json.example .vscode/launch.json
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| `python.languageServer` | `"None"` | Permite que Odoo IDE maneje la resolución |
-| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial (evita conflictos) |
-| `python.analysis.typeCheckingMode` | `"standard"` | Type checking |
+| `python.languageServer` | `"None"` | Pylance deshabilitado (Odoo IDE usa Pyright) |
+| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial Odoo |
+| `python.analysis.typeCheckingMode` | `"basic"` | Recomendado por Odoo IDE |
+| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Solo archivos abiertos |
+| `python.analysis.extraPaths` | `[odoo, odoo/addons, ...]` | Paths para resolver imports |
 | `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
 | `files.watcherInclude` | `["**"]` | Detectar cambios en symbolic links |
+
+### Odoo IDE como Language Server
+
+**Configuración actual:** Odoo IDE es el único Language Server activo:
+- **Pylance:** Deshabilitado (no interpreta bien los tipos de Odoo)
+- **Odoo IDE:** Resolución de modelos, `_inherit`, fields, XML IDs
+- **Mypy:** Deshabilitado (conflicto con Odoo, sin type stubs)
+
+**⚠️ IMPORTANTE:** Si tienes **Pyright standalone** (`ms-pyright.pyright`) instalada, deshabilitarla:
+
+```
+1. Ctrl+Shift+X (Extensions)
+2. Buscar "Pyright"
+3. Click en engranaje (⚙️)
+4. Seleccionar "Disable (Workspace)"
+```
+
+**Síntomas de conflicto:**
+```
+Module "odoo" has no attribute "models"
+Library stubs not installed for "dateutil"
+```
+
+### Configuración Pyright (`pyrightconfig.json`)
+
+**Arquitectura de configuración:**
+- **`settings.json` (`python.analysis.*`):** Configuración para Pylance
+- **`pyrightconfig.json`:** Configuración para Odoo IDE (su Pyright interno)
+
+Ambos archivos tienen configuraciones similares para consistencia:
+
+```json
+{
+    "typeCheckingMode": "basic",
+    "reportMissingTypeStubs": false,
+    "reportMissingModuleSource": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownArgumentType": false,
+    "extraPaths": ["odoo", "odoo/addons", "odoo-enterprise"]
+}
+```
+
+| Diagnóstico | Razón para ignorar |
+|-------------|-------------------|
+| `reportMissingTypeStubs` | dateutil, lxml, etc. sin stubs |
+| `reportMissingModuleSource` | Módulos Odoo dinámicos |
+| `reportUnknownMemberType` | Campos `self.field_name` dinámicos |
+| `reportUnknownArgumentType` | Argumentos dinámicos en métodos Odoo |
 
 **Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
 - Resolución de `_inherit` y navegación de modelos
@@ -335,14 +385,25 @@ addons_paths = [
 
 Configuraciones para mejorar productividad, similares a PyCharm:
 
-#### Límites de Línea y Formato
+#### Ruff - Linter y Formatter (Configurado para Odoo)
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
-| `[python].editor.formatOnSave` | `true` | Auto-formato al guardar |
-| `[python].editor.defaultFormatter` | `ms-python.autopep8` | Formateador autopep8 |
-| `[python].editor.codeActionsOnSave` | `organizeImports: explicit` | Organizar imports |
+| `[python].editor.defaultFormatter` | `charliermarsh.ruff` | Ruff formatter |
+| `ruff.lineLength` | `120` | Línea máxima para Odoo |
+| `ruff.lint.select` | `["E", "F", "W", "B", "C4", "SIM"]` | Reglas activas |
+| `ruff.organizeImports` | `false` | Deshabilitado (conflicto con Odoo IDE) |
+
+**Reglas ignoradas para Odoo:**
+
+| Regla | Razón |
+|-------|-------|
+| `E501` | Longitud de línea (manejada por lineLength) |
+| `E402` | Import no al inicio (patrón Odoo) |
+| `B904` | `raise ... from err` (UserError no expone internals) |
+| `I` (isort) | Conflicto con Odoo IDE y convenciones OCA |
+| `UP009` | `# -*- coding: utf-8 -*-` requerido por OCA |
 
 #### Navegación y Contexto
 
@@ -369,6 +430,7 @@ Configuraciones para mejorar productividad, similares a PyCharm:
 | `editor.inlayHints.enabled` | `"onUnlessPressed"` | Mostrar hints (Ctrl para ocultar) |
 | `python.analysis.inlayHints.functionReturnTypes` | `true` | Tipos de retorno de funciones |
 | `python.analysis.inlayHints.variableTypes` | `true` | Tipos de variables |
+| `python.analysis.inlayHints.callArgumentNames` | `"all"` | Nombres de argumentos en llamadas |
 | `editor.parameterHints.enabled` | `true` | Nombres de parámetros en llamadas |
 
 #### Auto-guardado y Limpieza
@@ -406,18 +468,88 @@ Para ejecutar reindex automáticamente al abrir el workspace:
 ]
 ```
 
-### Claude Code Environment Variables
+### Extensiones Avanzadas PyCharm Professional
 
-Variables de entorno disponibles para comandos ejecutados por Claude Code:
+Extensiones que replican funcionalidades de PyCharm Professional:
 
-```json
-"claudeCode.environmentVariables": [
-    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
-    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
-    "LANG=es_PE.UTF-8",
-    "LC_ALL=es_PE.UTF-8",
-    "TZ=America/Lima"
-]
+#### Error Lens - Errores Inline
+
+Muestra errores y warnings directamente en la línea de código:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `errorLens.enabledDiagnosticLevels` | `["error", "warning", "info"]` | Niveles de diagnóstico |
+| `errorLens.delay` | `500` | Delay antes de mostrar (ms) |
+| `errorLens.fontStyleItalic` | `true` | Texto en cursiva |
+
+#### Mypy - Type Checker (Deshabilitado para Odoo)
+
+Mypy está deshabilitado por defecto porque Odoo no tiene type stubs:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `mypy-type-checker.enabled` | `false` | Deshabilitado (Odoo sin type stubs) |
+
+> **Nota:** Odoo IDE usa Pyright internamente. Para proyectos no-Odoo, habilitar Mypy.
+
+#### Better Comments - Comentarios Coloreados
+
+Comentarios con colores según el tipo:
+
+| Prefijo | Color | Uso |
+|---------|-------|-----|
+| `!` | Rojo | Alertas importantes |
+| `?` | Azul | Preguntas o dudas |
+| `*` | Verde | Información destacada |
+| `TODO` | Naranja | Tareas pendientes |
+| `FIXME` | Rojo | Bugs a corregir |
+| `//` | Gris tachado | Código comentado |
+
+#### Git Graph - Visualización de Branches
+
+Visualización gráfica de ramas y commits (similar a GitKraken):
+
+```
+Ctrl+Shift+P → "Git Graph: View Git Graph"
+```
+
+#### Semantic Highlighting
+
+Colores personalizados para elementos Python:
+
+| Token | Color | Elemento |
+|-------|-------|----------|
+| `magicFunction:python` | `#DCDCAA` | `__init__`, `__str__`, etc. |
+| `function.declaration:python` | `#DCDCAA` | Declaraciones de funciones |
+| `*.decorator:python` | `#D19A66` | Decoradores `@api.model` |
+| `*.typeHint:python` | `#4EC9B0` | Type hints |
+| `class:python` | `#4EC9B0` | Nombres de clases |
+
+### Extensiones Recomendadas
+
+| Extensión | Propósito |
+|-----------|-----------|
+| `charliermarsh.ruff` | Linter + Formatter ultra-rápido |
+| `usernamehw.errorlens` | Errores inline en el código |
+| `ms-python.mypy-type-checker` | Type checking estricto |
+| `aaron-bond.better-comments` | Comentarios coloreados |
+| `mhutchie.git-graph` | Visualización de branches |
+| `eamodio.gitlens` | Git avanzado |
+| `mtxr.sqltools` | Database tools (como DataGrip) |
+
+### Environment Variables (`.env`)
+
+Variables de entorno para desarrollo Odoo. Copiar de `.env.example` y configurar:
+
+```bash
+# Odoo Runtime Configuration
+ODOO_RC=config/<client>/dev.conf
+PYTHONPATH=odoo:odoo-enterprise
+
+# Locale Settings (Peruvian Spanish)
+LANG=es_PE.UTF-8
+LC_ALL=es_PE.UTF-8
+TZ=America/Lima
 ```
 
 | Variable | Descripción | Nota |
