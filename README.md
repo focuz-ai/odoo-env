@@ -194,7 +194,7 @@ chmod +x clone-addons.sh
 | Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
 |---------------|-----------------|-----------------|
 | `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-ee/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
 | `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
 > **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).

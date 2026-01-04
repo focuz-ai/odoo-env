@@ -11,7 +11,7 @@ This is an Odoo 18 development environment (o18-env) configured for multi-client
 ```
 o18-env/
 ├── odoo/              # Odoo Community (cloned)
-├── odoo-ee/           # Odoo Enterprise (cloned)
+├── odoo-enterprise/   # Odoo Enterprise (cloned)
 ├── odoo-themes/       # Odoo Themes (cloned)
 ├── config/            # Per-client config files (dev.conf, main.conf)
 │   └── <client>/      # Client-specific configurations
@@ -163,7 +163,7 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 | Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
 |--------------|-----------------|-----------------|
 | `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-ee/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
 | `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
 ### Sync Functionality (--sync)
