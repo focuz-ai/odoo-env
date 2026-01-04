@@ -58,10 +58,25 @@ cp .env.example .env
 cp odools.toml.example odools.toml
 ```
 
-**Copiar launch de VSC para ejecutar y depurar Odoo**
+**Copiar launch de VSCode para ejecutar y depurar Odoo**
 ```bash
 cp .vscode/launch.json.example .vscode/launch.json
 ```
+
+Editar `launch.json` y reemplazar los placeholders:
+- `<database>` → nombre de tu base de datos
+- `<module_name>` → nombre del módulo a instalar/actualizar/testear
+
+**Configuraciones disponibles en launch.json:**
+
+| Configuración | Descripción |
+|---------------|-------------|
+| `Odoo: Development` | Servidor con hot reload (`--dev=all`) |
+| `Odoo: Install Module` | Instalar módulo y salir |
+| `Odoo: Update Module` | Actualizar módulo y salir |
+| `Odoo: Run Tests` | Ejecutar tests del módulo |
+| `Odoo: Shell (IPython)` | Shell interactivo con IPython |
+| `Odoo: Scaffold Module` | Crear estructura de nuevo módulo |
 
 **Copiar configuración por proyecto / cliente**
 ```bash
