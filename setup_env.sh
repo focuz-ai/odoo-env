@@ -97,6 +97,34 @@ validate_python_version() {
     fi
 
     log_info "Versión de Python seleccionada: $version"
+
+    # Advertencia de seguridad para versiones < 3.12
+    if [[ "$minor" -lt 12 ]]; then
+        echo ""
+        log_warn "========================================"
+        log_warn "⚠️  ADVERTENCIA DE SEGURIDAD"
+        log_warn "========================================"
+        log_warn "Python $version tiene limitaciones de seguridad:"
+        log_warn ""
+        log_warn "Las siguientes vulnerabilidades NO pueden parchearse:"
+        log_warn "  - urllib3: CVE-2025-66471, CVE-2025-66418 (High)"
+        log_warn "  - cryptography: CVE-2024-12797 (Low)"
+        log_warn "  - signxml: CVE-2025-48994, CVE-2025-48995 (Medium)"
+        log_warn "  - pdfminer.six: CVE-2025-64512 (High)"
+        log_warn ""
+        log_warn "Motivo: Odoo requiere versiones antiguas de estas"
+        log_warn "librerías para Python <3.12 (cryptography 3.x, lxml 4.x)"
+        log_warn ""
+        log_warn "Recomendación: Usar Python 3.12 o superior"
+        log_warn "========================================"
+        echo ""
+        read -p "¿Desea continuar con Python $version? [s/N] " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[SsYy]$ ]]; then
+            log_info "Instalación cancelada. Use: $0 -p 3.13"
+            exit 0
+        fi
+    fi
 }
 
 # Dependencias base comunes (sin python3 genérico)
