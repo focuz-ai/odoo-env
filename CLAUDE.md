@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Odoo 18 development environment (o18-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
+This is an Odoo Master development environment (omaster-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
 
 ## Repository Structure
 
 ```
-o18-env/
+omaster-env/
 ├── odoo/              # Odoo Community (cloned)
 ├── odoo-enterprise/   # Odoo Enterprise (cloned)
 ├── odoo-themes/       # Odoo Themes (cloned)
@@ -114,8 +114,8 @@ pip check
 
 ```bash
 # Clone and configure
-git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
-cd o18-env
+git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
+cd omaster-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 cp config/dev.conf.example config/<client>/dev.conf
@@ -174,7 +174,7 @@ When executed with `--sync`, the script:
 1. Clones repositories from focuz-ai forks
 2. Adds upstream Odoo remotes automatically
 3. Fetches latest changes from upstream
-4. Creates missing branches from upstream if needed (e.g., 18.0)
+4. Creates missing branches from upstream if needed (e.g., master)
 5. Merges upstream changes into the fork
 6. Pushes updates back to focuz-ai repositories
 
