@@ -4,6 +4,71 @@ set -e
 
 LOG_FILE=$(pwd)/clone.log
 
+# Odoo upstream repositories mapping (local_dir -> upstream_url)
+declare -A ODOO_UPSTREAM=(
+    ["odoo"]="https://github.com/odoo/odoo.git"
+    ["${ENTERPRISE_ADDONS}"]="https://github.com/odoo/enterprise.git"
+    ["${THEMES_ADDONS}"]="https://github.com/odoo/design-themes.git"
+)
+
+# Function to sync focuz-ai fork with upstream Odoo and push
+sync_fork_with_upstream() {
+    local repo_dir=$1
+    local upstream_url=${ODOO_UPSTREAM[$repo_dir]}
+
+    # Skip if no upstream mapping exists
+    if [ -z "$upstream_url" ]; then
+        return 0
+    fi
+
+    if [ ! -d "$repo_dir" ]; then
+        echo -e "\e[31m❌ Directory ${repo_dir} not found\e[0m"
+        return 1
+    fi
+
+    echo -e "\e[36m🔄 Syncing ${repo_dir} with upstream Odoo...\e[0m"
+    pushd "$repo_dir" > /dev/null
+
+    # Unshallow repository if cloned with --depth 1
+    if [ -f .git/shallow ]; then
+        echo -e "\e[33m   Fetching full history from origin...\e[0m"
+        git fetch --unshallow origin ${ODOO_TAG} 2>/dev/null || git fetch origin ${ODOO_TAG}
+    fi
+
+    # Add upstream remote if not exists
+    if ! git remote get-url upstream &>/dev/null; then
+        echo -e "\e[33m   Adding upstream: ${upstream_url}\e[0m"
+        git remote add upstream "$upstream_url"
+    fi
+
+    # Fetch upstream branch
+    echo -e "\e[36m   Fetching upstream/${ODOO_TAG}...\e[0m"
+    git fetch upstream ${ODOO_TAG} || {
+        echo -e "\e[31m❌ Error fetching upstream\e[0m"
+        popd > /dev/null
+        return 1
+    }
+
+    # Merge upstream changes into current branch
+    echo -e "\e[36m   Merging upstream/${ODOO_TAG}...\e[0m"
+    git merge upstream/${ODOO_TAG} -m "chore: sync with upstream odoo/${ODOO_TAG}" --no-edit || {
+        echo -e "\e[31m❌ Merge conflict in ${repo_dir}. Resolve manually.\e[0m"
+        popd > /dev/null
+        return 1
+    }
+
+    # Push changes to focuz-ai fork
+    echo -e "\e[36m   Pushing to focuz-ai fork (origin/${ODOO_TAG})...\e[0m"
+    git push origin ${ODOO_TAG} || {
+        echo -e "\e[31m❌ Error pushing to focuz-ai. Check permissions.\e[0m"
+        popd > /dev/null
+        return 1
+    }
+
+    echo -e "\e[32m✅ ${repo_dir} synced and pushed to focuz-ai!\e[0m"
+    popd > /dev/null
+}
+
 # Function to construct the clone command
 construct_clone_command() {
     local repo_type=$1
@@ -56,6 +121,8 @@ clone_and_copy_modules() {
             delete_repository $ENTERPRISE_ADDONS
             $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
             echo -e "\e[32mClone repository ${ENTERPRISE_ADDONS} 🆗\e[0m"
+            # Sync fork with upstream Odoo and push to focuz-ai
+            sync_fork_with_upstream $ENTERPRISE_ADDONS
         fi
     else
         # Determine if any module has a true condition
@@ -81,6 +148,8 @@ clone_and_copy_modules() {
         if [[ $should_clone == true && ! -d "$repo_name" ]]; then
             $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
             echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
+            # Sync fork with upstream Odoo and push to focuz-ai
+            sync_fork_with_upstream $repo_name
         fi
 
         # Copy the modules if the condition is true

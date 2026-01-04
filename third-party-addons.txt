@@ -1,12 +1,12 @@
 # This file is read by clone-addons.sh
 
-# Odoo addons
-public https://github.com/odoo/odoo true
+# Odoo Community (fork of odoo/odoo)
+public https://github.com/focuz-ai/odoo true
 
-# Themes addons
-themes https://github.com/odoo/design-themes true
+# Odoo Themes (fork of odoo/design-themes)
+themes https://github.com/focuz-ai/odoo-design-themes true
 
-# Enterprise addons
+# Odoo Enterprise (fork of odoo/enterprise)
 enterprise https://github.com/focuz-ai/odoo-enterprise true
 
 # Odoocker repositories
