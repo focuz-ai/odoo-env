@@ -118,7 +118,9 @@ git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
 cd o18-env
 cp .env.example .env
 cp odools.toml.example odools.toml
-cp config/odoo.conf.example config/<client>/dev.conf
+cp config/dev.conf.example config/<client>/dev.conf
+# Para producción:
+# cp config/prod.conf.example config/<client>/prod.conf
 cp .vscode/launch.json.example .vscode/launch.json
 
 # Clone Odoo repositories

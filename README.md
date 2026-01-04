@@ -63,12 +63,23 @@ cp odools.toml.example odools.toml
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
-**Copiar odoo.conf por proyecto / cliente**
+**Copiar configuración por proyecto / cliente**
 ```bash
-cp config/odoo.conf.example config/odoo.conf
+# Para desarrollo local
+cp config/dev.conf.example config/<client>/dev.conf
+
+# Para producción (opcional)
+cp config/prod.conf.example config/<client>/prod.conf
 ```
 
-Se recomienda crear una carpeta por cada cliente / proyecto. Y crear archivo dev.conf y main.conf. Cada uno apuntando a sus respectivas ramas para hacer pruebas en local.
+**Archivos de configuración disponibles:**
+
+| Archivo | Uso | Características |
+|---------|-----|-----------------|
+| `dev.conf.example` | Desarrollo local | workers=0 (debug), logging verbose, límites relajados |
+| `prod.conf.example` | Producción | Multi-worker, logging mínimo, seguridad reforzada |
+
+Se recomienda crear una carpeta por cada cliente / proyecto con sus respectivos archivos de configuración.
 
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.

@@ -27,7 +27,8 @@ odools.toml
 
 # window installation config file
 config/*
-!config/odoo.conf.example
+!config/dev.conf.example
+!config/prod.conf.example
 # Third Party Addons
 vendor/*
 !vendor/.gitkeep
