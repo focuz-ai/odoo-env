@@ -78,6 +78,18 @@ Editar `launch.json` y reemplazar los placeholders:
 | `Odoo: Shell (IPython)` | Shell interactivo con IPython |
 | `Odoo: Scaffold Module` | Crear estructura de nuevo módulo |
 
+**Configuración del workspace (settings.json):**
+
+El archivo `.vscode/settings.json` ya viene preconfigurado con:
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `python.languageServer` | `Pylance` | IntelliSense y autocompletado |
+| `python.analysis.typeCheckingMode` | `basic` | Type checking sin falsos positivos |
+| `editor.quickSuggestions.strings` | `on` | Autocompletado en strings (XML IDs) |
+
+**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+
 **Copiar configuración por proyecto / cliente**
 ```bash
 # Para desarrollo local
