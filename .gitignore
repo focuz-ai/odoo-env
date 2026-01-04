@@ -27,7 +27,8 @@ odools.toml
 
 # window installation config file
 config/*
-!config/odoo.conf.example
+!config/dev.conf.example
+!config/prod.conf.example
 # Third Party Addons
 vendor/*
 !vendor/.gitkeep
@@ -54,8 +55,9 @@ package.json
 # Distribution / packaging
 # Odoo source code (cloned dynamically with clone-addons.sh)
 odoo/
-enterprise/
-themes/
+odoo-enterprise/
+odoo-themes/
+clone.log
 env/
 env-*/
 .venv

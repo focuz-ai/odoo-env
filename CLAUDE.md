@@ -11,8 +11,8 @@ This is an Odoo 18 development environment (o18-env) configured for multi-client
 ```
 o18-env/
 ├── odoo/              # Odoo Community (cloned)
-├── enterprise/        # Odoo Enterprise (cloned)
-├── themes/            # Odoo Themes (cloned)
+├── odoo-enterprise/   # Odoo Enterprise (cloned)
+├── odoo-themes/       # Odoo Themes (cloned)
 ├── config/            # Per-client config files (dev.conf, main.conf)
 │   └── <client>/      # Client-specific configurations
 ├── src/
@@ -108,7 +108,7 @@ pip check
 - **`.env`**: Environment variables (ODOO_TAG, GITHUB_USER, GITHUB_ACCESS_TOKEN)
 - **`odools.toml`**: Defines addons paths for the project
 - **`config/<client>/<branch>.conf`**: Odoo configuration per client/branch
-- **`third-party-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
+- **`clone-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
 
 ## Initial Setup
 
@@ -118,7 +118,9 @@ git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
 cd o18-env
 cp .env.example .env
 cp odools.toml.example odools.toml
-cp config/odoo.conf.example config/<client>/dev.conf
+cp config/dev.conf.example config/<client>/dev.conf
+# Para producción:
+# cp config/prod.conf.example config/<client>/prod.conf
 cp .vscode/launch.json.example .vscode/launch.json
 
 # Clone Odoo repositories
@@ -132,6 +134,65 @@ source .venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
+```
+
+## Clone Addons Script
+
+The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz-ai forks with upstream Odoo.
+
+### Usage
+
+```bash
+# Show help
+./clone-addons.sh --help
+
+# Clone repositories only (default)
+./clone-addons.sh
+
+# Clone and sync with upstream Odoo
+./clone-addons.sh --sync
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-s, --sync` | Sync focuz-ai forks with upstream Odoo (fetch, merge, push) |
+| `-h, --help` | Show help message |
+
+### Repositories Managed
+
+| Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
+|--------------|-----------------|-----------------|
+| `odoo/` | focuz-ai/odoo | odoo/odoo |
+| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+
+### Sync Functionality (--sync)
+
+When executed with `--sync`, the script:
+1. Clones repositories from focuz-ai forks
+2. Adds upstream Odoo remotes automatically
+3. Fetches latest changes from upstream
+4. Creates missing branches from upstream if needed (e.g., 18.0)
+5. Merges upstream changes into the fork
+6. Pushes updates back to focuz-ai repositories
+
+### Requirements
+
+Configure `.env` with GitHub credentials for private repos and sync:
+```bash
+GITHUB_USER=your_username
+GITHUB_ACCESS_TOKEN=ghp_your_token
+```
+
+### Configuration (clone-addons.txt)
+
+```bash
+# Format: <type> <repo_url> <condition>
+public https://github.com/focuz-ai/odoo true
+themes https://github.com/focuz-ai/odoo-design-themes true
+enterprise https://github.com/focuz-ai/odoo-enterprise true
 ```
 
 ## Database Configuration
@@ -172,10 +233,63 @@ git submodule update --init --recursive
 ## VSCode Integration
 
 Launch configurations in `.vscode/launch.json`:
-- **Development**: Standard Odoo with `--dev=all`
-- **Shell**: IPython shell for interactive debugging
 
-Both use debugpy for Python debugging with frozen_modules disabled.
+| Configuration | Description | Key Args |
+|---------------|-------------|----------|
+| `Odoo: Development` | Run server with hot reload | `--dev=all` |
+| `Odoo: Install Module` | Install module and exit | `-i <module> --stop-after-init` |
+| `Odoo: Update Module` | Update module and exit | `-u <module> --stop-after-init` |
+| `Odoo: Run Tests` | Run module tests | `--test-enable --log-level=test` |
+| `Odoo: Shell (IPython)` | Interactive shell | `--shell-interface ipython` |
+| `Odoo: Scaffold Module` | Create new module structure | `scaffold <name> src/dev/` |
+
+All configurations use debugpy with `frozen_modules=off` for debugging support.
+
+### Launch Setup
+```bash
+cp .vscode/launch.json.example .vscode/launch.json
+# Edit launch.json: replace <database> and <module_name> placeholders
+```
+
+### Workspace Settings (`.vscode/settings.json`)
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `python.languageServer` | `"Pylance"` | IntelliSense, autocompletado, diagnósticos |
+| `python.analysis.typeCheckingMode` | `"basic"` | Type checking sin falsos positivos |
+| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Performance (no analiza todo) |
+| `python.analysis.autoImportCompletions` | `true` | Sugiere imports automáticamente |
+| `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
+
+**Extra Paths configurados:**
+```
+odoo/, odoo/addons/, odoo-enterprise/, odoo-themes/, vendor/, src/dev/, src/projects/
+```
+
+**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo) - Resolución de imports `odoo.addons.*`, navegación de modelos
+
+### Claude Code Environment Variables
+
+Variables de entorno disponibles para comandos ejecutados por Claude Code:
+
+```json
+"claudeCode.environmentVariables": [
+    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "LANG=es_PE.UTF-8",
+    "LC_ALL=es_PE.UTF-8",
+    "TZ=America/Lima"
+]
+```
+
+| Variable | Descripción | Nota |
+|----------|-------------|------|
+| `ODOO_RC` | Archivo de configuración Odoo | **Cambiar `<client>` por nombre del cliente** |
+| `PYTHONPATH` | Rutas para imports Python | Odoo + Enterprise |
+| `LANG/LC_ALL` | Locale del sistema | Español Perú |
+| `TZ` | Zona horaria | America/Lima |
+
+> **Importante:** Modificar `ODOO_RC` según el cliente activo: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
 
 ## Key Dependencies (requirements.txt)
 

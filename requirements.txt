@@ -60,6 +60,10 @@ Jinja2>=3.1.6,<4.0.0 ; python_version >= '3.10'
 urllib3>=1.26.19,<2.0.0 ; python_version >= '3.10' and python_version < '3.12'
 urllib3>=2.2.2,<3.0.0 ; python_version >= '3.12'
 
+# Pillow: CVE-2024-28219 (buffer overflow in _imagingcms.c)
+Pillow>=10.3.0,<11.0.0 ; python_version >= '3.12' and python_version < '3.13'
+Pillow>=11.1.0,<12.0.0 ; python_version >= '3.13'
+
 # cryptography: CVE-2023-23931, CVE-2023-49083 (Memory corruption, DoS)
 # Note: Python <3.12 requires cryptography 3.x due to pyopenssl compatibility (Odoo constraint)
 # Python >=3.12 already uses cryptography 42.x which is patched

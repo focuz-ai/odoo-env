@@ -58,17 +58,70 @@ cp .env.example .env
 cp odools.toml.example odools.toml
 ```
 
-**Copiar launch de VSC para ejecutar y depurar Odoo**
+**Copiar launch de VSCode para ejecutar y depurar Odoo**
 ```bash
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
-**Copiar odoo.conf por proyecto / cliente**
-```bash
-cp config/odoo.conf.example config/odoo.conf
+Editar `launch.json` y reemplazar los placeholders:
+- `<database>` → nombre de tu base de datos
+- `<module_name>` → nombre del módulo a instalar/actualizar/testear
+
+**Configuraciones disponibles en launch.json:**
+
+| Configuración | Descripción |
+|---------------|-------------|
+| `Odoo: Development` | Servidor con hot reload (`--dev=all`) |
+| `Odoo: Install Module` | Instalar módulo y salir |
+| `Odoo: Update Module` | Actualizar módulo y salir |
+| `Odoo: Run Tests` | Ejecutar tests del módulo |
+| `Odoo: Shell (IPython)` | Shell interactivo con IPython |
+| `Odoo: Scaffold Module` | Crear estructura de nuevo módulo |
+
+**Configuración del workspace (settings.json):**
+
+El archivo `.vscode/settings.json` ya viene preconfigurado con:
+
+| Setting | Valor | Descripción |
+|---------|-------|-------------|
+| `python.languageServer` | `Pylance` | IntelliSense y autocompletado |
+| `python.analysis.typeCheckingMode` | `basic` | Type checking sin falsos positivos |
+| `editor.quickSuggestions.strings` | `on` | Autocompletado en strings (XML IDs) |
+
+**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+
+**Variables de entorno para Claude Code:**
+
+Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
+
+```json
+"claudeCode.environmentVariables": [
+    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "LANG=es_PE.UTF-8",
+    "TZ=America/Lima"
+]
 ```
 
-Se recomienda crear una carpeta por cada cliente / proyecto. Y crear archivo dev.conf y main.conf. Cada uno apuntando a sus respectivas ramas para hacer pruebas en local.
+> Cambiar `<client>` por el nombre del cliente: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
+
+**Copiar configuración por proyecto / cliente**
+```bash
+# Para desarrollo local
+cp config/dev.conf.example config/<client>/dev.conf
+
+# Para producción (opcional)
+cp config/prod.conf.example config/<client>/prod.conf
+```
+
+**Archivos de configuración disponibles:**
+
+| Archivo | Uso | Características |
+|---------|-----|-----------------|
+| `dev.conf.example` | Desarrollo local | workers=0 (debug), logging verbose, límites relajados |
+| `prod.conf.example` | Producción | Multi-worker, logging mínimo, seguridad reforzada |
+
+Se recomienda crear una carpeta por cada cliente / proyecto con sus respectivos archivos de configuración.
 
 # El archivo `.env`
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
@@ -168,11 +221,36 @@ sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
 
 # Clonar repositorios de Odoo
 
-Para clonar el repositorio de Odoo Community, Odoo Enterprise y Themes:
+El script `clone-addons.sh` clona los repositorios de Odoo Community, Enterprise y Themes desde los forks de focuz-ai.
+
 ```bash
 chmod +x clone-addons.sh
 ./clone-addons.sh
 ```
+
+**Opciones disponibles:**
+
+| Opción | Descripción |
+|--------|-------------|
+| `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
+| `-h, --help` | Mostrar ayuda del script |
+
+**Ejemplos:**
+```bash
+./clone-addons.sh              # Solo clonar repositorios
+./clone-addons.sh --sync       # Clonar y sincronizar con upstream Odoo
+./clone-addons.sh --help       # Mostrar ayuda
+```
+
+**Repositorios clonados:**
+
+| Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
+|---------------|-----------------|-----------------|
+| `odoo/` | focuz-ai/odoo | odoo/odoo |
+| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+
+> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
 
 # Crear entorno virtual e instalar dependencias
 
