@@ -90,6 +90,21 @@ El archivo `.vscode/settings.json` ya viene preconfigurado con:
 
 **Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
 
+**Variables de entorno para Claude Code:**
+
+Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
+
+```json
+"claudeCode.environmentVariables": [
+    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "LANG=es_PE.UTF-8",
+    "TZ=America/Lima"
+]
+```
+
+> Cambiar `<client>` por el nombre del cliente: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
+
 **Copiar configuración por proyecto / cliente**
 ```bash
 # Para desarrollo local
