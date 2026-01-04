@@ -169,6 +169,14 @@ chmod +x setup_env.sh
 - Python (versión especificada) + pip + venv
 - Dependencias de compilación y librerías de Odoo
 - PostgreSQL client
+- wkhtmltopdf (versión según `ODOO_TAG` en `.env`)
+
+**Versiones de wkhtmltopdf:**
+
+| ODOO_TAG | wkhtmltox |
+|----------|-----------|
+| 14.0 - master | 0.12.6.1-3 |
+| 12.0 - 13.0 | 0.12.5-1 |
 
 ## Instalación manual
 
@@ -217,6 +225,29 @@ sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
 ```
 
 > **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`.
+</details>
+
+<details>
+<summary>Instalación de wkhtmltopdf</summary>
+
+wkhtmltopdf es requerido por Odoo para generar reportes PDF. Odoo 14+ requiere la versión 0.12.6 con parches Qt.
+
+```bash
+# Ubuntu 22.04 (jammy) / amd64
+wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo dpkg -i wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo apt-get install -f -y
+
+# Ubuntu 24.04 (noble) - usar paquete de jammy
+wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo dpkg -i wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+sudo apt-get install -f -y
+
+# Verificar instalación
+wkhtmltopdf --version
+```
+
+> **Nota:** Para otras distribuciones, consulta [wkhtmltopdf releases](https://github.com/wkhtmltopdf/packaging/releases).
 </details>
 
 # Clonar repositorios de Odoo

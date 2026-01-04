@@ -13,9 +13,12 @@ NC=$'\e[0m'
 DISTRO=""
 DISTRO_VERSION=""
 CODENAME=""
+ARCH=""
 PYTHON_VERSION="3.13"
 PYTHON_MIN_VERSION=10
 PYTHON_MAX_VERSION=14
+ODOO_TAG=""
+WKHTMLTOX_VERSION=""
 
 log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
@@ -41,6 +44,12 @@ Distribuciones soportadas:
   - Ubuntu 22.04, 24.04
   - Debian 11, 12
   - Linux Mint, Pop!_OS (basados en Ubuntu)
+
+El script instala automáticamente:
+  - Python (versión especificada) + pip + venv
+  - Dependencias de compilación y librerías de Odoo
+  - PostgreSQL client
+  - wkhtmltopdf (versión según ODOO_TAG en .env)
 
 EOF
     exit 0
@@ -326,6 +335,119 @@ install_postgresql_client() {
     sudo apt-get install -y --no-install-recommends postgresql-client
 }
 
+load_odoo_tag() {
+    local env_file=".env"
+
+    if [[ -f "$env_file" ]]; then
+        ODOO_TAG=$(grep -E "^ODOO_TAG=" "$env_file" | cut -d'=' -f2 | tr -d '"' | tr -d "'")
+    fi
+
+    if [[ -z "$ODOO_TAG" ]]; then
+        log_warn "ODOO_TAG no encontrado en .env, usando valor por defecto: 18.0"
+        ODOO_TAG="18.0"
+    fi
+
+    log_info "Versión de Odoo detectada: $ODOO_TAG"
+}
+
+get_wkhtmltox_version() {
+    # Determinar versión de wkhtmltox según ODOO_TAG
+    # Odoo 14+ requiere wkhtmltopdf 0.12.6 con parches Qt
+    local odoo_major="${ODOO_TAG%%.*}"
+
+    case "$odoo_major" in
+        14|15|16|17|18|19|master)
+            WKHTMLTOX_VERSION="0.12.6.1-3"
+            ;;
+        12|13)
+            WKHTMLTOX_VERSION="0.12.5-1"
+            ;;
+        *)
+            WKHTMLTOX_VERSION="0.12.6.1-3"
+            log_warn "Versión de Odoo no reconocida ($ODOO_TAG), usando wkhtmltox $WKHTMLTOX_VERSION"
+            ;;
+    esac
+
+    log_info "Versión de wkhtmltox seleccionada: $WKHTMLTOX_VERSION"
+}
+
+install_wkhtmltox() {
+    # Verificar si ya está instalado
+    if command -v wkhtmltopdf &>/dev/null; then
+        local current_version
+        current_version=$(wkhtmltopdf --version 2>/dev/null | grep -oP '[\d.]+' | head -1)
+        log_info "wkhtmltopdf ya instalado (v${current_version}), omitiendo..."
+        return 0
+    fi
+
+    load_odoo_tag
+    get_wkhtmltox_version
+
+    # Detectar arquitectura
+    ARCH=$(dpkg --print-architecture)
+    log_info "Arquitectura detectada: $ARCH"
+
+    local deb_file="wkhtmltox_${WKHTMLTOX_VERSION}.${CODENAME}_${ARCH}.deb"
+    local download_url="https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOX_VERSION}/${deb_file}"
+    local tmp_dir="/tmp/wkhtmltox"
+
+    log_info "Instalando wkhtmltox ${WKHTMLTOX_VERSION}..."
+
+    # Instalar dependencias requeridas
+    sudo apt-get install -y --no-install-recommends \
+        fontconfig libfreetype6 libjpeg-turbo8 libpng16-16 \
+        libx11-6 libxcb1 libxext6 libxrender1 xfonts-75dpi xfonts-base 2>/dev/null || \
+    sudo apt-get install -y --no-install-recommends \
+        fontconfig libfreetype6 libjpeg62-turbo libpng16-16 \
+        libx11-6 libxcb1 libxext6 libxrender1 xfonts-75dpi xfonts-base 2>/dev/null || true
+
+    mkdir -p "$tmp_dir"
+    cd "$tmp_dir"
+
+    # Intentar descargar el paquete para la distribución actual
+    log_info "Descargando wkhtmltox desde: $download_url"
+    if ! wget -q "$download_url" 2>/dev/null; then
+        # Fallback: intentar con codename alternativo
+        log_warn "Paquete no encontrado para ${CODENAME}, intentando alternativas..."
+
+        local alt_codename=""
+        case "$CODENAME" in
+            noble) alt_codename="jammy" ;;
+            bookworm) alt_codename="bullseye" ;;
+            jammy) alt_codename="focal" ;;
+            *) alt_codename="focal" ;;
+        esac
+
+        deb_file="wkhtmltox_${WKHTMLTOX_VERSION}.${alt_codename}_${ARCH}.deb"
+        download_url="https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOX_VERSION}/${deb_file}"
+
+        log_info "Intentando con: $download_url"
+        if ! wget -q "$download_url" 2>/dev/null; then
+            log_error "No se pudo descargar wkhtmltox. Instálalo manualmente desde:"
+            log_error "https://github.com/wkhtmltopdf/packaging/releases"
+            cd /
+            rm -rf "$tmp_dir"
+            return 1
+        fi
+    fi
+
+    # Instalar el paquete
+    log_info "Instalando paquete ${deb_file}..."
+    sudo dpkg -i "$deb_file" || sudo apt-get install -f -y
+
+    # Limpiar
+    cd /
+    rm -rf "$tmp_dir"
+
+    # Verificar instalación
+    if command -v wkhtmltopdf &>/dev/null; then
+        log_info "wkhtmltopdf instalado correctamente: $(wkhtmltopdf --version 2>&1 | head -1)"
+    else
+        log_error "Error instalando wkhtmltopdf"
+        return 1
+    fi
+}
+
 show_summary() {
     local py_cmd="python${PYTHON_VERSION}"
 
@@ -336,6 +458,7 @@ show_summary() {
     log_info "  Python: $($py_cmd --version 2>/dev/null || echo 'No instalado')"
     log_info "  pip: $($py_cmd -m pip --version 2>/dev/null || echo 'No instalado')"
     log_info "  PostgreSQL: $(psql --version 2>/dev/null || echo 'No instalado')"
+    log_info "  wkhtmltopdf: $(wkhtmltopdf --version 2>&1 | head -1 || echo 'No instalado')"
     log_info "========================================"
     log_info ""
     log_info "Próximos pasos:"
@@ -362,6 +485,7 @@ main() {
     install_odoo_deps
     install_python
     install_postgresql_client
+    install_wkhtmltox
 
     show_summary
 }
