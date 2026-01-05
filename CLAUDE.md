@@ -366,7 +366,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
 **Configuración de Odoo IDE (`odools.toml`):**
 ```toml
 [[config]]
-name = "Odoo 18.0"
+name = "Odoo Master"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
