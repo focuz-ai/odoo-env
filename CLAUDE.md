@@ -77,31 +77,62 @@ python odoo/odoo-bin -c config/<client>/dev.conf --dev=all
 
 **Order matters**: Install Odoo requirements first to lock base versions.
 
+### Odoo 16 con Python 3.10
+
+Odoo 16 requiere Python 3.10 y versiones específicas de dependencias. **setuptools/Cython modernos no compilan gevent 21.8.0** (requerido por Odoo 16).
+
+**Error típico sin la solución:**
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
+```
+
+**Solución:** Usar `setuptools<70` y `Cython<3`, luego instalar con `--no-build-isolation`:
+
 ```bash
 # 1. Activate environment
 source .venv/bin/activate
 
-# 2. Install Odoo dependencies first (locks cryptography, Pillow, lxml, etc.)
-pip install -r odoo/requirements.txt
+# 2. Install compatible build tools (required for gevent 21.8.0)
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
 
-# 3. Install project dependencies (respects Odoo versions)
+# 3. Install Odoo dependencies (no build isolation to use local Cython)
+pip install -r odoo/requirements.txt --no-build-isolation
+
+# 4. Install project dependencies
 pip install -r requirements.txt
 
-# 4. Verify no conflicts
+# 5. Verify no conflicts
+pip check
+```
+
+### Odoo 17+ con Python 3.11+
+
+Para Odoo 17 o superior, usar instalación estándar:
+
+```bash
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
 pip check
 ```
 
 ### Key Library Versions by Python
 
-| Library | Python 3.10-3.11 | Python 3.12 | Python 3.13+ |
-|---------|------------------|-------------|--------------|
-| cryptography | 3.4.8 | 42.0.8 | 42.0.8 |
-| Pillow | 9.0.1 / 9.4.0 | 10.2.0 | 11.1.0 |
-| pdfminer.six | 20211012 | 20231228 | 20231228 |
-| signxml | 3.1.1 | 3.2.2+ | 3.2.2+ |
-| pandas | 1.3.5 | 2.2.3+ | 2.2.3+ |
-| numpy | 1.26.x | 1.26.x | 2.4.x+ |
-| PyArrow | 15.x | 15.x | 18.x+ |
+| Library | Python 3.10 | Python 3.11+ | Notes |
+|---------|-------------|--------------|-------|
+| gevent | 21.8.0 | 22.10.2+ | 21.8.0 requiere Cython<3 |
+| greenlet | 1.1.2 | 2.0.2+ | Debe coincidir con gevent |
+| Werkzeug | 2.0.2 | 3.0.6+ | Odoo 16 usa `werkzeug.__version__` (eliminado en 3.x) |
+| cryptography | 3.4.8 | 42.0.8+ | Python <3.12 limitado por pyopenssl |
+| Pillow | 9.0.1 | 10.2.0+ | |
+| pdfminer.six | 20211012 | 20231228+ | |
+| signxml | 3.1.1 | 3.2.2+ | |
+| pandas | 1.3.5 | 2.2.3+ | |
+| numpy | 1.26.x | 2.0.0+ | |
+| PyArrow | 15.x | 18.x+ | |
 
 ## Configuration Files
 
@@ -126,14 +157,16 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.13 virtual environment
-python3.13 -m venv .venv
+# Create Python 3.10 virtual environment (required for Odoo 16)
+python3.10 -m venv .venv
 source .venv/bin/activate
 
-# Install dependencies
-pip install --upgrade pip setuptools wheel
-pip install -r odoo/requirements.txt
+# Install dependencies (see "Dependencies Installation" for details)
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
+pip install -r odoo/requirements.txt --no-build-isolation
 pip install -r requirements.txt
+pip check
 ```
 
 ## Setup Environment Script

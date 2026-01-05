@@ -380,24 +380,58 @@ chmod +x clone-addons.sh
 
 # Crear entorno virtual e instalar dependencias
 
-Crear entorno virtual con la versión de Python instalada:
-```bash
-python3.13 -m venv .venv
+## Odoo 16 con Python 3.10 (Recomendado)
+
+Odoo 16 requiere Python 3.10 y versiones específicas de dependencias. El problema principal es que **setuptools/Cython modernos no compilan gevent 21.8.0** (requerido por Odoo 16).
+
+**Error típico sin la solución:**
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
 ```
 
-Activar entorno virtual:
+**Solución:** Usar `setuptools<70` y `Cython<3`, luego instalar con `--no-build-isolation`:
+
 ```bash
+# Crear entorno virtual con Python 3.10
+python3.10 -m venv .venv
 source .venv/bin/activate
+
+# Instalar herramientas de build compatibles
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
+
+# Instalar dependencias de Odoo (sin build isolation para usar Cython local)
+pip install -r odoo/requirements.txt --no-build-isolation
+
+# Instalar dependencias del proyecto
+pip install -r requirements.txt
+
+# Verificar instalación
+pip check
 ```
 
-Instalar dependencias:
+**Versiones clave instaladas correctamente:**
+| Paquete | Versión | Nota |
+|---------|---------|------|
+| gevent | 21.8.0 | Versión original de Odoo 16 |
+| greenlet | 1.1.2 | Versión original de Odoo 16 |
+| Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no compatible) |
+
+## Odoo 17+ con Python 3.11+
+
+Para Odoo 17 o superior, usar Python 3.11+ con instalación estándar:
+
 ```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 ```
 
-Desactivar entorno virtual (cuando sea necesario):
+## Desactivar entorno virtual
+
 ```bash
 deactivate
 ```
