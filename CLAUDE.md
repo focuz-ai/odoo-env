@@ -254,7 +254,7 @@ Default PostgreSQL settings:
 
 > **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
 
-### Odoo 18 Específico
+### Odoo Master Específico
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute

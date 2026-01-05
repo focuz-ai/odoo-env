@@ -523,7 +523,7 @@ state = fields.Selection([('draft', _('Draft'))])  # MAL
 # ✅ Selection sin _()
 state = fields.Selection([('draft', 'Draft')])  # BIEN
 
-# ✅ Usar @api.model_create_multi (Odoo 18+)
+# ✅ Usar @api.model_create_multi (Odoo Master)
 @api.model_create_multi
 def create(self, vals_list):
     return super().create(vals_list)
@@ -581,10 +581,10 @@ cd odoo
 git remote add upstream https://github.com/odoo/odoo.git
 
 # 2. Actualizar desde upstream
-git fetch upstream 18.0
+git fetch upstream master
 
 # 3. Crear branch para el fix/feature
-git checkout -b 18.0-fix-descripcion upstream/18.0
+git checkout -b master-fix-descripcion upstream/master
 
 # 4. Hacer cambios y commit
 git add .
@@ -593,11 +593,11 @@ git commit -m "[FIX] module: descripción corta
 Descripción larga del por qué..."
 
 # 5. Push al fork
-git push origin 18.0-fix-descripcion
+git push origin master-fix-descripcion
 
 # 6. Crear PR en GitHub
-gh pr create --repo odoo/odoo --base 18.0 \
-  --head focuz-ai:18.0-fix-descripcion \
+gh pr create --repo odoo/odoo --base master \
+  --head focuz-ai:master-fix-descripcion \
   --title "[FIX] module: descripción corta"
 ```
 
@@ -618,9 +618,9 @@ Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blo
 # O manualmente
 cd odoo
 git fetch upstream
-git checkout 18.0
-git merge upstream/18.0
-git push origin 18.0
+git checkout master
+git merge upstream/master
+git push origin master
 ```
 
 # Documentación adicional
