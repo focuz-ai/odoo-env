@@ -302,31 +302,254 @@ cp .vscode/launch.json.example .vscode/launch.json
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| `python.languageServer` | `"Pylance"` | IntelliSense, autocompletado, diagnósticos |
-| `python.analysis.typeCheckingMode` | `"basic"` | Type checking sin falsos positivos |
-| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Performance (no analiza todo) |
-| `python.analysis.autoImportCompletions` | `true` | Sugiere imports automáticamente |
+| `python.languageServer` | `"None"` | Pylance deshabilitado (Odoo IDE usa Pyright) |
+| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial Odoo |
+| `python.analysis.typeCheckingMode` | `"basic"` | Recomendado por Odoo IDE |
+| `python.analysis.diagnosticMode` | `"openFilesOnly"` | Solo archivos abiertos |
+| `python.analysis.extraPaths` | `[odoo, odoo/addons, ...]` | Paths para resolver imports |
 | `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
+| `files.watcherInclude` | `["**"]` | Detectar cambios en symbolic links |
 
-**Extra Paths configurados:**
+### Odoo IDE como Language Server
+
+**Configuración actual:** Odoo IDE es el único Language Server activo:
+- **Pylance:** Deshabilitado (no interpreta bien los tipos de Odoo)
+- **Odoo IDE:** Resolución de modelos, `_inherit`, fields, XML IDs
+- **Mypy:** Deshabilitado (conflicto con Odoo, sin type stubs)
+
+**⚠️ IMPORTANTE:** Si tienes **Pyright standalone** (`ms-pyright.pyright`) instalada, deshabilitarla:
+
 ```
-odoo/, odoo/addons/, odoo-enterprise/, odoo-themes/, vendor/, src/dev/, src/projects/
+1. Ctrl+Shift+X (Extensions)
+2. Buscar "Pyright"
+3. Click en engranaje (⚙️)
+4. Seleccionar "Disable (Workspace)"
 ```
 
-**Extensión recomendada:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo) - Resolución de imports `odoo.addons.*`, navegación de modelos
+**Síntomas de conflicto:**
+```
+Module "odoo" has no attribute "models"
+Library stubs not installed for "dateutil"
+```
 
-### Claude Code Environment Variables
+### Configuración Pyright (`pyrightconfig.json`)
 
-Variables de entorno disponibles para comandos ejecutados por Claude Code:
+**Arquitectura de configuración:**
+- **`settings.json` (`python.analysis.*`):** Configuración para Pylance
+- **`pyrightconfig.json`:** Configuración para Odoo IDE (su Pyright interno)
+
+Ambos archivos tienen configuraciones similares para consistencia:
 
 ```json
-"claudeCode.environmentVariables": [
-    "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
-    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
-    "LANG=es_PE.UTF-8",
-    "LC_ALL=es_PE.UTF-8",
-    "TZ=America/Lima"
+{
+    "typeCheckingMode": "basic",
+    "reportMissingTypeStubs": false,
+    "reportMissingModuleSource": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownArgumentType": false,
+    "extraPaths": ["odoo", "odoo/addons", "odoo-enterprise"]
+}
+```
+
+| Diagnóstico | Razón para ignorar |
+|-------------|-------------------|
+| `reportMissingTypeStubs` | dateutil, lxml, etc. sin stubs |
+| `reportMissingModuleSource` | Módulos Odoo dinámicos |
+| `reportUnknownMemberType` | Campos `self.field_name` dinámicos |
+| `reportUnknownArgumentType` | Argumentos dinámicos en métodos Odoo |
+
+**Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+- Resolución de `_inherit` y navegación de modelos
+- Autocompletado de campos y métodos
+- Usa `odools.toml` para configuración de paths
+
+**Configuración de Odoo IDE (`odools.toml`):**
+```toml
+[[config]]
+name = "Odoo 18.0"
+odoo_path = "${workspaceFolder}/odoo"
+addons_paths = [
+    "${workspaceFolder}/odoo/addons",
+    "${workspaceFolder}/odoo-enterprise",
+    "${workspaceFolder}/odoo-themes",
 ]
+```
+
+**Comandos útiles de Odoo IDE:**
+- `Ctrl+Shift+P` → "Odoo: Reindex Addons" - Reindexar después de cambios
+- `Ctrl+Shift+P` → "Odoo: Restart Language Server" - Reiniciar si hay problemas
+
+> **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace si hay problemas.
+
+### Configuraciones Estilo PyCharm
+
+Configuraciones para mejorar productividad, similares a PyCharm:
+
+#### Ruff - Linter y Formatter (Configurado para Odoo)
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
+| `[python].editor.defaultFormatter` | `charliermarsh.ruff` | Ruff formatter |
+| `ruff.lineLength` | `120` | Línea máxima para Odoo |
+| `ruff.lint.select` | `["E", "F", "W", "B", "C4", "SIM"]` | Reglas activas |
+| `ruff.organizeImports` | `false` | Deshabilitado (conflicto con Odoo IDE) |
+
+**Reglas ignoradas para Odoo:**
+
+| Regla | Razón |
+|-------|-------|
+| `E501` | Longitud de línea (manejada por lineLength) |
+| `E402` | Import no al inicio (patrón Odoo) |
+| `B904` | `raise ... from err` (UserError no expone internals) |
+| `I` (isort) | Conflicto con Odoo IDE y convenciones OCA |
+| `UP009` | `# -*- coding: utf-8 -*-` requerido por OCA |
+
+#### Navegación y Contexto
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.stickyScroll.enabled` | `true` | Mantener clase/función visible en header |
+| `editor.stickyScroll.maxLineCount` | `5` | Máximo de líneas sticky |
+| `breadcrumbs.enabled` | `true` | Ruta de navegación de código |
+| `editor.minimap.enabled` | `true` | Vista previa del archivo |
+
+#### Colorización y Guías
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.bracketPairColorization.enabled` | `true` | Colorear pares de paréntesis |
+| `editor.guides.bracketPairs` | `"active"` | Resaltar par activo |
+| `editor.guides.indentation` | `true` | Guías de indentación |
+| `editor.guides.highlightActiveIndentation` | `true` | Resaltar indentación activa |
+
+#### Inlay Hints (Tipos y Parámetros)
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.inlayHints.enabled` | `"onUnlessPressed"` | Mostrar hints (Ctrl para ocultar) |
+| `python.analysis.inlayHints.functionReturnTypes` | `true` | Tipos de retorno de funciones |
+| `python.analysis.inlayHints.variableTypes` | `true` | Tipos de variables |
+| `python.analysis.inlayHints.callArgumentNames` | `"all"` | Nombres de argumentos en llamadas |
+| `editor.parameterHints.enabled` | `true` | Nombres de parámetros en llamadas |
+
+#### Auto-guardado y Limpieza
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `files.autoSave` | `"afterDelay"` | Guardar automáticamente |
+| `files.autoSaveDelay` | `1000` | Delay de 1 segundo |
+| `files.trimTrailingWhitespace` | `true` | Eliminar espacios al final |
+| `files.insertFinalNewline` | `true` | Nueva línea al final |
+| `files.trimFinalNewlines` | `true` | Eliminar líneas vacías al final |
+
+#### Cursor y Scrolling
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `editor.smoothScrolling` | `true` | Scroll suave |
+| `editor.cursorBlinking` | `"smooth"` | Parpadeo suave del cursor |
+| `editor.cursorSmoothCaretAnimation` | `"on"` | Animación del cursor |
+| `editor.renderLineHighlight` | `"all"` | Resaltar línea actual |
+| `editor.renderWhitespace` | `"boundary"` | Mostrar espacios en bordes |
+
+### Auto-Reindex de Odoo IDE
+
+Para ejecutar reindex automáticamente al abrir el workspace:
+
+1. Instalar extensión: `gabrielgrinberg.auto-run-command`
+2. Configuración en `settings.json`:
+```json
+"auto-run-command.rules": [
+    {
+        "command": "odoo-ide.reindex",
+        "message": "Reindexing Odoo addons..."
+    }
+]
+```
+
+### Extensiones Avanzadas PyCharm Professional
+
+Extensiones que replican funcionalidades de PyCharm Professional:
+
+#### Error Lens - Errores Inline
+
+Muestra errores y warnings directamente en la línea de código:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `errorLens.enabledDiagnosticLevels` | `["error", "warning", "info"]` | Niveles de diagnóstico |
+| `errorLens.delay` | `500` | Delay antes de mostrar (ms) |
+| `errorLens.fontStyleItalic` | `true` | Texto en cursiva |
+
+#### Mypy - Type Checker (Deshabilitado para Odoo)
+
+Mypy está deshabilitado por defecto porque Odoo no tiene type stubs:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `mypy-type-checker.enabled` | `false` | Deshabilitado (Odoo sin type stubs) |
+
+> **Nota:** Odoo IDE usa Pyright internamente. Para proyectos no-Odoo, habilitar Mypy.
+
+#### Better Comments - Comentarios Coloreados
+
+Comentarios con colores según el tipo:
+
+| Prefijo | Color | Uso |
+|---------|-------|-----|
+| `!` | Rojo | Alertas importantes |
+| `?` | Azul | Preguntas o dudas |
+| `*` | Verde | Información destacada |
+| `TODO` | Naranja | Tareas pendientes |
+| `FIXME` | Rojo | Bugs a corregir |
+| `//` | Gris tachado | Código comentado |
+
+#### Git Graph - Visualización de Branches
+
+Visualización gráfica de ramas y commits (similar a GitKraken):
+
+```
+Ctrl+Shift+P → "Git Graph: View Git Graph"
+```
+
+#### Semantic Highlighting
+
+Colores personalizados para elementos Python:
+
+| Token | Color | Elemento |
+|-------|-------|----------|
+| `magicFunction:python` | `#DCDCAA` | `__init__`, `__str__`, etc. |
+| `function.declaration:python` | `#DCDCAA` | Declaraciones de funciones |
+| `*.decorator:python` | `#D19A66` | Decoradores `@api.model` |
+| `*.typeHint:python` | `#4EC9B0` | Type hints |
+| `class:python` | `#4EC9B0` | Nombres de clases |
+
+### Extensiones Recomendadas
+
+| Extensión | Propósito |
+|-----------|-----------|
+| `charliermarsh.ruff` | Linter + Formatter ultra-rápido |
+| `usernamehw.errorlens` | Errores inline en el código |
+| `ms-python.mypy-type-checker` | Type checking estricto |
+| `aaron-bond.better-comments` | Comentarios coloreados |
+| `mhutchie.git-graph` | Visualización de branches |
+| `eamodio.gitlens` | Git avanzado |
+| `mtxr.sqltools` | Database tools (como DataGrip) |
+
+### Environment Variables (`.env`)
+
+Variables de entorno para desarrollo Odoo. Copiar de `.env.example` y configurar:
+
+```bash
+# Odoo Runtime Configuration
+ODOO_RC=config/<client>/dev.conf
+PYTHONPATH=odoo:odoo-enterprise
+
+# Locale Settings (Peruvian Spanish)
+LANG=es_PE.UTF-8
+LC_ALL=es_PE.UTF-8
+TZ=America/Lima
 ```
 
 | Variable | Descripción | Nota |
@@ -358,6 +581,25 @@ The environment is set up for Peruvian electronic invoicing and compliance:
 - `l10n_pe_hr_payroll`: Payroll with PLAME, AFP, Renta 5ta
 
 ## Common Issues
+
+**InterfaceError: connection already closed**
+
+Occurs when editing Python code while Odoo runs with `--dev=all`:
+```
+psycopg2.InterfaceError: connection already closed
+  File "odoo/service/server.py", line 507, in _run_cron
+    pg_conn.poll()
+```
+
+**Cause:** When `max_cron_threads > 0` and using auto-reload, cron connections get closed abruptly.
+
+**Solution:** Disable cron in development config:
+```ini
+# config/<client>/dev.conf
+max_cron_threads = 0
+```
+
+> **Note:** Use `max_cron_threads = 1` only when testing cron jobs, without `--dev=all`.
 
 **OSError: [Errno 24] inotify instance limit reached**
 ```bash
