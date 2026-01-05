@@ -1,22 +1,60 @@
 {
+  // ═══════════════════════════════════════════════════════════════════
+  // Odoo IDE como único Language Server
+  // - Pylance: Deshabilitado (no interpreta bien tipos de Odoo)
+  // - Odoo IDE: Resolución de modelos, _inherit, fields, XML IDs
+  //
+  // ⚠️ Si tienes Pyright (ms-pyright.pyright): Deshabilitarla
+  // ═══════════════════════════════════════════════════════════════════
   "recommendations": [
+    // ═══════════════════════════════════════════════════════════════
+    // Python Core
+    // ═══════════════════════════════════════════════════════════════
     "ms-python.python",                   // Soporte completo para Python
-    "ms-python.vscode-pylance",           // IntelliSense avanzado para Python
-    "ms-toolsai.jupyter",                 // Soporte para notebooks (útil en análisis)
+    // "ms-python.vscode-pylance",        // Deshabilitado (Odoo IDE usa Pyright)
+    // "ms-python.mypy-type-checker",     // Deshabilitado (Odoo sin type stubs)
+    "charliermarsh.ruff",                 // Linter + Formatter ultra-rápido (reemplaza Black, isort, Flake8)
     "njpwerner.autodocstring",            // Generación automática de docstrings
-    "ms-azuretools.vscode-docker",        // Integración con Docker
-    "mtxr.sqltools",                      // Cliente SQL para PostgreSQL
-    "mtxr.sqltools-driver-pg",            // Driver específico para PostgreSQL
-    "eamodio.gitlens",                    // Git avanzado con historial y anotaciones
-    // "streetsidesoftware.code-spell-checker", // Corrector ortográfico para documentación
-    "esbenp.prettier-vscode",             // Formateo automático de código
-    "ms-vscode.makefile-tools",           // Soporte para Makefiles (útil en Odoo)
-    // "oderwat.indent-rainbow",             // Visualización de indentación
+    "ms-toolsai.jupyter",                 // Soporte para notebooks (útil en análisis)
+
+    // ═══════════════════════════════════════════════════════════════
+    // Productividad estilo PyCharm
+    // ═══════════════════════════════════════════════════════════════
+    "usernamehw.errorlens",               // Errores inline en el código (PyCharm-style)
+    "aaron-bond.better-comments",         // Comentarios coloreados (TODO, FIXME, etc.)
     "gruntfuggly.todo-tree",              // Gestión de TODOs en el código
+
+    // ═══════════════════════════════════════════════════════════════
+    // Git & Version Control
+    // ═══════════════════════════════════════════════════════════════
+    "eamodio.gitlens",                    // Git avanzado con historial y anotaciones
+    "mhutchie.git-graph",                 // Visualización de ramas y commits
+
+    // ═══════════════════════════════════════════════════════════════
+    // Database Tools (como DataGrip de JetBrains)
+    // ═══════════════════════════════════════════════════════════════
+    "mtxr.sqltools",                      // Cliente SQL para bases de datos
+    "mtxr.sqltools-driver-pg",            // Driver específico para PostgreSQL
+
+    // ═══════════════════════════════════════════════════════════════
+    // Odoo Development
+    // ═══════════════════════════════════════════════════════════════
+    "trinhanhngoc.vscode-odoo",           // Odoo IDE - Resolución de _inherit y modelos
+    "jigar-patel.OdooSnippets",           // Snippets específicos para Odoo
+    "gabrielgrinberg.auto-run-command",   // Ejecutar Odoo Reindex al abrir workspace
+
+    // ═══════════════════════════════════════════════════════════════
+    // DevOps & Tools
+    // ═══════════════════════════════════════════════════════════════
+    "ms-azuretools.vscode-docker",        // Integración con Docker
+    "ms-vscode.makefile-tools",           // Soporte para Makefiles
+
+    // ═══════════════════════════════════════════════════════════════
+    // Utilities
+    // ═══════════════════════════════════════════════════════════════
     "alefragnani.project-manager",        // Navegación entre múltiples proyectos
     "formulahendry.code-runner",          // Ejecutar scripts rápidamente
-    "tushortz.python-extended-snippets",   // Snippets útiles para Python
-    "trinhanhngoc.vscode-odoo",         // Extensión específica para Odoo  
-    "jigar-patel.OdooSnippets"          // Snippets específicos para Odoo
+    "tushortz.python-extended-snippets",  // Snippets útiles para Python
+    "esbenp.prettier-vscode"              // Formateo automático (JS, JSON, XML, etc.)
   ]
 }

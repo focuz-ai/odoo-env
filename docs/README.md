@@ -237,7 +237,7 @@ git push <nombre-remoto> <rama-local>
 
 Ejemplo:
 
-    git push gitlab 18.0
+    git push gitlab master
 
 #### Push de todas las ramas a un remoto específico:
 ```
@@ -265,7 +265,7 @@ git pull <nombre-remoto> <rama-remota>
 
 Ejemplo:
 
-    git pull gitlab 18.0
+    git pull gitlab master
 
 Esto te permitirá trabajar con varios repositorios remotos simultáneamente.
 

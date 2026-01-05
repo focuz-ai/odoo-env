@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Configuración de herramientas de análisis de código para Odoo
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mypy - Deshabilitado para Odoo (conflicto con Odoo IDE, sin type stubs)
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.mypy]
+# Ignorar errores de imports sin tipos (librerías sin stubs)
+ignore_missing_imports = true
+# Deshabilitar códigos de error específicos
+disable_error_code = ["import-untyped", "import-not-found"]
+# No verificar módulos sin anotaciones de tipos
+check_untyped_defs = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pyright - Configuración para Odoo IDE
+# ─────────────────────────────────────────────────────────────────────────────
+
+[tool.pyright]
+include = ["odoo", "odoo-enterprise", "odoo-themes", "src"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "vendor"]
+extraPaths = ["odoo", "odoo/addons", "odoo-enterprise", "odoo-themes"]
+
+venvPath = "."
+venv = ".venv"
+
+# Type checking básico (recomendado por Odoo IDE)
+typeCheckingMode = "basic"
+pythonVersion = "3.13"
+
+# Usar código de librería para tipos cuando no hay stubs
+useLibraryCodeForTypes = true
+
+# Suprimir todos los warnings (false = deshabilitado)
+reportMissingTypeStubs = false
+reportMissingModuleSource = false
+reportMissingImports = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportOptionalMemberAccess = false
+reportOptionalSubscript = false
+reportPrivateUsage = false
+reportGeneralTypeIssues = false
+reportAttributeAccessIssue = false
+reportOperatorIssue = false
+reportArgumentType = false

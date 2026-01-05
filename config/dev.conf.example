@@ -111,8 +111,11 @@ screenshots = /tmp/odoo_tests
 ;------------------------------------------------------------------------------
 ; Performance - Not optimized (development focus)
 ;------------------------------------------------------------------------------
-; Cron threads (0 = disabled, useful when debugging non-cron code)
-max_cron_threads = 1
+; Cron threads - MUST be 0 for development with --dev=all
+; When max_cron_threads > 0 and using auto-reload, cron connections get closed
+; abruptly causing: InterfaceError: connection already closed
+; Set to 1+ only if you need to test cron jobs specifically
+max_cron_threads = 0
 
 ; Transient records cleanup (hours)
 transient_age_limit = 1.0
