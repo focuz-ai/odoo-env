@@ -1,5 +1,5 @@
 {
-    // VSCode Launch Configurations for Odoo Master Development
+    // VSCode Launch Configurations for Odoo 17.0 Development
     // Copy to launch.json and customize paths as needed
     // Docs: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",

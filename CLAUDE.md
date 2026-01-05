@@ -250,7 +250,7 @@ Default PostgreSQL settings:
 - User: odoo
 - Password: odoo
 
-## Odoo Master Coding Guidelines
+## Odoo 17 Coding Guidelines
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
@@ -366,7 +366,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
 **Configuración de Odoo IDE (`odools.toml`):**
 ```toml
 [[config]]
-name = "Odoo Master"
+name = "Odoo 17.0"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
