@@ -371,8 +371,8 @@ load_odoo_tag() {
     fi
 
     if [[ -z "$ODOO_TAG" ]]; then
-        log_warn "ODOO_TAG no encontrado en .env, usando valor por defecto: master"
-        ODOO_TAG="master"
+        log_warn "ODOO_TAG no encontrado en .env, usando valor por defecto: 16.0"
+        ODOO_TAG="16.0"
     fi
 
     log_info "Versión de Odoo detectada: $ODOO_TAG"
@@ -384,7 +384,7 @@ get_wkhtmltox_version() {
     local odoo_major="${ODOO_TAG%%.*}"
 
     case "$odoo_major" in
-        14|15|16|17|18|19|master)
+        14|15|16|17|18|19)
             WKHTMLTOX_VERSION="0.12.6.1-3"
             ;;
         12|13)
