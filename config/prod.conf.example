@@ -1,5 +1,5 @@
 ;==============================================================================
-; Odoo 18 - Production Configuration
+; Odoo Master - Production Configuration
 ;==============================================================================
 ; Optimized for production deployment behind reverse proxy (nginx)
 ; Copy this file and rename to prod.conf, then customize for your environment

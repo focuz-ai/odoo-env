@@ -250,7 +250,7 @@ Default PostgreSQL settings:
 - User: odoo
 - Password: odoo
 
-## Odoo 18 Coding Guidelines
+## Odoo Master Coding Guidelines
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
