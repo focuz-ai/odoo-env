@@ -1,0 +1,16 @@
+# Ruff configuration for Odoo addons
+# https://docs.astral.sh/ruff/configuration/
+
+# Line length limit (default 88 is too strict for Odoo)
+line-length = 120
+
+[lint]
+# Rules to enable
+select = ["E", "F", "B", "SIM"]
+
+[lint.per-file-ignores]
+# __init__.py files in Odoo use imports for module loading (not direct usage)
+"**/__init__.py" = ["F401"]
+
+# __manifest__.py files contain a dict expression read by Odoo's module loader
+"**/__manifest__.py" = ["B018"]
