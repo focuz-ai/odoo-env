@@ -481,9 +481,153 @@ fs.inotify.max_user_instances = 1100000
 sudo sysctl -p
 ```
 
+# Coding Guidelines
+
+Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html) oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
+
+## Estructura de Modelos
+
+```python
+class MyModel(models.Model):
+    # 1. Atributos privados (_name, _description, _inherit, _order)
+    # 2. Métodos default
+    # 3. Campos
+    # 4. SQL constraints
+    # 5. Compute/inverse/search
+    # 6. Selection methods
+    # 7. Constraints y onchange
+    # 8. CRUD overrides
+    # 9. Action methods
+    # 10. Business methods
+```
+
+## Convenciones de Nombres
+
+| Elemento | Convención | Ejemplo |
+|----------|------------|---------|
+| Modelo | Singular, dot notation | `sale.order` |
+| Campo Many2one | Sufijo `_id` | `partner_id` |
+| Campo X2many | Sufijo `_ids` | `line_ids` |
+| Método compute | `_compute_<field>` | `_compute_total` |
+| Método action | `action_<verb>` | `action_confirm` |
+
+## Reglas Críticas
+
+```python
+# ❌ NUNCA hacer commit manual
+self.env.cr.commit()  # PROHIBIDO
+
+# ❌ No usar _() en Selection de clase
+state = fields.Selection([('draft', _('Draft'))])  # MAL
+
+# ✅ Selection sin _()
+state = fields.Selection([('draft', 'Draft')])  # BIEN
+
+# ✅ Usar @api.model_create_multi (Odoo 18+)
+@api.model_create_multi
+def create(self, vals_list):
+    return super().create(vals_list)
+```
+
+## Estructura de Módulo
+
+```
+my_module/
+├── __init__.py
+├── __manifest__.py
+├── models/          # Un archivo por modelo
+├── views/           # <modelo>_views.xml
+├── security/        # ir.model.access.csv, *_groups.xml
+├── wizard/          # Transient models
+├── data/            # *_data.xml, *_demo.xml
+└── static/src/      # js/, scss/, xml/
+```
+
+# Contribuir a Odoo
+
+Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
+
+## Formato de Commits
+
+```
+[TAG] module: descripción corta (< 50 chars)
+
+Descripción larga explicando POR QUÉ se hizo el cambio,
+incluyendo razonamiento y decisiones técnicas.
+
+References: task-123, Fixes #123
+```
+
+## Tags Disponibles
+
+| Tag | Uso |
+|-----|-----|
+| `[FIX]` | Bug fixes |
+| `[IMP]` | Mejoras incrementales |
+| `[ADD]` | Nuevos módulos |
+| `[REF]` | Refactoring |
+| `[REM]` | Eliminar código muerto |
+| `[REV]` | Revertir commits |
+| `[MOV]` | Mover archivos |
+| `[I18N]` | Traducciones |
+| `[PERF]` | Performance |
+| `[CLN]` | Limpieza de código |
+
+## Workflow para Contribuir
+
+```bash
+# 1. Configurar remotes (si no están)
+cd odoo
+git remote add upstream https://github.com/odoo/odoo.git
+
+# 2. Actualizar desde upstream
+git fetch upstream 18.0
+
+# 3. Crear branch para el fix/feature
+git checkout -b 18.0-fix-descripcion upstream/18.0
+
+# 4. Hacer cambios y commit
+git add .
+git commit -m "[FIX] module: descripción corta
+
+Descripción larga del por qué..."
+
+# 5. Push al fork
+git push origin 18.0-fix-descripcion
+
+# 6. Crear PR en GitHub
+gh pr create --repo odoo/odoo --base 18.0 \
+  --head focuz-ai:18.0-fix-descripcion \
+  --title "[FIX] module: descripción corta"
+```
+
+## Firmar el CLA
+
+Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blob/master/doc/cla/sign-cla.md):
+
+1. Crear archivo en `odoo/doc/cla/individual/<github_username>.md`
+2. Seguir el formato de los archivos existentes
+3. Crear PR con tag `[CLA]`
+
+## Sincronizar Fork con Upstream
+
+```bash
+# Usando el script incluido
+./clone-addons.sh --sync
+
+# O manualmente
+cd odoo
+git fetch upstream
+git checkout 18.0
+git merge upstream/18.0
+git push origin 18.0
+```
+
 # Documentación adicional
 
 Por favor, consulte la [sección de documentos](https://github.com/focuzai/odoo_vsc/tree/main/docs).
+
+Para guías detalladas de desarrollo, consulte [CLAUDE.md](CLAUDE.md).
 
 # Fuentes
 
