@@ -250,7 +250,11 @@ Default PostgreSQL settings:
 - User: odoo
 - Password: odoo
 
-## Odoo 17 Coding Guidelines
+## Odoo Coding Guidelines
+
+> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
+
+### Odoo Master Específico
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
@@ -258,6 +262,443 @@ Default PostgreSQL settings:
 - No `_()` translation wrapper in class-level Selection field definitions
 - Related fields don't need `selection` redefinition
 - FontAwesome `<i>` tags require `title` attribute for accessibility
+
+### Python - PEP8 con Excepciones
+
+Odoo sigue PEP8 excepto:
+- **E501:** Línea muy larga (permitido)
+- **E301:** Expected 1 blank line (relajado)
+- **E302:** Expected 2 blank lines (relajado)
+
+### Organización de Imports
+
+```python
+# 1. Librerías externas (stdlib primero, luego third-party)
+import base64
+import logging
+from datetime import datetime
+
+# 2. Submódulos de Odoo
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_compare
+
+# 3. Imports de addons (raramente usado)
+from odoo.addons.sale.models.sale_order import SaleOrder
+```
+
+### Estructura de Modelos (Orden de Atributos)
+
+```python
+class SaleOrder(models.Model):
+    # 1. Atributos privados
+    _name = 'sale.order'
+    _description = 'Sales Order'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'date_order desc, id desc'
+
+    # 2. Métodos default y default_get
+    @api.model
+    def _default_warehouse_id(self):
+        return self.env['stock.warehouse'].search([], limit=1)
+
+    # 3. Declaración de campos
+    name = fields.Char(string='Order Reference', required=True, copy=False)
+    state = fields.Selection([
+        ('draft', 'Quotation'),
+        ('sent', 'Quotation Sent'),
+        ('sale', 'Sales Order'),
+        ('cancel', 'Cancelled'),
+    ], string='Status', default='draft', tracking=True)
+    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
+    order_line_ids = fields.One2many('sale.order.line', 'order_id', string='Order Lines')
+    amount_total = fields.Monetary(compute='_compute_amount', store=True)
+
+    # 4. Constraints SQL e índices
+    _sql_constraints = [
+        ('name_uniq', 'unique(name, company_id)', 'Order reference must be unique!'),
+    ]
+
+    # 5. Métodos compute, inverse, search (orden de campos)
+    @api.depends('order_line_ids.price_subtotal')
+    def _compute_amount(self):
+        for order in self:
+            order.amount_total = sum(order.order_line_ids.mapped('price_subtotal'))
+
+    # 6. Métodos selection
+    @api.model
+    def _selection_state(self):
+        return [('draft', 'Draft'), ('done', 'Done')]
+
+    # 7. Constraints y onchange
+    @api.constrains('partner_id')
+    def _check_partner(self):
+        for order in self:
+            if order.partner_id.is_blocked:
+                raise ValidationError(_('Partner is blocked!'))
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        if self.partner_id:
+            self.pricelist_id = self.partner_id.property_product_pricelist
+
+    # 8. Overrides CRUD (create, read, write, unlink)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('name'):
+                vals['name'] = self.env['ir.sequence'].next_by_code('sale.order')
+        return super().create(vals_list)
+
+    # 9. Métodos action
+    def action_confirm(self):
+        self.ensure_one()
+        self.state = 'sale'
+        return True
+
+    # 10. Métodos de negocio
+    def _prepare_invoice(self):
+        self.ensure_one()
+        return {
+            'partner_id': self.partner_id.id,
+            'origin': self.name,
+        }
+```
+
+### Convenciones de Nombres
+
+| Elemento | Convención | Ejemplo |
+|----------|------------|---------|
+| **Modelo** | Singular, dot notation | `sale.order`, `res.partner` |
+| **Transient** | `<modelo>.action` | `sale.order.make.invoice` |
+| **Report** | `<modelo>.report.<action>` | `sale.report.order` |
+| **Variable modelo** | PascalCase | `Partner`, `SaleOrder` |
+| **Variable record** | snake_case | `partner`, `sale_order` |
+| **Campo Many2one** | Sufijo `_id` | `partner_id`, `order_id` |
+| **Campo X2many** | Sufijo `_ids` | `order_line_ids`, `tag_ids` |
+| **Método compute** | `_compute_<field>` | `_compute_amount_total` |
+| **Método search** | `_search_<field>` | `_search_product_id` |
+| **Método default** | `_default_<field>` | `_default_warehouse_id` |
+| **Método selection** | `_selection_<field>` | `_selection_state` |
+| **Método onchange** | `_onchange_<field>` | `_onchange_partner_id` |
+| **Método constraint** | `_check_<name>` | `_check_dates` |
+| **Método action** | `action_<verb>` | `action_confirm`, `action_cancel` |
+
+### Buenas Prácticas Python
+
+```python
+# ✅ Crear diccionarios con literales
+my_dict = {'foo': 3, 'bar': 4}
+
+# ❌ Evitar .clone()
+new_dict = my_dict.clone()  # Mal
+new_dict = dict(my_dict)    # Bien
+
+# ✅ Actualizar diccionarios
+my_dict.update(foo=3, bar=4)
+my_dict.setdefault('key', default_value)
+
+# ✅ Colecciones como booleanos
+if collection:      # Bien
+if len(collection): # Mal
+
+# ✅ Iterar diccionarios
+for key in my_dict:           # Bien (keys)
+for key, value in my_dict.items():  # Bien (items)
+for key in my_dict.keys():    # Innecesario
+
+# ✅ Usar context correctamente
+records.with_context(new_context).do_stuff()  # Reemplaza contexto
+records.with_context(**extra).do_stuff()      # Merge contexto
+```
+
+### Traducciones con `_()`
+
+```python
+# ✅ Correcto - string literal con parámetros
+error = _('Record %s cannot be modified!', record.name)
+message = _('Hello %(name)s!', name=user.name)
+
+# ❌ Incorrecto - formateo fuera de _()
+error = _('Record %s!') % record.name
+error = _('Record ' + name + '!')
+
+# ❌ Incorrecto - en definición de Selection a nivel clase
+state = fields.Selection([
+    ('draft', _('Draft')),  # MAL - no usar _() aquí
+])
+
+# ✅ Correcto - Selection sin _()
+state = fields.Selection([
+    ('draft', 'Draft'),     # BIEN - Odoo traduce automáticamente
+])
+```
+
+### Transacciones y Savepoints
+
+```python
+# ❌ NUNCA hacer commit manual
+self.env.cr.commit()  # PROHIBIDO
+
+# ✅ Usar savepoints para aislar excepciones
+try:
+    with self.env.cr.savepoint():
+        do_risky_stuff()
+except SpecificException:
+    # La transacción principal no se corrompe
+    handle_error()
+
+# ⚠️ Máximo ~64 savepoints por transacción (límite PostgreSQL)
+```
+
+### Excepciones
+
+```python
+# ❌ Evitar catch genérico
+try:
+    do_something()
+except Exception as e:
+    logger.warning(e)
+
+# ✅ Capturar excepciones específicas
+try:
+    do_something()
+except ValidationError:
+    # Manejar específicamente
+    pass
+except UserError as e:
+    # Manejar diferente
+    raise UserError(_('Error: %s', e))
+```
+
+### Estructura de Módulo
+
+```
+my_module/
+├── __init__.py
+├── __manifest__.py
+├── data/
+│   ├── my_module_data.xml      # Datos iniciales
+│   └── my_module_demo.xml      # Datos demo
+├── models/
+│   ├── __init__.py
+│   ├── sale_order.py           # Un archivo por modelo principal
+│   └── res_partner.py
+├── views/
+│   ├── sale_order_views.xml    # <modelo>_views.xml
+│   └── res_partner_views.xml
+├── security/
+│   ├── ir.model.access.csv     # Permisos CRUD
+│   ├── my_module_groups.xml    # Grupos de usuarios
+│   └── sale_order_security.xml # Record rules
+├── wizard/
+│   ├── __init__.py
+│   ├── sale_make_invoice.py
+│   └── sale_make_invoice_views.xml
+├── report/
+│   ├── sale_report.py          # SQL views
+│   └── sale_report_templates.xml
+├── controllers/
+│   └── my_module.py            # HTTP routes
+├── static/
+│   ├── description/
+│   │   └── icon.png
+│   └── src/
+│       ├── js/
+│       ├── scss/
+│       └── xml/
+└── tests/
+    ├── __init__.py
+    └── test_sale_order.py
+```
+
+### XML - IDs y Vistas
+
+```xml
+<!-- Formato: name antes de model, id al inicio -->
+<record id="sale_order_view_form" model="ir.ui.view">
+    <field name="name">sale.order.form</field>
+    <field name="model">sale.order</field>
+    <field name="arch" type="xml">
+        <form>
+            <!-- contenido -->
+        </form>
+    </field>
+</record>
+
+<!-- Naming de XML IDs -->
+<!-- Menús: <modelo>_menu -->
+<menuitem id="sale_order_menu" name="Sales Orders"/>
+
+<!-- Vistas: <modelo>_view_<tipo> -->
+<record id="sale_order_view_form" model="ir.ui.view"/>
+<record id="sale_order_view_tree" model="ir.ui.view"/>
+<record id="sale_order_view_kanban" model="ir.ui.view"/>
+
+<!-- Actions: <modelo>_action -->
+<record id="sale_order_action" model="ir.actions.act_window"/>
+
+<!-- Grupos: <modulo>_group_<nombre> -->
+<record id="sale_group_manager" model="res.groups"/>
+
+<!-- Rules: <modelo>_rule_<grupo> -->
+<record id="sale_order_rule_user" model="ir.rule"/>
+
+<!-- Herencia: mismo ID + .inherit en name -->
+<record id="sale_order_view_form" model="ir.ui.view">
+    <field name="name">sale.order.form.inherit.my_module</field>
+    <field name="inherit_id" ref="sale.sale_order_view_form"/>
+</record>
+```
+
+### CSS/SCSS Convenciones
+
+```scss
+// Prefijo obligatorio: o_<modulo>
+.o_sale_order_form {
+    // Variables SCSS scoped (block-level)
+    $-padding: 10px;
+
+    padding: $-padding;
+
+    .o_sale_order_header {
+        // CSS variables para adaptaciones contextuales
+        color: var(--SaleOrder-header-color, #{$o-sale-header-color});
+    }
+}
+
+// Orden de propiedades:
+// 1. Variables SCSS scoped
+// 2. CSS variables
+// 3. Position/layout
+// 4. Display
+// 5. Margin, width, border
+// 6. Padding, background
+// 7. Font, filter
+```
+
+### Permisos de Archivos
+
+| Tipo | Permiso |
+|------|---------|
+| Directorios | 755 |
+| Archivos | 644 |
+
+## Odoo Git Guidelines
+
+> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
+
+### Formato de Mensaje de Commit
+
+```
+[TAG] module: short description (ideally < 50 chars)
+
+Long description explaining WHY the change was made,
+including rationale and technical decisions.
+
+References: task-123, Fixes #123, opw-123
+```
+
+**Principios clave:**
+- **Enfócate en el POR QUÉ, no en el QUÉ** - El diff muestra qué cambió, el mensaje debe explicar por qué
+- **El header debe formar una oración válida:** "if applied, this commit will [header]"
+- **Un módulo por commit** - Evita commits que impacten múltiples módulos (para permitir reverts independientes)
+- **Usa nombres técnicos** - Nombres de módulos técnicos, no funcionales
+
+### Tags de Commit (Prefijos)
+
+| Tag | Uso | Ejemplo |
+|-----|-----|---------|
+| `[FIX]` | Bug fixes (stable o desarrollo reciente) | `[FIX] sale: correct discount calculation` |
+| `[IMP]` | Mejoras incrementales (más común) | `[IMP] stock: add batch picking support` |
+| `[ADD]` | Nuevos módulos | `[ADD] l10n_pe_edi: Peruvian electronic invoicing` |
+| `[REF]` | Refactoring de features | `[REF] account: split invoice logic into mixins` |
+| `[REM]` | Eliminar código muerto, vistas o módulos | `[REM] sale: remove deprecated workflow` |
+| `[REV]` | Revertir commits | `[REV] stock: revert batch changes (breaks X)` |
+| `[MOV]` | Mover archivos (preserva historial git) | `[MOV] web: move static assets to new structure` |
+| `[REL]` | Commits de release (major/minor) | `[REL] 18.0` |
+| `[MERGE]` | Merge commits y forward ports | `[MERGE] 17.0 into 18.0` |
+| `[CLA]` | Firma de Contributor License Agreement | `[CLA] sign individual CLA` |
+| `[I18N]` | Cambios en archivos de traducción | `[I18N] l10n_pe: update Spanish translations` |
+| `[PERF]` | Mejoras de performance | `[PERF] stock: optimize quant queries` |
+| `[CLN]` | Limpieza de código | `[CLN] sale: remove unused imports` |
+| `[LINT]` | Pasadas de linting | `[LINT] account: fix pylint warnings` |
+
+### Nombrado de Branches
+
+```bash
+# Formato: <base-branch>-<descripcion>
+18.0-fix-invoice-discount
+18.0-add-batch-picking
+master-improve-stock-valuation
+
+# Para empleados de Odoo, agregar handle:
+18.0-fix-invoice-discount-abc
+```
+
+### Ejemplos de Buenos Commits
+
+**Bug fix:**
+```
+[FIX] sale: correct discount calculation on multi-line orders
+
+When applying a global discount to orders with multiple lines,
+the discount was being applied twice to lines with quantity > 1.
+
+This was caused by the discount computation being called both
+in _compute_amount and in the line's _compute_discount method.
+
+The fix moves all discount logic to _compute_amount to ensure
+single computation.
+
+Fixes #12345
+```
+
+**Mejora:**
+```
+[IMP] stock: add batch transfer support for warehouse operations
+
+Large warehouses need to process multiple transfers simultaneously
+to improve picking efficiency. This adds:
+- Batch transfer model to group pickings
+- Batch picking wizard
+- Batch validation with partial support
+
+task-456789
+```
+
+**Nuevo módulo:**
+```
+[ADD] l10n_pe_edi: Peruvian electronic invoicing module
+
+Adds support for SUNAT electronic documents:
+- Factura electrónica (invoice)
+- Boleta electrónica (ticket)
+- Nota de crédito/débito
+- Guía de remisión
+
+Includes UBL 2.1 XML generation and SOAP web service integration.
+```
+
+### PR Guidelines
+
+1. **Base branch:** Usar `master` para nuevas features, `X.0` para bug fixes
+2. **Título del PR:** Mismo formato que el commit principal
+3. **Descripción:** Incluir contexto, screenshots si aplica, y pasos de testing
+4. **CLA:** Firmar el CLA antes de contribuir (doc/cla/individual/)
+5. **Allow edits:** Habilitar "Allow edits from maintainer"
+
+### Git Config Recomendado
+
+```bash
+# Configurar identidad
+git config --global user.name "Harrison Chumpitaz"
+git config --global user.email "hchumpitaz92@gmail.com"
+
+# Configurar remotes para contribuir
+git remote add upstream https://github.com/odoo/odoo.git
+git remote add origin https://github.com/focuz-ai/odoo.git
+```
 
 ## Git Submodule Management
 
