@@ -252,9 +252,9 @@ Default PostgreSQL settings:
 
 ## Odoo Coding Guidelines
 
-> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
+> **Fuente oficial:** https://www.odoo.com/documentation/17.0/contributing/development/coding_guidelines.html
 
-### Odoo Master Específico
+### Odoo 17 Específico
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
@@ -586,7 +586,7 @@ my_module/
 
 ## Odoo Git Guidelines
 
-> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
+> **Fuente oficial:** https://www.odoo.com/documentation/17.0/contributing/development/git_guidelines.html
 
 ### Formato de Mensaje de Commit
 
@@ -628,9 +628,9 @@ References: task-123, Fixes #123, opw-123
 
 ```bash
 # Formato: <base-branch>-<descripcion>
-18.0-fix-invoice-discount
-18.0-add-batch-picking
-master-improve-stock-valuation
+17.0-fix-invoice-discount
+17.0-add-batch-picking
+17.0-improve-stock-valuation
 
 # Para empleados de Odoo, agregar handle:
 18.0-fix-invoice-discount-abc
@@ -682,7 +682,7 @@ Includes UBL 2.1 XML generation and SOAP web service integration.
 
 ### PR Guidelines
 
-1. **Base branch:** Usar `master` para nuevas features, `X.0` para bug fixes
+1. **Base branch:** Usar `17.0` para nuevas features y bug fixes
 2. **Título del PR:** Mismo formato que el commit principal
 3. **Descripción:** Incluir contexto, screenshots si aplica, y pasos de testing
 4. **CLA:** Firmar el CLA antes de contribuir (doc/cla/individual/)

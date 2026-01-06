@@ -483,7 +483,7 @@ sudo sysctl -p
 
 # Coding Guidelines
 
-Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html) oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
+Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/17.0/contributing/development/coding_guidelines.html) oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
 
 ## Estructura de Modelos
 
@@ -523,7 +523,7 @@ state = fields.Selection([('draft', _('Draft'))])  # MAL
 # ✅ Selection sin _()
 state = fields.Selection([('draft', 'Draft')])  # BIEN
 
-# ✅ Usar @api.model_create_multi (Odoo Master)
+# ✅ Usar @api.model_create_multi (Odoo 17)
 @api.model_create_multi
 def create(self, vals_list):
     return super().create(vals_list)
@@ -545,7 +545,7 @@ my_module/
 
 # Contribuir a Odoo
 
-Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
+Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/17.0/contributing/development/git_guidelines.html).
 
 ## Formato de Commits
 
@@ -581,10 +581,10 @@ cd odoo
 git remote add upstream https://github.com/odoo/odoo.git
 
 # 2. Actualizar desde upstream
-git fetch upstream master
+git fetch upstream 17.0
 
 # 3. Crear branch para el fix/feature
-git checkout -b master-fix-descripcion upstream/master
+git checkout -b 17.0-fix-descripcion upstream/17.0
 
 # 4. Hacer cambios y commit
 git add .
@@ -593,17 +593,17 @@ git commit -m "[FIX] module: descripción corta
 Descripción larga del por qué..."
 
 # 5. Push al fork
-git push origin master-fix-descripcion
+git push origin 17.0-fix-descripcion
 
 # 6. Crear PR en GitHub
-gh pr create --repo odoo/odoo --base master \
-  --head focuz-ai:master-fix-descripcion \
+gh pr create --repo odoo/odoo --base 17.0 \
+  --head focuz-ai:17.0-fix-descripcion \
   --title "[FIX] module: descripción corta"
 ```
 
 ## Firmar el CLA
 
-Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blob/master/doc/cla/sign-cla.md):
+Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blob/17.0/doc/cla/sign-cla.md):
 
 1. Crear archivo en `odoo/doc/cla/individual/<github_username>.md`
 2. Seguir el formato de los archivos existentes
@@ -618,9 +618,9 @@ Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blo
 # O manualmente
 cd odoo
 git fetch upstream
-git checkout master
-git merge upstream/master
-git push origin master
+git checkout 17.0
+git merge upstream/17.0
+git push origin 17.0
 ```
 
 # Documentación adicional
