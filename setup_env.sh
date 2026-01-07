@@ -371,8 +371,8 @@ load_odoo_tag() {
     fi
 
     if [[ -z "$ODOO_TAG" ]]; then
-        log_warn "ODOO_TAG no encontrado en .env, usando valor por defecto: 18.0"
-        ODOO_TAG="18.0"
+        log_warn "ODOO_TAG no encontrado en .env, usando valor por defecto: master"
+        ODOO_TAG="master"
     fi
 
     log_info "Versión de Odoo detectada: $ODOO_TAG"
