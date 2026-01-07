@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Odoo Master development environment (omaster-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
+This is an Odoo 19 development environment (o19-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
 
 ## Repository Structure
 
 ```
-omaster-env/
+o19-env/
 ├── odoo/              # Odoo Community (cloned)
 ├── odoo-enterprise/   # Odoo Enterprise (cloned)
 ├── odoo-themes/       # Odoo Themes (cloned)
@@ -117,8 +117,8 @@ pip check
 
 ```bash
 # Clone and configure
-git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
-cd omaster-env
+git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
+cd o19-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 cp config/dev.conf.example config/<client>/dev.conf
@@ -167,7 +167,7 @@ The script automatically selects the correct wkhtmltopdf version based on `ODOO_
 
 | ODOO_TAG | wkhtmltox Version |
 |----------|-------------------|
-| 14.0 - 19.0, master | 0.12.6.1-3 |
+| 14.0 - 19.0 | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
 The script handles fallback for distributions without official packages (e.g., noble → jammy).
@@ -258,7 +258,7 @@ Default PostgreSQL settings:
 
 > **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
 
-### Odoo Master Específico
+### Odoo 19 Específico
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
@@ -811,7 +811,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
 **Configuración de Odoo IDE (`odools.toml`):**
 ```toml
 [[config]]
-name = "Odoo Master"
+name = "Odoo 19"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
