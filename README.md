@@ -52,8 +52,8 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone -b master git@github.com:focuz-ai/odoo-env.git omaster-env
-cd omaster-env
+git clone -b 16.0 git@github.com:focuz-ai/odoo-env.git o16-env
+cd o16-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 ```
@@ -211,7 +211,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=master
+ODOO_TAG=16.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -257,7 +257,7 @@ chmod +x setup_env.sh
 
 | ODOO_TAG | wkhtmltox |
 |----------|-----------|
-| 14.0 - master | 0.12.6.1-3 |
+| 14.0 - 19.0 | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
 **⚠️ Advertencia de seguridad para Python <3.12:**
@@ -627,10 +627,10 @@ cd odoo
 git remote add upstream https://github.com/odoo/odoo.git
 
 # 2. Actualizar desde upstream
-git fetch upstream master
+git fetch upstream 16.0
 
 # 3. Crear branch para el fix/feature
-git checkout -b master-fix-descripcion upstream/master
+git checkout -b 16.0-fix-descripcion upstream/16.0
 
 # 4. Hacer cambios y commit
 git add .
@@ -639,11 +639,11 @@ git commit -m "[FIX] module: descripción corta
 Descripción larga del por qué..."
 
 # 5. Push al fork
-git push origin master-fix-descripcion
+git push origin 16.0-fix-descripcion
 
 # 6. Crear PR en GitHub
-gh pr create --repo odoo/odoo --base master \
-  --head focuz-ai:master-fix-descripcion \
+gh pr create --repo odoo/odoo --base 16.0 \
+  --head focuz-ai:16.0-fix-descripcion \
   --title "[FIX] module: descripción corta"
 ```
 
@@ -664,9 +664,9 @@ Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blo
 # O manualmente
 cd odoo
 git fetch upstream
-git checkout master
-git merge upstream/master
-git push origin master
+git checkout 16.0
+git merge upstream/16.0
+git push origin 16.0
 ```
 
 # Documentación adicional
