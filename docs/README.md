@@ -344,4 +344,4 @@ fail2ban-client status sshd
 
 # Fuentes
 - [Cómo usar Fail2ban para prevenir accesos no deseados al servidor](https://www.arsys.es/blog/instalar-fail2ban)
-- [Seguridad en Odoo](https://www.odoo.com/documentation/16.0/administration/on_premise/deploy.html#security)
+- [Seguridad en Odoo](https://www.odoo.com/documentation/18.0/administration/on_premise/deploy.html#security)
