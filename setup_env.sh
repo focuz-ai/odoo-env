@@ -384,7 +384,7 @@ get_wkhtmltox_version() {
     local odoo_major="${ODOO_TAG%%.*}"
 
     case "$odoo_major" in
-        14|15|16|17)
+        14|15|16|17|18|19)
             WKHTMLTOX_VERSION="0.12.6.1-3"
             ;;
         12|13)

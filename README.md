@@ -380,24 +380,70 @@ chmod +x clone-addons.sh
 
 # Crear entorno virtual e instalar dependencias
 
-Crear entorno virtual con la versión de Python instalada:
+## Odoo 16 con Python 3.12 (Recomendado)
+
+**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren con Python 3.10.
+
+```bash
+# Crear entorno virtual con Python 3.12
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+# Instalar dependencias
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
+
+# Verificar instalación
+pip check
+```
+
+**Versiones clave instaladas:**
+| Paquete | Versión | Nota |
+|---------|---------|------|
+| gevent | 24.2.1 | Compatible con Python 3.12 |
+| greenlet | 3.0.3 | Compatible con Python 3.12 |
+| Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no compatible) |
+
+<details>
+<summary><b>Alternativa: Python 3.10 (solo si es requerido)</b></summary>
+
+Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
+
+**Error típico:**
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
+```
+
+**Solución:** Usar `setuptools<70` y `Cython<3` con `--no-build-isolation`:
+
+```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
+pip install -r odoo/requirements.txt --no-build-isolation
+pip install -r requirements.txt
+pip check
+```
+
+</details>
+
+## Odoo 17+ con Python 3.13
+
+Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
+
 ```bash
 python3.13 -m venv .venv
-```
-
-Activar entorno virtual:
-```bash
 source .venv/bin/activate
-```
-
-Instalar dependencias:
-```bash
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 ```
 
-Desactivar entorno virtual (cuando sea necesario):
+## Desactivar entorno virtual
+
 ```bash
 deactivate
 ```
@@ -523,7 +569,7 @@ state = fields.Selection([('draft', _('Draft'))])  # MAL
 # ✅ Selection sin _()
 state = fields.Selection([('draft', 'Draft')])  # BIEN
 
-# ✅ Usar @api.model_create_multi (Odoo 17)
+# ✅ Usar @api.model_create_multi (Odoo 16+)
 @api.model_create_multi
 def create(self, vals_list):
     return super().create(vals_list)
