@@ -58,7 +58,7 @@ pycryptodome>=3.20.0,<4.0.0 ; python_version >= '3.10'
 # - Odoo 16: Requiere Werkzeug 2.0.x (usa werkzeug.__version__ eliminado en 3.x)
 # - Odoo 17+: Compatible con Werkzeug 3.x
 # Error sin fix: AttributeError: module 'werkzeug' has no attribute '__version__'
-Werkzeug==2.0.2 ; python_version <= '3.12'
+# Werkzeug==2.0.2 ; python_version <= '3.12'  # Comentado: respetar versión de odoo/requirements.txt
 Werkzeug>=3.0.6,<4.0.0 ; python_version >= '3.13'
 Jinja2>=3.1.6,<4.0.0 ; python_version >= '3.10'
 
