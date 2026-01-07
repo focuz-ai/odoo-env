@@ -93,15 +93,18 @@ pip check
 
 ### Key Library Versions by Python
 
-| Library | Python 3.10-3.11 | Python 3.12 | Python 3.13+ |
-|---------|------------------|-------------|--------------|
-| cryptography | 3.4.8 | 42.0.8 | 42.0.8 |
-| Pillow | 9.0.1 / 9.4.0 | 10.2.0 | 11.1.0 |
-| pdfminer.six | 20211012 | 20231228 | 20231228 |
-| signxml | 3.1.1 | 3.2.2+ | 3.2.2+ |
-| pandas | 1.3.5 | 2.2.3+ | 2.2.3+ |
-| numpy | 1.26.x | 1.26.x | 2.4.x+ |
-| PyArrow | 15.x | 15.x | 18.x+ |
+| Library | Python 3.10-3.11 | Python 3.12+ | Security Notes |
+|---------|------------------|--------------|----------------|
+| cryptography | 3.4.8 ⚠️ | ≥44.0.1 ✅ | CVE-2024-12797 fixed in 44.0.1 |
+| urllib3 | 1.26.19 ⚠️ | ≥2.6.0 ✅ | CVE-2025-66471/66418 fixed in 2.6.0 |
+| pdfminer.six | 20211012 ⚠️ | ≥20251230 ✅ | CVE-2025-64512 fixed; pickle vuln open |
+| signxml | 3.1.1 ⚠️ | ≥4.0.4 ✅ | CVE-2025-48994/48995 fixed in 4.0.4 |
+| Pillow | 9.0.1 / 9.4.0 | ≥10.3.0 / 11.1.0 | CVE-2024-28219 fixed |
+| pandas | 1.3.5 | ≥2.2.3 | - |
+| numpy | 1.26.x | 1.26.x / 2.4.x+ | - |
+| PyArrow | 15.x | 15.x / 18.x+ | - |
+
+> ⚠️ = Vulnerable (Odoo constraints prevent update) | ✅ = Patched
 
 ## Configuration Files
 
@@ -1014,6 +1017,96 @@ Beyond Odoo's requirements, this environment includes:
 | Data Processing | `pandas`, `numpy`, `Pyarrow` |
 | Cryptography | `PyJWT`, `pycryptodome` |
 | Development | `ipython`, `pytest`, `pydevd-odoo`, `watchdog` |
+
+## Security Vulnerabilities and Mitigations
+
+> **Última revisión:** Enero 2026
+
+### Resumen de Vulnerabilidades por Python
+
+| Python | Estado | Vulnerabilidades Abiertas |
+|--------|--------|---------------------------|
+| 3.13+ | ✅ **Recomendado** | 1 (sin parche disponible) |
+| 3.12 | ✅ Seguro | 1 (sin parche disponible) |
+| 3.10-3.11 | ⚠️ **No recomendado** | 7+ (restricciones de Odoo) |
+
+### CVEs Conocidos y Estado
+
+| CVE | Paquete | Severidad | Parche | Python ≥3.12 | Python <3.12 |
+|-----|---------|-----------|--------|--------------|--------------|
+| CVE-2025-66471 | urllib3 | **High** | 2.6.0 | ✅ Corregido | ❌ Sin fix (1.x) |
+| CVE-2025-66418 | urllib3 | **High** | 2.6.0 | ✅ Corregido | ❌ Sin fix (1.x) |
+| CVE-2025-50181 | urllib3 | Medium | 2.5.0 | ✅ Corregido | ❌ Sin fix (1.x) |
+| CVE-2024-12797 | cryptography | Low | 44.0.1 | ✅ Corregido | ❌ Sin fix (3.x) |
+| CVE-2025-64512 | pdfminer.six | **High** | 20251107 | ✅ Corregido | ❌ Sin fix |
+| CVE-2025-48994 | signxml | Medium | 4.0.4 | ✅ Corregido | ❌ Sin fix (3.x) |
+| CVE-2025-48995 | signxml | Medium | 4.0.4 | ✅ Corregido | ❌ Sin fix (3.x) |
+| GHSA-f83h | pdfminer.six | **High** | ❌ None | ⚠️ Sin parche | ⚠️ Sin parche |
+
+### Vulnerabilidad sin Parche: pdfminer.six Pickle Deserialization
+
+**GHSA-f83h-ghpp-7wcc** - Insecure Deserialization via pickle (CVSS 7.8 High)
+
+**Descripción:** pdfminer.six usa `pickle` para cargar archivos CMap. Un atacante con acceso de escritura a directorios en `CMAP_PATH` puede ejecutar código arbitrario.
+
+**Requisitos para explotar:**
+1. Atacante puede escribir en un directorio incluido en `CMAP_PATH`
+2. Un proceso privilegiado (root/service) carga CMaps desde ese directorio
+
+**Riesgo en Odoo:** 🟡 **Bajo-Medio**
+- Requiere acceso local al servidor
+- No explotable remotamente via PDFs procesados por Odoo
+- `CMAP_PATH` debe estar mal configurado
+
+**Mitigaciones:**
+```bash
+# No configurar CMAP_PATH a directorios escribibles por usuarios
+# Verificar permisos de /tmp y directorios de upload
+chmod 1777 /tmp  # sticky bit
+```
+
+### Python <3.12: Restricciones de Odoo
+
+Las siguientes restricciones de Odoo impiden actualizar paquetes vulnerables en Python <3.12:
+
+| Paquete | Versión Odoo | Limitación |
+|---------|--------------|------------|
+| cryptography | 3.4.8 | pyopenssl requiere esta versión |
+| lxml | 4.x | Odoo no compatible con lxml 5.x |
+| urllib3 | 1.x | requests de Odoo requiere 1.x |
+
+**Consecuencia:** Vulnerabilidades en urllib3, signxml, pdfminer.six no pueden parchearse.
+
+### Mitigaciones Recomendadas
+
+| Acción | Impacto | Prioridad |
+|--------|---------|-----------|
+| **Usar Python ≥3.12** | Corrige 7 de 8 CVEs | 🔴 Alta |
+| Ejecutar Odoo como usuario sin privilegios | Limita escalación | 🔴 Alta |
+| No configurar `CMAP_PATH` escribible | Mitiga pickle vuln | 🟡 Media |
+| Firewall: limitar acceso a puertos Odoo | Reduce superficie | 🟡 Media |
+| Monitorear pdfminer.six para parche | Preparar actualización | 🟢 Baja |
+
+### Dependabot y Marcadores de Versión Python
+
+Dependabot no interpreta los marcadores `python_version` en requirements.txt, por lo que muestra alertas aunque las vulnerabilidades estén corregidas para Python ≥3.12.
+
+**Para verificar estado real:**
+```bash
+# Verificar versión Python activa
+python --version
+
+# Verificar versiones instaladas
+pip show urllib3 cryptography pdfminer.six signxml
+
+# Si Python ≥3.12, las versiones deberían ser:
+# urllib3>=2.6.0, cryptography>=44.0.1, pdfminer.six>=20251230, signxml>=4.0.4
+```
+
+### Referencias
+
+- [GHSA-f83h-ghpp-7wcc](https://github.com/pdfminer/pdfminer.six/security/advisories/GHSA-f83h-ghpp-7wcc) - pdfminer.six pickle
+- [Dependabot Alerts](https://github.com/focuz-ai/odoo-env/security/dependabot) - Estado actual
 
 ## Peruvian Localization Modules
 
