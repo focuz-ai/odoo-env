@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Odoo 18 development environment (o18-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
+This is an Odoo 16.0 development environment (o16-env) configured for multi-client/multi-project development with VSCode integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
 
 ## Repository Structure
 
 ```
-o18-env/
+o16-env/
 ├── odoo/              # Odoo Community (cloned)
 ├── odoo-enterprise/   # Odoo Enterprise (cloned)
 ├── odoo-themes/       # Odoo Themes (cloned)
@@ -21,12 +21,12 @@ o18-env/
 │   │   └── <client>/{dev,main,temp}/
 │   └── migrate/       # Migration work
 ├── vendor/            # Third-party addons
-└── .venv/             # Python 3.13 virtual environment
+└── .venv/             # Python 3.12 virtual environment
 ```
 
 ## Python Environment
 
-**Python 3.13** (current, stable)
+**Python 3.12** (recommended for Odoo 16)
 
 ```bash
 # Activate virtual environment
@@ -39,8 +39,8 @@ source .venv/bin/activate
 |--------|--------|-------|
 | 3.10 | ✅ Supported | Minimum version |
 | 3.11 | ✅ Supported | Legacy stable |
-| 3.12 | ✅ Supported | Previous stable |
-| 3.13 | ✅ Current | Recommended, latest features |
+| 3.12 | ✅ Current | Recommended, latest features |
+| 3.13 | ✅ Supported | Previous stable |
 
 ## Development Commands
 
@@ -77,31 +77,70 @@ python odoo/odoo-bin -c config/<client>/dev.conf --dev=all
 
 **Order matters**: Install Odoo requirements first to lock base versions.
 
+### Odoo 16 con Python 3.12 (Recomendado)
+
+**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren con Python 3.10.
+
 ```bash
 # 1. Activate environment
 source .venv/bin/activate
 
-# 2. Install Odoo dependencies first (locks cryptography, Pillow, lxml, etc.)
+# 2. Install dependencies
+pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
-
-# 3. Install project dependencies (respects Odoo versions)
 pip install -r requirements.txt
 
-# 4. Verify no conflicts
+# 3. Verify no conflicts
+pip check
+```
+
+### Odoo 17+ con Python 3.13
+
+Para Odoo 17 o superior, usar Python 3.13:
+
+```bash
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
+pip check
+```
+
+### Alternativa: Python 3.10 (solo si es requerido)
+
+Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
+
+**Error típico:**
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
+```
+
+**Solución:** Usar `setuptools<70` y `Cython<3`, luego instalar con `--no-build-isolation`:
+
+```bash
+source .venv/bin/activate
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
+pip install -r odoo/requirements.txt --no-build-isolation
+pip install -r requirements.txt
 pip check
 ```
 
 ### Key Library Versions by Python
 
-| Library | Python 3.10-3.11 | Python 3.12 | Python 3.13+ |
-|---------|------------------|-------------|--------------|
-| cryptography | 3.4.8 | 42.0.8 | 42.0.8 |
-| Pillow | 9.0.1 / 9.4.0 | 10.2.0 | 11.1.0 |
-| pdfminer.six | 20211012 | 20231228 | 20231228 |
-| signxml | 3.1.1 | 3.2.2+ | 3.2.2+ |
-| pandas | 1.3.5 | 2.2.3+ | 2.2.3+ |
-| numpy | 1.26.x | 1.26.x | 2.4.x+ |
-| PyArrow | 15.x | 15.x | 18.x+ |
+| Library | Python 3.10 | Python 3.12+ | Notes |
+|---------|-------------|--------------|-------|
+| gevent | 21.8.0 | 24.2.1+ | 21.8.0 requiere Cython<3 |
+| greenlet | 1.1.2 | 3.0.3+ | Debe coincidir con gevent |
+| Werkzeug | 2.0.2 | 2.0.2 | Odoo 16 usa `werkzeug.__version__` (eliminado en 3.x) |
+| cryptography | 3.4.8 | 42.0.8+ | Python <3.12 limitado por pyopenssl |
+| Pillow | 9.0.1 | 10.2.0+ | |
+| pdfminer.six | 20211012 | 20231228+ | |
+| signxml | 3.1.1 | 4.0.4+ | |
+| pandas | 1.3.5 | 2.2.3+ | |
+| numpy | 1.26.x | 2.0.0+ | |
+| PyArrow | 15.x | 18.x+ | |
 
 ## Configuration Files
 
@@ -114,8 +153,8 @@ pip check
 
 ```bash
 # Clone and configure
-git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
-cd o18-env
+git clone -b 16.0 git@github.com:focuz-ai/odoo-env.git o16-env
+cd o16-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 cp config/dev.conf.example config/<client>/dev.conf
@@ -126,14 +165,15 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.13 virtual environment
-python3.13 -m venv .venv
+# Create Python 3.12 virtual environment (recommended for Odoo 16)
+python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
+pip check
 ```
 
 ## Setup Environment Script
@@ -163,7 +203,7 @@ The script automatically selects the correct wkhtmltopdf version based on `ODOO_
 
 | ODOO_TAG | wkhtmltox Version |
 |----------|-------------------|
-| 14.0 - 19.0, master | 0.12.6.1-3 |
+| 14.0 - 16.0 | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
 The script handles fallback for distributions without official packages (e.g., noble → jammy).
@@ -221,7 +261,7 @@ When executed with `--sync`, the script:
 1. Clones repositories from focuz-ai forks
 2. Adds upstream Odoo remotes automatically
 3. Fetches latest changes from upstream
-4. Creates missing branches from upstream if needed (e.g., 18.0)
+4. Creates missing branches from upstream if needed (e.g., 16.0)
 5. Merges upstream changes into the fork
 6. Pushes updates back to focuz-ai repositories
 
@@ -254,7 +294,7 @@ Default PostgreSQL settings:
 
 > **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
 
-### Odoo 18 Específico
+### Odoo 16 Específico
 
 - Use `@api.model_create_multi` instead of `@api.model` for create methods
 - All models require `_description` attribute
@@ -807,7 +847,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
 **Configuración de Odoo IDE (`odools.toml`):**
 ```toml
 [[config]]
-name = "Odoo 18.0"
+name = "Odoo 16.0"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",

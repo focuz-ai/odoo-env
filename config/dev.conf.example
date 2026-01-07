@@ -1,5 +1,5 @@
 ;==============================================================================
-; Odoo 18 - Development Configuration
+; Odoo 16.0 - Development Configuration
 ;==============================================================================
 ; Optimized for local development with debugging capabilities
 ; Copy this file and rename to dev.conf, then customize paths
@@ -10,14 +10,14 @@
 ;------------------------------------------------------------------------------
 ; Paths - UPDATE THESE TO YOUR LOCAL PATHS
 ;------------------------------------------------------------------------------
-addons_path = /home/user/o18-env/odoo/addons,
-              /home/user/o18-env/odoo-enterprise,
-              /home/user/o18-env/odoo-themes,
-              /home/user/o18-env/vendor,
-              /home/user/o18-env/src/dev,
-              /home/user/o18-env/src/projects
+addons_path = /home/user/o16-env/odoo/addons,
+              /home/user/o16-env/odoo-enterprise,
+              /home/user/o16-env/odoo-themes,
+              /home/user/o16-env/vendor,
+              /home/user/o16-env/src/dev,
+              /home/user/o16-env/src/projects
 
-; data_dir = /home/user/o18-env/data
+; data_dir = /home/user/o16-env/data
 
 ;------------------------------------------------------------------------------
 ; Database - Local PostgreSQL

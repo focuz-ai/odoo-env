@@ -52,8 +52,8 @@ src/
 # Guía de configuración rápida:
 **Clonar y configurar:**
 ```bash
-git clone -b 18.0 git@github.com:focuz-ai/odoo-env.git o18-env
-cd o18-env
+git clone -b 16.0 git@github.com:focuz-ai/odoo-env.git o16-env
+cd o16-env
 cp .env.example .env
 cp odools.toml.example odools.toml
 ```
@@ -211,7 +211,7 @@ Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámic
 Archivo de muestra `.env`
 ```bash
 # Odoo
-ODOO_TAG=18.0
+ODOO_TAG=16.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -257,7 +257,7 @@ chmod +x setup_env.sh
 
 | ODOO_TAG | wkhtmltox |
 |----------|-----------|
-| 14.0 - master | 0.12.6.1-3 |
+| 14.0 - 16.0 | 0.12.6.1-3 |
 | 12.0 - 13.0 | 0.12.5-1 |
 
 **⚠️ Advertencia de seguridad para Python <3.12:**
@@ -380,24 +380,70 @@ chmod +x clone-addons.sh
 
 # Crear entorno virtual e instalar dependencias
 
-Crear entorno virtual con la versión de Python instalada:
+## Odoo 16 con Python 3.12 (Recomendado)
+
+**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren con Python 3.10.
+
+```bash
+# Crear entorno virtual con Python 3.12
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+# Instalar dependencias
+pip install --upgrade pip setuptools wheel
+pip install -r odoo/requirements.txt
+pip install -r requirements.txt
+
+# Verificar instalación
+pip check
+```
+
+**Versiones clave instaladas:**
+| Paquete | Versión | Nota |
+|---------|---------|------|
+| gevent | 24.2.1 | Compatible con Python 3.12 |
+| greenlet | 3.0.3 | Compatible con Python 3.12 |
+| Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no compatible) |
+
+<details>
+<summary><b>Alternativa: Python 3.10 (solo si es requerido)</b></summary>
+
+Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
+
+**Error típico:**
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
+```
+
+**Solución:** Usar `setuptools<70` y `Cython<3` con `--no-build-isolation`:
+
+```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install "setuptools<70" wheel "Cython<3"
+pip install -r odoo/requirements.txt --no-build-isolation
+pip install -r requirements.txt
+pip check
+```
+
+</details>
+
+## Odoo 17+ con Python 3.13
+
+Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
+
 ```bash
 python3.13 -m venv .venv
-```
-
-Activar entorno virtual:
-```bash
 source .venv/bin/activate
-```
-
-Instalar dependencias:
-```bash
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 ```
 
-Desactivar entorno virtual (cuando sea necesario):
+## Desactivar entorno virtual
+
 ```bash
 deactivate
 ```
@@ -523,7 +569,7 @@ state = fields.Selection([('draft', _('Draft'))])  # MAL
 # ✅ Selection sin _()
 state = fields.Selection([('draft', 'Draft')])  # BIEN
 
-# ✅ Usar @api.model_create_multi (Odoo 18+)
+# ✅ Usar @api.model_create_multi (Odoo 16+)
 @api.model_create_multi
 def create(self, vals_list):
     return super().create(vals_list)
@@ -581,10 +627,10 @@ cd odoo
 git remote add upstream https://github.com/odoo/odoo.git
 
 # 2. Actualizar desde upstream
-git fetch upstream 18.0
+git fetch upstream master
 
 # 3. Crear branch para el fix/feature
-git checkout -b 18.0-fix-descripcion upstream/18.0
+git checkout -b master-fix-descripcion upstream/master
 
 # 4. Hacer cambios y commit
 git add .
@@ -593,11 +639,11 @@ git commit -m "[FIX] module: descripción corta
 Descripción larga del por qué..."
 
 # 5. Push al fork
-git push origin 18.0-fix-descripcion
+git push origin master-fix-descripcion
 
 # 6. Crear PR en GitHub
-gh pr create --repo odoo/odoo --base 18.0 \
-  --head focuz-ai:18.0-fix-descripcion \
+gh pr create --repo odoo/odoo --base master \
+  --head focuz-ai:master-fix-descripcion \
   --title "[FIX] module: descripción corta"
 ```
 
@@ -618,9 +664,9 @@ Antes de contribuir, debes firmar el [Odoo CLA](https://github.com/odoo/odoo/blo
 # O manualmente
 cd odoo
 git fetch upstream
-git checkout 18.0
-git merge upstream/18.0
-git push origin 18.0
+git checkout master
+git merge upstream/master
+git push origin master
 ```
 
 # Documentación adicional
