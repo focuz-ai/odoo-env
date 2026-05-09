@@ -3,6 +3,6 @@ name = "Odoo 19"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/odoo-enterprise",
-    "${workspaceFolder}/odoo-themes",
+    "${workspaceFolder}/enterprise",
+    "${workspaceFolder}/design-themes"
 ]

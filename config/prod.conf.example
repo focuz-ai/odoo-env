@@ -13,7 +13,7 @@
 ; Paths - UPDATE THESE TO YOUR PRODUCTION PATHS
 ;------------------------------------------------------------------------------
 addons_path = /opt/odoo/odoo/addons,
-              /opt/odoo/odoo-enterprise,
+              /opt/odoo/enterprise,
               /opt/odoo/custom-addons
 
 data_dir = /opt/odoo/data

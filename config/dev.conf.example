@@ -11,8 +11,8 @@
 ; Paths - UPDATE THESE TO YOUR LOCAL PATHS
 ;------------------------------------------------------------------------------
 addons_path = /home/user/o16-env/odoo/addons,
-              /home/user/o16-env/odoo-enterprise,
-              /home/user/o16-env/odoo-themes,
+              /home/user/o16-env/enterprise,
+              /home/user/o16-env/design-themes,
               /home/user/o16-env/vendor,
               /home/user/o16-env/src/dev,
               /home/user/o16-env/src/projects
