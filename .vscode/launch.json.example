@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/odoo/odoo-bin",
             "args": [
                 "-c", "${workspaceFolder}/config/dev.conf",
-                "--dev=all"
+                "--dev=xml,reload,qweb"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/odoo",

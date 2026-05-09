@@ -11,11 +11,16 @@
     // Python Core
     // ═══════════════════════════════════════════════════════════════
     "ms-python.python",                   // Soporte completo para Python
+    "ms-python.debugpy",                   // Depuración de Python
     // "ms-python.vscode-pylance",        // Deshabilitado (Odoo IDE usa Pyright)
     // "ms-python.mypy-type-checker",     // Deshabilitado (Odoo sin type stubs)
     "charliermarsh.ruff",                 // Linter + Formatter ultra-rápido (reemplaza Black, isort, Flake8)
     "njpwerner.autodocstring",            // Generación automática de docstrings
     "ms-toolsai.jupyter",                 // Soporte para notebooks (útil en análisis)
+    "DotJoshJohnson.xml",                // Soporte para XML (vital para vistas, QWeb, etc.)
+    "formulahendry.auto-complete-tag",   // Autocompletado de etiquetas XML (vistas, QWeb)
+    "codezombiech.gitignore",           // Soporte para archivos .gitignore
+    "mrorz.language-gettext",          // Soporte para archivos .po (traducciones)
 
     // ═══════════════════════════════════════════════════════════════
     // Productividad estilo PyCharm
@@ -42,6 +47,8 @@
     "trinhanhngoc.vscode-odoo",           // Odoo IDE - Resolución de _inherit y modelos
     "jigar-patel.OdooSnippets",           // Snippets específicos para Odoo
     "gabrielgrinberg.auto-run-command",   // Ejecutar Odoo Reindex al abrir workspace
+    "odoo.owl-vision",                // Soporte para OWL (Odoo Web Library)
+    "mvintg.odoo-file",                   // Soporte para archivos .odoo (configuración de addons)
 
     // ═══════════════════════════════════════════════════════════════
     // DevOps & Tools
