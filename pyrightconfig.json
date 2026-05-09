@@ -1,8 +1,8 @@
 {
     "include": [
         "odoo",
-        "odoo-enterprise",
-        "odoo-themes",
+        "enterprise",
+        "design-themes",
         "src"
     ],
     "exclude": [
@@ -14,13 +14,13 @@
     "extraPaths": [
         "odoo",
         "odoo/addons",
-        "odoo-enterprise",
-        "odoo-themes"
+        "enterprise",
+        "design-themes"
     ],
     "venvPath": ".",
     "venv": ".venv",
     "typeCheckingMode": "basic",
-    "pythonVersion": "3.13",
+    "pythonVersion": "3.12",
     "useLibraryCodeForTypes": true,
     "reportMissingTypeStubs": false,
     "reportMissingModuleSource": false,

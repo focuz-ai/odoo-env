@@ -18,16 +18,16 @@ check_untyped_defs = false
 # ─────────────────────────────────────────────────────────────────────────────
 
 [tool.pyright]
-include = ["odoo", "odoo-enterprise", "odoo-themes", "src"]
+include = ["odoo/addons", "enterprise", "design-themes", "src"]
 exclude = ["**/node_modules", "**/__pycache__", "**/.*", "vendor"]
-extraPaths = ["odoo", "odoo/addons", "odoo-enterprise", "odoo-themes"]
+extraPaths = ["odoo/addons", "enterprise", "design-themes", "src"]
 
 venvPath = "."
 venv = ".venv"
 
 # Type checking básico (recomendado por Odoo IDE)
 typeCheckingMode = "basic"
-pythonVersion = "3.13"
+pythonVersion = "3.12"
 
 # Usar código de librería para tipos cuando no hay stubs
 useLibraryCodeForTypes = true

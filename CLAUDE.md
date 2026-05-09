@@ -10,9 +10,10 @@ This is an Odoo 19 development environment (o19-env) configured for multi-client
 
 ```
 o19-env/
-├── odoo/              # Odoo Community (cloned)
-├── odoo-enterprise/   # Odoo Enterprise (cloned)
-├── odoo-themes/       # Odoo Themes (cloned)
+├── odoo/              # Odoo Community (cloned, vendored — no editar)
+├── enterprise/        # Odoo Enterprise (cloned, vendored — no editar)
+├── design-themes/     # Odoo Themes (cloned, vendored — no editar)
+├── industry/          # Odoo industry modules (vendored — no editar)
 ├── config/            # Per-client config files (dev.conf, main.conf)
 │   └── <client>/      # Client-specific configurations
 ├── src/
@@ -21,16 +22,34 @@ o19-env/
 │   │   └── <client>/{dev,main,temp}/
 │   └── migrate/       # Migration work
 ├── vendor/            # Third-party addons
-└── .venv/             # Python 3.12 virtual environment
+├── scripts/           # DB template/clone helpers, filestore cleanup
+├── openspec/          # OpenSpec specs y propuestas de cambios
+├── docs/              # Notas internas (uv, optimizaciones, etc.)
+└── .venv/             # Python 3.12 virtual environment (active)
 ```
+
+### Mapa rápido: "¿Dónde tocar para...?"
+
+| Intención | Archivo / directorio |
+|-----------|---------------------|
+| Agregar una config de cliente | `config/<client>/{dev,prod}.conf` (copiar de `*.example`) |
+| Agregar un addons-path para el IDE | `odools.toml` |
+| Agregar un repo a clonar | `clone-addons.txt` |
+| Run/debug Odoo desde VSCode | `.vscode/launch.json` (copiar de `.example`) |
+| Configuración de linter | `ruff.toml` + `pyproject.toml` (`[tool.pyright]`, `[tool.mypy]`) |
+| Pre-commit hooks | `.pre-commit-config.yaml` |
+| Addons internos por cliente | `src/projects/<client>/{dev,main,temp}/` |
+| Addons internos compartidos | `src/dev/<org>/<repo>/` |
+| Scripts operacionales (DB, filestore) | `scripts/` |
 
 ## Python Environment
 
-**Python 3.13** (current, stable)
+**Python 3.12** (versión activa del `.venv`, default del `setup_env.sh`)
 
 ```bash
 # Activate virtual environment
 source .venv/bin/activate
+python --version   # → Python 3.12.x
 ```
 
 ### Python Version Compatibility
@@ -39,8 +58,8 @@ source .venv/bin/activate
 |--------|--------|-------|
 | 3.10 | ✅ Supported | Minimum version |
 | 3.11 | ✅ Supported | Legacy stable |
-| 3.12 | ✅ Supported | Previous stable |
-| 3.13 | ✅ Current | Recommended, latest features |
+| 3.12 | ✅ **Active** | Versión del `.venv` y default de `setup_env.sh` |
+| 3.13 | ✅ Supported | Disponible vía `setup_env.sh -p 3.13` |
 
 ## Development Commands
 
@@ -77,19 +96,26 @@ python odoo/odoo-bin -c config/<client>/dev.conf --dev=all
 
 **Order matters**: Install Odoo requirements first to lock base versions.
 
+> **Recomendado: usa `uv`** — drop-in replacement de pip, 10-100x más rápido. Ver [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md).
+
 ```bash
 # 1. Activate environment
 source .venv/bin/activate
 
-# 2. Install Odoo dependencies first (locks cryptography, Pillow, lxml, etc.)
-pip install -r odoo/requirements.txt
+# 2. Install uv (una sola vez)
+pip install uv
 
-# 3. Install project dependencies (respects Odoo versions)
-pip install -r requirements.txt
+# 3. Install Odoo dependencies first (locks cryptography, Pillow, lxml, etc.)
+uv pip install -r odoo/requirements.txt
 
-# 4. Verify no conflicts
-pip check
+# 4. Install project dependencies (respects Odoo versions)
+uv pip install -r requirements.txt
+
+# 5. Verify no conflicts
+uv pip check
 ```
+
+> Si prefieres pip clásico, sustituye `uv pip` por `pip` en los pasos 3-5.
 
 ### Key Library Versions by Python
 
@@ -129,8 +155,8 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.13 virtual environment
-python3.13 -m venv .venv
+# Create Python 3.12 virtual environment
+python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
@@ -147,8 +173,8 @@ The `setup_env.sh` script prepares the development environment automatically.
 ### Usage
 
 ```bash
-./setup_env.sh                  # Install with Python 3.13 (default)
-./setup_env.sh -p 3.12          # Install with Python 3.12
+./setup_env.sh                  # Install with Python 3.12 (default)
+./setup_env.sh -p 3.13          # Install with Python 3.13
 ./setup_env.sh --help           # Show help
 ```
 
@@ -216,8 +242,8 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 | Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
 |--------------|-----------------|-----------------|
 | `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
-| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| `enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `design-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
 ### Sync Functionality (--sync)
 
@@ -254,455 +280,140 @@ Default PostgreSQL settings:
 - User: odoo
 - Password: odoo
 
+## Database Workflow Scripts (`scripts/`)
+
+Scripts en `scripts/` para acelerar el ciclo "DB limpia con módulos pre-instalados". Todos leen credenciales del `.conf` que les pases (default `config/l10n-pe/dev.conf`).
+
+| Script | Qué hace |
+|--------|----------|
+| `scripts/db-template-create.sh [TPL] [MODULES] [CONFIG]` | Crea un template Postgres con módulos pre-instalados (ej. `tpl_l10n_pe` con `base,web,l10n_pe`). Marca la DB como `datistemplate=true` y bloquea conexiones. Lento la primera vez. |
+| `scripts/db-clone-from-template.sh TPL NEW_DB [CONFIG]` | Clona una DB fresca desde el template en segundos (`CREATE DATABASE … TEMPLATE …`). Idempotente: si `NEW_DB` ya existe, la elimina primero. |
+| `scripts/clean-orphan-filestores.sh [--apply]` | Detecta filestores en `~/.local/share/Odoo/filestore/` cuya DB ya no existe en **ninguna** instancia Postgres conocida. Dry-run por defecto; `--apply` borra. Soporta multi-instancia vía `--instances-glob` o `--instance HOST:PORT:USER:PASS`. |
+
+**Workflow recomendado:**
+
+```bash
+# 1. Una sola vez (lento): seed un template con los módulos que reúsas
+./scripts/db-template-create.sh tpl_l10n_pe base,web,l10n_pe
+
+# 2. Repetido (~segundos): clonar DBs frescas para tests aislados
+./scripts/db-clone-from-template.sh tpl_l10n_pe pe_test_$(date +%Y%m%d)
+
+# 3. Periódicamente: liberar disco eliminando filestores huérfanos
+./scripts/clean-orphan-filestores.sh           # listar (dry-run)
+./scripts/clean-orphan-filestores.sh --apply   # borrar
+```
+
+## Linting & Pre-commit
+
+El repo ships con `.pre-commit-config.yaml` (Ruff v0.15.12 + ruff-format + OCA `pylint-odoo` v10) y excluye automáticamente `odoo/`, `enterprise/`, `design-themes/`, `industry/`, `vendor/`, `.venv/` y `migrations/`.
+
+```bash
+# Setup (una sola vez)
+pre-commit install
+
+# Sobre archivos staged (default, rápido)
+pre-commit run
+
+# Sobre archivos específicos
+pre-commit run --files src/dev/focuz-ai/<repo>/<module>/models/<file>.py
+
+# Ruff directo (linter + formatter)
+ruff check .                  # lint
+ruff check --fix .            # autofix
+ruff format .                 # format
+```
+
+**Configuración relevante:**
+- `ruff.toml`: `line-length=120`, reglas activas `E,F,B,SIM`, ignora `F401` en `__init__.py` y `B018` en `__manifest__.py`.
+- `pyproject.toml`: configuración de Pyright/Mypy (Mypy deshabilitado en práctica — Odoo no tiene type stubs).
+
+> **Nota:** No correr `pre-commit run --all-files` en la primera pasada — incluye archivos del repo que no han pasado por la convención y genera mucho ruido. Usar siempre staged o `--files`.
+
 ## Odoo Coding Guidelines
 
-> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
+Seguimos las [Odoo Coding Guidelines oficiales](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html). Esta sección lista solamente las **diferencias relevantes a Odoo 19** y los antipatrones donde Claude debe ser explícito.
 
-### Odoo 19 Específico
+### Reglas duras (no negociables)
 
-- Use `@api.model_create_multi` instead of `@api.model` for create methods
-- All models require `_description` attribute
-- Boolean field attributes must be actual booleans (`readonly=True` not `readonly="True"`)
-- No `_()` translation wrapper in class-level Selection field definitions
-- Related fields don't need `selection` redefinition
-- FontAwesome `<i>` tags require `title` attribute for accessibility
+| Regla | Por qué |
+|-------|---------|
+| `@api.model_create_multi` en vez de `@api.model` para `create()` | Estándar Odoo 16+; permite batch insert |
+| Todo modelo lleva `_description` | Validación interna lo exige |
+| `readonly=True` (bool), no `readonly="True"` (str) | El str se evalúa como truthy siempre |
+| **No** usar `_()` en `Selection` definidos a nivel clase | Odoo traduce automáticamente; envolverlo rompe la extracción |
+| **No** usar `self.env.cr.commit()` manual | Rompe la transacción del request |
+| Excepciones: capturar `UserError`/`ValidationError`, no `Exception` genérico | El catch genérico oculta bugs y rompe rollback |
+| Aislar bloques riesgosos con `with self.env.cr.savepoint():` | Evita corromper la transacción padre. Postgres limita a ~64 savepoints por txn |
+| `if collection:` no `if len(collection):` | Recordsets implementan `__bool__` |
 
-### Python - PEP8 con Excepciones
+### Convenciones de nombres (sólo lo Odoo-específico)
 
-Odoo sigue PEP8 excepto:
-- **E501:** Línea muy larga (permitido)
-- **E301:** Expected 1 blank line (relajado)
-- **E302:** Expected 2 blank lines (relajado)
+| Elemento | Convención |
+|----------|------------|
+| Modelo | `sale.order` (singular, dot-notation) |
+| Many2one | sufijo `_id` |
+| X2many | sufijo `_ids` |
+| Compute | `_compute_<field>` |
+| Default | `_default_<field>` |
+| Onchange | `_onchange_<field>` |
+| Constraint | `_check_<name>` |
+| Action | `action_<verb>` |
+| Vista heredada `name` | `<modelo>.<tipo>.inherit.<modulo>` |
 
-### Organización de Imports
+### Orden de atributos en un modelo (resumen)
 
-```python
-# 1. Librerías externas (stdlib primero, luego third-party)
-import base64
-import logging
-from datetime import datetime
+`_attrs` privados → métodos `_default_*` → `fields` → `_sql_constraints` → `_compute_*`/`_search_*` → `_selection_*` → `_check_*`/`_onchange_*` → CRUD overrides → `action_*` → métodos de negocio.
 
-# 2. Submódulos de Odoo
-from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_compare
-
-# 3. Imports de addons (raramente usado)
-from odoo.addons.sale.models.sale_order import SaleOrder
-```
-
-### Estructura de Modelos (Orden de Atributos)
+### Traducción con `_()`
 
 ```python
-class SaleOrder(models.Model):
-    # 1. Atributos privados
-    _name = 'sale.order'
-    _description = 'Sales Order'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
-    _order = 'date_order desc, id desc'
-
-    # 2. Métodos default y default_get
-    @api.model
-    def _default_warehouse_id(self):
-        return self.env['stock.warehouse'].search([], limit=1)
-
-    # 3. Declaración de campos
-    name = fields.Char(string='Order Reference', required=True, copy=False)
-    state = fields.Selection([
-        ('draft', 'Quotation'),
-        ('sent', 'Quotation Sent'),
-        ('sale', 'Sales Order'),
-        ('cancel', 'Cancelled'),
-    ], string='Status', default='draft', tracking=True)
-    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
-    order_line_ids = fields.One2many('sale.order.line', 'order_id', string='Order Lines')
-    amount_total = fields.Monetary(compute='_compute_amount', store=True)
-
-    # 4. Constraints SQL e índices
-    _sql_constraints = [
-        ('name_uniq', 'unique(name, company_id)', 'Order reference must be unique!'),
-    ]
-
-    # 5. Métodos compute, inverse, search (orden de campos)
-    @api.depends('order_line_ids.price_subtotal')
-    def _compute_amount(self):
-        for order in self:
-            order.amount_total = sum(order.order_line_ids.mapped('price_subtotal'))
-
-    # 6. Métodos selection
-    @api.model
-    def _selection_state(self):
-        return [('draft', 'Draft'), ('done', 'Done')]
-
-    # 7. Constraints y onchange
-    @api.constrains('partner_id')
-    def _check_partner(self):
-        for order in self:
-            if order.partner_id.is_blocked:
-                raise ValidationError(_('Partner is blocked!'))
-
-    @api.onchange('partner_id')
-    def _onchange_partner_id(self):
-        if self.partner_id:
-            self.pricelist_id = self.partner_id.property_product_pricelist
-
-    # 8. Overrides CRUD (create, read, write, unlink)
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            if not vals.get('name'):
-                vals['name'] = self.env['ir.sequence'].next_by_code('sale.order')
-        return super().create(vals_list)
-
-    # 9. Métodos action
-    def action_confirm(self):
-        self.ensure_one()
-        self.state = 'sale'
-        return True
-
-    # 10. Métodos de negocio
-    def _prepare_invoice(self):
-        self.ensure_one()
-        return {
-            'partner_id': self.partner_id.id,
-            'origin': self.name,
-        }
+_('Record %s cannot be modified!', record.name)            # ✅
+_('Hello %(name)s!', name=user.name)                       # ✅
+_('Record %s!') % record.name                              # ❌ formato fuera de _()
+fields.Selection([('draft', _('Draft'))])                  # ❌ en clase
 ```
 
-### Convenciones de Nombres
+### Estructura del módulo (esqueleto)
 
-| Elemento | Convención | Ejemplo |
-|----------|------------|---------|
-| **Modelo** | Singular, dot notation | `sale.order`, `res.partner` |
-| **Transient** | `<modelo>.action` | `sale.order.make.invoice` |
-| **Report** | `<modelo>.report.<action>` | `sale.report.order` |
-| **Variable modelo** | PascalCase | `Partner`, `SaleOrder` |
-| **Variable record** | snake_case | `partner`, `sale_order` |
-| **Campo Many2one** | Sufijo `_id` | `partner_id`, `order_id` |
-| **Campo X2many** | Sufijo `_ids` | `order_line_ids`, `tag_ids` |
-| **Método compute** | `_compute_<field>` | `_compute_amount_total` |
-| **Método search** | `_search_<field>` | `_search_product_id` |
-| **Método default** | `_default_<field>` | `_default_warehouse_id` |
-| **Método selection** | `_selection_<field>` | `_selection_state` |
-| **Método onchange** | `_onchange_<field>` | `_onchange_partner_id` |
-| **Método constraint** | `_check_<name>` | `_check_dates` |
-| **Método action** | `action_<verb>` | `action_confirm`, `action_cancel` |
+`__init__.py`, `__manifest__.py`, `models/`, `views/`, `security/` (`ir.model.access.csv` + groups + rules), `wizard/`, `data/`, `report/`, `controllers/`, `static/{description,src/{js,scss,xml}}/`, `tests/`. Un archivo por modelo principal; vistas en `<modelo>_views.xml`.
 
-### Buenas Prácticas Python
+### CSS/SCSS
 
-```python
-# ✅ Crear diccionarios con literales
-my_dict = {'foo': 3, 'bar': 4}
+Prefijo `o_<modulo>_` obligatorio en clases custom. Variables SCSS scoped con `$-name`, variables CSS para adaptaciones contextuales: `var(--Component-prop, #{$default})`.
 
-# ❌ Evitar .clone()
-new_dict = my_dict.clone()  # Mal
-new_dict = dict(my_dict)    # Bien
+### Permisos de archivos
 
-# ✅ Actualizar diccionarios
-my_dict.update(foo=3, bar=4)
-my_dict.setdefault('key', default_value)
-
-# ✅ Colecciones como booleanos
-if collection:      # Bien
-if len(collection): # Mal
-
-# ✅ Iterar diccionarios
-for key in my_dict:           # Bien (keys)
-for key, value in my_dict.items():  # Bien (items)
-for key in my_dict.keys():    # Innecesario
-
-# ✅ Usar context correctamente
-records.with_context(new_context).do_stuff()  # Reemplaza contexto
-records.with_context(**extra).do_stuff()      # Merge contexto
-```
-
-### Traducciones con `_()`
-
-```python
-# ✅ Correcto - string literal con parámetros
-error = _('Record %s cannot be modified!', record.name)
-message = _('Hello %(name)s!', name=user.name)
-
-# ❌ Incorrecto - formateo fuera de _()
-error = _('Record %s!') % record.name
-error = _('Record ' + name + '!')
-
-# ❌ Incorrecto - en definición de Selection a nivel clase
-state = fields.Selection([
-    ('draft', _('Draft')),  # MAL - no usar _() aquí
-])
-
-# ✅ Correcto - Selection sin _()
-state = fields.Selection([
-    ('draft', 'Draft'),     # BIEN - Odoo traduce automáticamente
-])
-```
-
-### Transacciones y Savepoints
-
-```python
-# ❌ NUNCA hacer commit manual
-self.env.cr.commit()  # PROHIBIDO
-
-# ✅ Usar savepoints para aislar excepciones
-try:
-    with self.env.cr.savepoint():
-        do_risky_stuff()
-except SpecificException:
-    # La transacción principal no se corrompe
-    handle_error()
-
-# ⚠️ Máximo ~64 savepoints por transacción (límite PostgreSQL)
-```
-
-### Excepciones
-
-```python
-# ❌ Evitar catch genérico
-try:
-    do_something()
-except Exception as e:
-    logger.warning(e)
-
-# ✅ Capturar excepciones específicas
-try:
-    do_something()
-except ValidationError:
-    # Manejar específicamente
-    pass
-except UserError as e:
-    # Manejar diferente
-    raise UserError(_('Error: %s', e))
-```
-
-### Estructura de Módulo
-
-```
-my_module/
-├── __init__.py
-├── __manifest__.py
-├── data/
-│   ├── my_module_data.xml      # Datos iniciales
-│   └── my_module_demo.xml      # Datos demo
-├── models/
-│   ├── __init__.py
-│   ├── sale_order.py           # Un archivo por modelo principal
-│   └── res_partner.py
-├── views/
-│   ├── sale_order_views.xml    # <modelo>_views.xml
-│   └── res_partner_views.xml
-├── security/
-│   ├── ir.model.access.csv     # Permisos CRUD
-│   ├── my_module_groups.xml    # Grupos de usuarios
-│   └── sale_order_security.xml # Record rules
-├── wizard/
-│   ├── __init__.py
-│   ├── sale_make_invoice.py
-│   └── sale_make_invoice_views.xml
-├── report/
-│   ├── sale_report.py          # SQL views
-│   └── sale_report_templates.xml
-├── controllers/
-│   └── my_module.py            # HTTP routes
-├── static/
-│   ├── description/
-│   │   └── icon.png
-│   └── src/
-│       ├── js/
-│       ├── scss/
-│       └── xml/
-└── tests/
-    ├── __init__.py
-    └── test_sale_order.py
-```
-
-### XML - IDs y Vistas
-
-```xml
-<!-- Formato: name antes de model, id al inicio -->
-<record id="sale_order_view_form" model="ir.ui.view">
-    <field name="name">sale.order.form</field>
-    <field name="model">sale.order</field>
-    <field name="arch" type="xml">
-        <form>
-            <!-- contenido -->
-        </form>
-    </field>
-</record>
-
-<!-- Naming de XML IDs -->
-<!-- Menús: <modelo>_menu -->
-<menuitem id="sale_order_menu" name="Sales Orders"/>
-
-<!-- Vistas: <modelo>_view_<tipo> -->
-<record id="sale_order_view_form" model="ir.ui.view"/>
-<record id="sale_order_view_tree" model="ir.ui.view"/>
-<record id="sale_order_view_kanban" model="ir.ui.view"/>
-
-<!-- Actions: <modelo>_action -->
-<record id="sale_order_action" model="ir.actions.act_window"/>
-
-<!-- Grupos: <modulo>_group_<nombre> -->
-<record id="sale_group_manager" model="res.groups"/>
-
-<!-- Rules: <modelo>_rule_<grupo> -->
-<record id="sale_order_rule_user" model="ir.rule"/>
-
-<!-- Herencia: mismo ID + .inherit en name -->
-<record id="sale_order_view_form" model="ir.ui.view">
-    <field name="name">sale.order.form.inherit.my_module</field>
-    <field name="inherit_id" ref="sale.sale_order_view_form"/>
-</record>
-```
-
-### CSS/SCSS Convenciones
-
-```scss
-// Prefijo obligatorio: o_<modulo>
-.o_sale_order_form {
-    // Variables SCSS scoped (block-level)
-    $-padding: 10px;
-
-    padding: $-padding;
-
-    .o_sale_order_header {
-        // CSS variables para adaptaciones contextuales
-        color: var(--SaleOrder-header-color, #{$o-sale-header-color});
-    }
-}
-
-// Orden de propiedades:
-// 1. Variables SCSS scoped
-// 2. CSS variables
-// 3. Position/layout
-// 4. Display
-// 5. Margin, width, border
-// 6. Padding, background
-// 7. Font, filter
-```
-
-### Permisos de Archivos
-
-| Tipo | Permiso |
-|------|---------|
-| Directorios | 755 |
-| Archivos | 644 |
+Directorios `755`, archivos `644`.
 
 ## Odoo Git Guidelines
 
-> **Fuente oficial:** https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
+Seguimos las [Odoo Git Guidelines oficiales](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html). Resumen de lo que aplica al día a día:
 
-### Formato de Mensaje de Commit
+### Formato de commit
 
 ```
-[TAG] module: short description (ideally < 50 chars)
+[TAG] module: descripción corta (< 50 chars)
 
-Long description explaining WHY the change was made,
-including rationale and technical decisions.
+Descripción larga explicando POR QUÉ se hizo el cambio.
 
-References: task-123, Fixes #123, opw-123
+References: task-123, Fixes #123
 ```
 
-**Principios clave:**
-- **Enfócate en el POR QUÉ, no en el QUÉ** - El diff muestra qué cambió, el mensaje debe explicar por qué
-- **El header debe formar una oración válida:** "if applied, this commit will [header]"
-- **Un módulo por commit** - Evita commits que impacten múltiples módulos (para permitir reverts independientes)
-- **Usa nombres técnicos** - Nombres de módulos técnicos, no funcionales
+- **El header debe formar oración válida:** "if applied, this commit will [header]"
+- **Un módulo por commit** — permite reverts independientes
+- El POR QUÉ va en el body; el diff ya muestra el QUÉ
 
-### Tags de Commit (Prefijos)
+### Tags más usados
 
-| Tag | Uso | Ejemplo |
-|-----|-----|---------|
-| `[FIX]` | Bug fixes (stable o desarrollo reciente) | `[FIX] sale: correct discount calculation` |
-| `[IMP]` | Mejoras incrementales (más común) | `[IMP] stock: add batch picking support` |
-| `[ADD]` | Nuevos módulos | `[ADD] l10n_pe_edi: Peruvian electronic invoicing` |
-| `[REF]` | Refactoring de features | `[REF] account: split invoice logic into mixins` |
-| `[REM]` | Eliminar código muerto, vistas o módulos | `[REM] sale: remove deprecated workflow` |
-| `[REV]` | Revertir commits | `[REV] stock: revert batch changes (breaks X)` |
-| `[MOV]` | Mover archivos (preserva historial git) | `[MOV] web: move static assets to new structure` |
-| `[REL]` | Commits de release (major/minor) | `[REL] 18.0` |
-| `[MERGE]` | Merge commits y forward ports | `[MERGE] 17.0 into 18.0` |
-| `[CLA]` | Firma de Contributor License Agreement | `[CLA] sign individual CLA` |
-| `[I18N]` | Cambios en archivos de traducción | `[I18N] l10n_pe: update Spanish translations` |
-| `[PERF]` | Mejoras de performance | `[PERF] stock: optimize quant queries` |
-| `[CLN]` | Limpieza de código | `[CLN] sale: remove unused imports` |
-| `[LINT]` | Pasadas de linting | `[LINT] account: fix pylint warnings` |
+`[FIX]` bug · `[IMP]` mejora incremental (el más común) · `[ADD]` nuevo módulo · `[REF]` refactor · `[REM]` borrar · `[REV]` revertir · `[MOV]` mover archivos (preserva git history) · `[I18N]` traducciones · `[PERF]` performance · `[CLN]` limpieza · `[LINT]` linting · `[MERGE]` merges/forward-ports · `[CLA]` firma CLA · `[REL]` release.
 
-### Nombrado de Branches
+### Branches y PR
 
-```bash
-# Formato: <base-branch>-<descripcion>
-18.0-fix-invoice-discount
-18.0-add-batch-picking
-master-improve-stock-valuation
-
-# Para empleados de Odoo, agregar handle:
-18.0-fix-invoice-discount-abc
-```
-
-### Ejemplos de Buenos Commits
-
-**Bug fix:**
-```
-[FIX] sale: correct discount calculation on multi-line orders
-
-When applying a global discount to orders with multiple lines,
-the discount was being applied twice to lines with quantity > 1.
-
-This was caused by the discount computation being called both
-in _compute_amount and in the line's _compute_discount method.
-
-The fix moves all discount logic to _compute_amount to ensure
-single computation.
-
-Fixes #12345
-```
-
-**Mejora:**
-```
-[IMP] stock: add batch transfer support for warehouse operations
-
-Large warehouses need to process multiple transfers simultaneously
-to improve picking efficiency. This adds:
-- Batch transfer model to group pickings
-- Batch picking wizard
-- Batch validation with partial support
-
-task-456789
-```
-
-**Nuevo módulo:**
-```
-[ADD] l10n_pe_edi: Peruvian electronic invoicing module
-
-Adds support for SUNAT electronic documents:
-- Factura electrónica (invoice)
-- Boleta electrónica (ticket)
-- Nota de crédito/débito
-- Guía de remisión
-
-Includes UBL 2.1 XML generation and SOAP web service integration.
-```
-
-### PR Guidelines
-
-1. **Base branch:** Usar `master` para nuevas features, `X.0` para bug fixes
-2. **Título del PR:** Mismo formato que el commit principal
-3. **Descripción:** Incluir contexto, screenshots si aplica, y pasos de testing
-4. **CLA:** Firmar el CLA antes de contribuir (doc/cla/individual/)
-5. **Allow edits:** Habilitar "Allow edits from maintainer"
-
-### Git Config Recomendado
-
-```bash
-# Configurar identidad
-git config --global user.name "Harrison Chumpitaz"
-git config --global user.email "hchumpitaz92@gmail.com"
-
-# Configurar remotes para contribuir
-git remote add upstream https://github.com/odoo/odoo.git
-git remote add origin https://github.com/focuz-ai/odoo.git
-```
+- Branch: `<base>-<descripcion>` (ej. `19.0-fix-invoice-discount`).
+- Base branch: `master` para features, `X.0` para fixes en versión estable.
+- PR title = mismo formato del commit. Habilitar "Allow edits from maintainer".
+- Para contribuir upstream: firmar el CLA en `odoo/doc/cla/individual/<github_username>.md` con tag `[CLA]`.
 
 ## Git Submodule Management
 
@@ -792,7 +503,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
     "reportMissingModuleSource": false,
     "reportUnknownMemberType": false,
     "reportUnknownArgumentType": false,
-    "extraPaths": ["odoo", "odoo/addons", "odoo-enterprise"]
+    "extraPaths": ["odoo", "odoo/addons", "enterprise"]
 }
 ```
 
@@ -815,8 +526,8 @@ name = "Odoo 19"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/odoo-enterprise",
-    "${workspaceFolder}/odoo-themes",
+    "${workspaceFolder}/enterprise",
+    "${workspaceFolder}/design-themes",
 ]
 ```
 
@@ -989,7 +700,7 @@ Variables de entorno para desarrollo Odoo. Copiar de `.env.example` y configurar
 ```bash
 # Odoo Runtime Configuration
 ODOO_RC=config/<client>/dev.conf
-PYTHONPATH=odoo:odoo-enterprise
+PYTHONPATH=odoo:enterprise
 
 # Locale Settings (Peruvian Spanish)
 LANG=es_PE.UTF-8

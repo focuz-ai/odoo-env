@@ -14,7 +14,7 @@ DISTRO=""
 DISTRO_VERSION=""
 CODENAME=""
 ARCH=""
-PYTHON_VERSION="3.13"
+PYTHON_VERSION="3.12"
 PYTHON_MIN_VERSION=10
 PYTHON_MAX_VERSION=14
 ODOO_TAG=""
@@ -32,12 +32,12 @@ Uso: $0 [opciones]
 
 Opciones:
   -p, --python VERSION    Versión de Python a instalar (3.10 - 3.14)
-                          Por defecto: 3.13
+                          Por defecto: 3.12
   -h, --help              Mostrar esta ayuda
 
 Ejemplos:
-  $0                      Instalar con Python 3.13 (por defecto)
-  $0 -p 3.12              Instalar con Python 3.12
+  $0                      Instalar con Python 3.12 (por defecto)
+  $0 -p 3.13              Instalar con Python 3.13
   $0 --python 3.11        Instalar con Python 3.11
 
 Distribuciones soportadas:
@@ -121,7 +121,7 @@ validate_python_version() {
         read -p "¿Desea continuar con Python $version? [s/N] " -n 1 -r
         echo ""
         if [[ ! $REPLY =~ ^[SsYy]$ ]]; then
-            log_info "Instalación cancelada. Use: $0 -p 3.13"
+            log_info "Instalación cancelada. Use: $0 -p 3.12"
             exit 0
         fi
     fi
