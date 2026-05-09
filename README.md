@@ -38,7 +38,7 @@ config/
 ### Estructura de módulos
 ```
 src/
-├── dev/                      # Development Addons 
+├── dev/                      # Development Addons
 │   └── focuz-ai/             # Organization
 │       ├── repository_1/     # repository 1
 │       └── repository_2/     # repository 2
@@ -46,7 +46,7 @@ src/
     ├── client_1/             # Client 1
     │   ├── dev/              # Staging branch
     │   ├── main/             # Main branch
-    │   └── temp/             # Temp branch        
+    │   └── temp/             # Temp branch
     └── client_2/             # Client 2
 ```
 # Guía de configuración rápida:
@@ -179,7 +179,7 @@ Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
 ```json
 "claudeCode.environmentVariables": [
     "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
-    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/enterprise",
     "LANG=es_PE.UTF-8",
     "TZ=America/Lima"
 ]
@@ -373,12 +373,16 @@ chmod +x clone-addons.sh
 | Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
 |---------------|-----------------|-----------------|
 | `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
-| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| `enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| `design-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
 > **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
 
 # Crear entorno virtual e instalar dependencias
+
+> **Recomendado:** usa [`uv`](https://github.com/astral-sh/uv) en lugar de `pip` — drop-in replacement, 10-100x más rápido. Detalles y benchmarks en [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
+>
+> Si prefieres `pip` clásico, sustituye `uv pip` por `pip` en los comandos siguientes.
 
 ## Odoo 16 con Python 3.12 (Recomendado)
 
@@ -389,13 +393,16 @@ chmod +x clone-addons.sh
 python3.12 -m venv .venv
 source .venv/bin/activate
 
+# Instalar uv (una sola vez)
+pip install uv
+
 # Instalar dependencias
-pip install --upgrade pip setuptools wheel
-pip install -r odoo/requirements.txt
-pip install -r requirements.txt
+uv pip install --upgrade pip setuptools wheel
+uv pip install -r odoo/requirements.txt
+uv pip install -r requirements.txt
 
 # Verificar instalación
-pip check
+uv pip check
 ```
 
 **Versiones clave instaladas:**
@@ -421,11 +428,11 @@ ERROR: Failed to build 'gevent' when getting requirements to build wheel
 ```bash
 python3.10 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
-pip install "setuptools<70" wheel "Cython<3"
-pip install -r odoo/requirements.txt --no-build-isolation
-pip install -r requirements.txt
-pip check
+pip install --upgrade pip uv
+uv pip install "setuptools<70" wheel "Cython<3"
+uv pip install -r odoo/requirements.txt --no-build-isolation
+uv pip install -r requirements.txt
+uv pip check
 ```
 
 </details>
@@ -437,9 +444,10 @@ Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
 ```bash
 python3.13 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip setuptools wheel
-pip install -r odoo/requirements.txt
-pip install -r requirements.txt
+pip install uv
+uv pip install --upgrade pip setuptools wheel
+uv pip install -r odoo/requirements.txt
+uv pip install -r requirements.txt
 ```
 
 ## Desactivar entorno virtual
@@ -481,7 +489,7 @@ IPython es un shell interactivo de Python que proporciona funciones avanzadas co
 
 Instala IPython en tu sistema:
 ```bash
-pip install ipython
+uv pip install ipython
 ```
 
 Ahora que IPython está instalado, ejecutar:

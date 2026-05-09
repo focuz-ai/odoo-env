@@ -1,5 +1,11 @@
 <h1>Tabla de contenido</h1>
 
+## Documentos relacionados
+
+- [**Optimización del entorno de desarrollo**](dev-environment-optimization.md) — Postgres dev mode, `uv`, templates de DB, VSCode, Git, pytest-odoo, etc.
+
+## Índice de esta guía
+
 - [Gestión de submódulos (sub-proyecto o sub-repositorio)](#gestión-de-submódulos-sub-proyecto-o-sub-repositorio)
   - [Cómo agregar un nuevo submódulo](#cómo-agregar-un-nuevo-submódulo)
   - [Cómo descargar actualizaciones de superproyectos](#cómo-descargar-actualizaciones-de-superproyectos)
@@ -204,7 +210,7 @@ Haga que push sea predeterminado en --recurse-submodules = on-demand:
 Haga que todos los comandos (excepto clone) estén predeterminados en --recurse-submodules si admiten la bandera (esto funciona para git pull desde Git 2.15):
 
     git config --global submodule.recurse true
-    
+
 # Extras de GIT
 ## Múltiples ubicaciones remotas donde el repositorio está almacenado
 
