@@ -34,10 +34,11 @@
 - Campos eliminados → migración de datos.
 
 ## Ejecutar tests
-Patrón típico (la db, addons y test_tags salen del `config/<cliente>/dev.conf`;
-`odoo-bin` de la raíz del entorno):
+`addons_path`/conexión salen del `config/<cliente>/dev.conf` y `odoo-bin` de la raíz
+del entorno. **La BD destino NO está en el `dev.conf`**: la define el target en
+`.vscode/launch.json` (`--db-filter`/`-d`); tómala de ahí. Patrón típico:
 ```bash
-odoo-bin -c config/<cliente>/dev.conf -d <db> -i <modulo> --test-enable --stop-after-init
+odoo-bin -c config/<cliente>/dev.conf -d <BD-del-target> -i <modulo> --test-enable --stop-after-init
 # usa -u <modulo> si ya está instalado
 ```
-Si falta la configuración, pídela; no inventes el comando.
+Si falta la configuración o la BD, pídela; no inventes el comando.
