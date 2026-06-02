@@ -2,9 +2,10 @@
 
 > Fuente oficial: https://www.odoo.com/documentation/18.0/contributing/development/git_guidelines.html
 >
-> Aplica a contribuciones a Odoo community/enterprise y a los repos del entorno. El
-> flujo Spec-Driven de los módulos focuz-ai usa **Conventional Commits** con
-> `Refs: <ticket>` (lo aplica `/odoo-commit`); no mezcles ambos estilos en un repo.
+> **Estándar único de commits del proyecto**: este formato (`[TAG] module: …`) se usa
+> en TODO — módulos focuz-ai y contribuciones a Odoo. No uses Conventional Commits.
+> El ticket de Jira/Plane va en el footer de referencias (`Refs: <ticket>`); lo aplica
+> `/odoo-commit`.
 
 ## Formato del mensaje
 ```
