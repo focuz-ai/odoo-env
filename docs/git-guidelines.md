@@ -1,66 +1,75 @@
-# Git guidelines — Odoo 18.0
+# Git guidelines — Odoo 18.0 (commits estilo Odoo)
 
 > Fuente oficial: https://www.odoo.com/documentation/18.0/contributing/development/git_guidelines.html
 >
-> Estas son las convenciones **estilo Odoo upstream** (commits con `[TAG]`), útiles al
-> contribuir a community/enterprise o a los repos del entorno. El flujo Spec-Driven de
-> los módulos focuz-ai usa **Conventional Commits** con `Refs: <ticket>` (lo aplica
-> `/odoo-commit`); no mezcles ambos estilos en un mismo repo.
+> Aplica a contribuciones a Odoo community/enterprise y a los repos del entorno. El
+> flujo Spec-Driven de los módulos focuz-ai usa **Conventional Commits** con
+> `Refs: <ticket>` (lo aplica `/odoo-commit`); no mezcles ambos estilos en un repo.
 
-## Formato de mensaje de commit
+## Formato del mensaje
 ```
 [TAG] module: short description (ideally < 50 chars)
 
 Long description explaining WHY the change was made,
-including rationale and technical decisions.
+including rationale and feature context.
 
-References: task-123, Fixes #123, opw-123
+References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 ```
 
-Principios clave:
-- **Enfócate en el POR QUÉ, no en el QUÉ** — el diff muestra qué cambió.
-- El header debe formar una oración válida: "if applied, this commit will [header]".
-- **Un módulo por commit** (permite reverts independientes).
-- Usa nombres técnicos de módulo, no funcionales.
+## Principios
+- **POR QUÉ, no QUÉ**: el diff ya muestra qué cambió; el mensaje explica el motivo y
+  las decisiones técnicas. Sé verboso — el mensaje es tu documentación.
+- El header debe formar una oración válida: *"if applied, this commit will [header]"*.
+- Usa el **nombre técnico** del módulo, no el funcional.
+- **Un módulo por commit** siempre que se pueda (permite reverts/cherry-picks limpios);
+  evita cambios cross-módulo en un mismo commit.
+- Evita descripciones de una palabra como "bugfix" o "improvements".
+- Incluye **referencias**: nº de tarea, issues/PR de GitHub, tickets OPW.
 
-## Tags de commit
+## Tags
 | Tag | Uso |
 |-----|-----|
-| `[FIX]` | Bug fixes |
-| `[IMP]` | Mejoras incrementales (el más común) |
-| `[ADD]` | Nuevos módulos |
-| `[REF]` | Refactoring de features |
-| `[REM]` | Eliminar código/vistas/módulos muertos |
+| `[FIX]` | Corrección de bugs |
+| `[REF]` | Refactoring; features reescritas a fondo |
+| `[ADD]` | Módulos nuevos |
+| `[REM]` | Eliminar recursos (código muerto, vistas, módulos) |
 | `[REV]` | Revertir commits |
-| `[MOV]` | Mover archivos (preserva historial) |
-| `[REL]` | Commits de release |
-| `[MERGE]` | Merge commits y forward ports |
-| `[CLA]` | Firma del CLA |
-| `[I18N]` | Cambios en traducciones |
-| `[PERF]` | Mejoras de performance |
+| `[MOV]` | Mover archivos o código entre archivos (sin cambios funcionales) |
+| `[REL]` | Commits de release (versiones major/minor) |
+| `[IMP]` | Mejoras incrementales (el más común) |
+| `[MERGE]` | Merge commits; forward-ports de fixes |
+| `[CLA]` | Firma del Contributor License Agreement |
+| `[I18N]` | Cambios en archivos de traducción |
+| `[PERF]` | Parches de rendimiento |
 | `[CLN]` | Limpieza de código |
 | `[LINT]` | Pasadas de linting |
 
-## Nombrado de ramas
-```
-<base-branch>-<descripcion>     # 18.0-fix-invoice-discount, master-improve-stock
-<base-branch>-<descripcion>-<handle>   # empleados de Odoo
-```
-
-## Ejemplo
-```
-[FIX] sale: correct discount calculation on multi-line orders
-
-When applying a global discount to orders with multiple lines, the
-discount was applied twice. Moves all discount logic to _compute_amount
-to ensure single computation.
-
-Fixes #12345
+## Config de git
+Define `user.email` y `user.name` en tu git local antes de commitear:
+```bash
+git config --global user.email "<tu-email>"
+git config --global user.name  "<tu-nombre>"
 ```
 
-## PR guidelines
-1. Base branch: `master` para features, `X.0` para bug fixes.
-2. Título del PR: mismo formato que el commit principal.
-3. Descripción: contexto, screenshots si aplica, pasos de testing.
-4. Firmar el CLA antes de contribuir.
-5. Habilitar "Allow edits from maintainer".
+## Ejemplos (oficiales)
+```
+[REF] models: use `parent_path` to implement parent_store
+
+This replaces the former modified preorder tree traversal (MPPT) with the
+fields `parent_left`/`parent_right`[...]
+```
+```
+[FIX] account: remove frenglish
+
+[...]
+
+Closes #22793
+Fixes #22769
+```
+```
+[FIX] website: remove unused alert div, fixes look of input-group-btn
+
+Bootstrap's CSS depends on the input-group-btn element being the first/last
+child of its parent. This was not the case because of the invisible
+and useless alert.
+```
