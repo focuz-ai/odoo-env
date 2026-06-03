@@ -7,6 +7,15 @@ Antes de crear, busca en el fuente qué heredar o reutilizar: `_inherit`, `_inhe
 o mixins (`mail.thread`, `mail.activity.mixin`, `portal.mixin`, `rating.mixin`,
 `utm.mixin`). Extiende en lugar de duplicar. Sigue el mapa de reúso de la propuesta.
 
+## Programación en Odoo (principios)
+- **Pensar en extensible**: diseña para herencia/override. Llama a `super()`, divide
+  en métodos pequeños y sobreescribibles, y no hardcodees lógica en métodos base que
+  otros módulos puedan necesitar extender (refuerza «reúso primero»).
+- **Propaga el contexto**: pasa/mezcla el `context` en las llamadas
+  (`records.with_context(**extra).do_stuff()`) para preservar preferencias y entorno.
+- Ver también en [orm-performance.md](orm-performance.md): nunca `commit()` manual,
+  captura de excepciones específica e idioms de Python.
+
 ## Específico de Odoo 18
 - Usa `@api.model_create_multi` en los `create` (no `@api.model`).
 - Todo modelo requiere `_description`.
