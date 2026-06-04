@@ -46,12 +46,36 @@ my_module/
 ```
 
 ## Manifest (`__manifest__.py`)
+- `license`: **`OPL-1`** siempre (estándar del proyecto; no AGPL/LGPL de OCA ni OEEL-1 de EE).
+- `author`: **`"Focuz AI S.A.C."`**; `website` de Focuz.
 - `version` con formato **`18.0.x.y.z`**.
+- `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
 - `data` en orden correcto: **security antes** de las vistas que lo usan.
-- `license`: `OPL-1` si depende de Enterprise; `LGPL-3` si es solo CE.
 - `assets` declarados en el bundle correcto (ver [frontend-owl.md](frontend-owl.md)).
 - Datos demo en `demo`, nunca en `data`.
+
+## Cabecera y licencia de archivos
+Cabecera de copyright + licencia en cada `.py` (estilo OCA, con la licencia y el autor
+del proyecto). Sin `# -*- coding: utf-8 -*-` (innecesario en Python 3):
+```python
+# Copyright <año> Focuz AI S.A.C.
+# License OPL-1 (https://www.odoo.com/documentation/user/legal/licenses.html#odoo-apps).
+```
+
+## Calidad y formato (estándar OCA, sin conflicto con EE)
+Convenciones de OCA que adoptamos (solo licencia/autor se sobreescriben a OPL-1 /
+Focuz AI S.A.C.):
+- **Formato**: `ruff` + `ruff-format`; `isort` con secciones
+  `stdlib → third-party → odoo → odoo.addons → first-party/local`; mccabe ≤ 16;
+  longitud de línea según `ruff` (OCA usa 88).
+- **Lint Odoo**: `pylint-odoo` (manifest, XML, CSV, `.po`).
+- **pre-commit**: `trailing-whitespace`, `end-of-file-fixer`, `check-xml`, checks de `.po`.
+- **editorconfig**: indent 4 (`.py`/`.xml`), 2 (`.json`/`.yml`/`.rst`/`.md`), UTF-8,
+  newline final, sin espacios finales.
+- **Doc del módulo (OCA)**: fragmentos en `readme/` (`DESCRIPTION`, `USAGE`, `CONFIGURE`,
+  `CONTRIBUTORS`) que generan `README.rst` (`oca-gen-addon-readme`). No usado por EE,
+  pero sin conflicto.
 
 ## Organización de imports
 ```python

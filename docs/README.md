@@ -23,7 +23,7 @@
 ## Específico de Odoo 18.0
 - Tests web: **HOOT** (`@odoo/hoot`), **NO QUnit** (solo heredado en `static/tests/legacy/`).
 - Frontend: **OWL 2** (`@odoo/owl`).
-- `version` del manifest con formato **`18.0.x.y.z`**; `license` `OPL-1` (depende de EE) o `LGPL-3` (solo CE).
+- `version` del manifest con formato **`18.0.x.y.z`**; `license` **`OPL-1`** y `author` **`"Focuz AI S.A.C."`** (siempre).
 - Para APIs dudosas, verifica contra el fuente de **esta** versión (community/enterprise), de solo lectura.
 
 ## Fuentes oficiales
