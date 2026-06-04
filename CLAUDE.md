@@ -330,90 +330,24 @@ ruff format .                 # format
 
 > **Nota:** No correr `pre-commit run --all-files` en la primera pasada — incluye archivos del repo que no han pasado por la convención y genera mucho ruido. Usar siempre staged o `--files`.
 
-## Odoo Coding Guidelines
+## Odoo Coding & Git Guidelines
 
-Seguimos las [Odoo Coding Guidelines oficiales](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html). Esta sección lista solamente las **diferencias relevantes a Odoo 19** y los antipatrones donde Claude debe ser explícito.
+Los estándares de desarrollo (coding guidelines, ORM/rendimiento, seguridad, OWL/SCSS,
+testing) y las git guidelines viven ahora en **[`docs/`](docs/README.md)** — única
+fuente de verdad, estandarizada con la plantilla del sistema `odoo-openspec`:
 
-### Reglas duras (no negociables)
+| Tema | Documento |
+|------|-----------|
+| Convenciones, estructura de módulo, orden de atributos, naming, XML, SCSS, i18n, permisos | [docs/conventions.md](docs/conventions.md) |
+| ORM, N+1, computes, índices, SQL, transacciones/savepoints, excepciones | [docs/orm-performance.md](docs/orm-performance.md) |
+| ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores | [docs/security.md](docs/security.md) |
+| OWL 2, QWeb-JS, assets/registry, widgets, SCSS, tests del web client | [docs/frontend-owl.md](docs/frontend-owl.md) |
+| TransactionCase/HttpCase + framework JS de la versión, trazabilidad, upgrade-safety | [docs/testing.md](docs/testing.md) |
+| Formato de commit, tags, ramas, PR (estilo Odoo) | [docs/git-guidelines.md](docs/git-guidelines.md) |
 
-| Regla | Por qué |
-|-------|---------|
-| `@api.model_create_multi` en vez de `@api.model` para `create()` | Estándar Odoo 16+; permite batch insert |
-| Todo modelo lleva `_description` | Validación interna lo exige |
-| `readonly=True` (bool), no `readonly="True"` (str) | El str se evalúa como truthy siempre |
-| **No** usar `_()` en `Selection` definidos a nivel clase | Odoo traduce automáticamente; envolverlo rompe la extracción |
-| **No** usar `self.env.cr.commit()` manual | Rompe la transacción del request |
-| Excepciones: capturar `UserError`/`ValidationError`, no `Exception` genérico | El catch genérico oculta bugs y rompe rollback |
-| Aislar bloques riesgosos con `with self.env.cr.savepoint():` | Evita corromper la transacción padre. Postgres limita a ~64 savepoints por txn |
-| `if collection:` no `if len(collection):` | Recordsets implementan `__bool__` |
-
-### Convenciones de nombres (sólo lo Odoo-específico)
-
-| Elemento | Convención |
-|----------|------------|
-| Modelo | `sale.order` (singular, dot-notation) |
-| Many2one | sufijo `_id` |
-| X2many | sufijo `_ids` |
-| Compute | `_compute_<field>` |
-| Default | `_default_<field>` |
-| Onchange | `_onchange_<field>` |
-| Constraint | `_check_<name>` |
-| Action | `action_<verb>` |
-| Vista heredada `name` | `<modelo>.<tipo>.inherit.<modulo>` |
-
-### Orden de atributos en un modelo (resumen)
-
-`_attrs` privados → métodos `_default_*` → `fields` → `_sql_constraints` → `_compute_*`/`_search_*` → `_selection_*` → `_check_*`/`_onchange_*` → CRUD overrides → `action_*` → métodos de negocio.
-
-### Traducción con `_()`
-
-```python
-_('Record %s cannot be modified!', record.name)            # ✅
-_('Hello %(name)s!', name=user.name)                       # ✅
-_('Record %s!') % record.name                              # ❌ formato fuera de _()
-fields.Selection([('draft', _('Draft'))])                  # ❌ en clase
-```
-
-### Estructura del módulo (esqueleto)
-
-`__init__.py`, `__manifest__.py`, `models/`, `views/`, `security/` (`ir.model.access.csv` + groups + rules), `wizard/`, `data/`, `report/`, `controllers/`, `static/{description,src/{js,scss,xml}}/`, `tests/`. Un archivo por modelo principal; vistas en `<modelo>_views.xml`.
-
-### CSS/SCSS
-
-Prefijo `o_<modulo>_` obligatorio en clases custom. Variables SCSS scoped con `$-name`, variables CSS para adaptaciones contextuales: `var(--Component-prop, #{$default})`.
-
-### Permisos de archivos
-
-Directorios `755`, archivos `644`.
-
-## Odoo Git Guidelines
-
-Seguimos las [Odoo Git Guidelines oficiales](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html). Resumen de lo que aplica al día a día:
-
-### Formato de commit
-
-```
-[TAG] module: descripción corta (< 50 chars)
-
-Descripción larga explicando POR QUÉ se hizo el cambio.
-
-References: task-123, Fixes #123
-```
-
-- **El header debe formar oración válida:** "if applied, this commit will [header]"
-- **Un módulo por commit** — permite reverts independientes
-- El POR QUÉ va en el body; el diff ya muestra el QUÉ
-
-### Tags más usados
-
-`[FIX]` bug · `[IMP]` mejora incremental (el más común) · `[ADD]` nuevo módulo · `[REF]` refactor · `[REM]` borrar · `[REV]` revertir · `[MOV]` mover archivos (preserva git history) · `[I18N]` traducciones · `[PERF]` performance · `[CLN]` limpieza · `[LINT]` linting · `[MERGE]` merges/forward-ports · `[CLA]` firma CLA · `[REL]` release.
-
-### Branches y PR
-
-- Branch: `<base>-<descripcion>` (ej. `19.0-fix-invoice-discount`).
-- Base branch: `master` para features, `X.0` para fixes en versión estable.
-- PR title = mismo formato del commit. Habilitar "Allow edits from maintainer".
-- Para contribuir upstream: firmar el CLA en `odoo/doc/cla/individual/<github_username>.md` con tag `[CLA]`.
+> Los agentes IA del flujo resuelven `docs/<tema>.md` contra este `docs/` (estándar de
+> la versión activa). El resto de este `CLAUDE.md` cubre el **entorno** (Python, deps,
+> IDE, etc.), no el código del módulo.
 
 ## Git Submodule Management
 
