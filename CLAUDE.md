@@ -309,11 +309,11 @@ Scripts en `scripts/` para acelerar el ciclo "DB limpia con módulos pre-instala
 
 El repo ships con `.pre-commit-config.yaml` (Ruff v0.15.12 + ruff-format + OCA `pylint-odoo` v10) y excluye automáticamente `odoo/`, `enterprise/`, `design-themes/`, `industry/`, `vendor/`, `.venv/` y `migrations/`.
 
-**Format-on-save (workspace `o19-env`):** Python → Ruff (`.vscode/settings.json`). Markdown, XML, YAML, JSON → Prettier vía extensión **Run on Save** (`.vscode/prettier-format-on-save.sh`; requiere `npm ci` en la raíz del env y ext. `emeraldwalk.runonsave`). Abre siempre la carpeta **`o19-env`** como workspace, no un subrepo suelto.
+**Format-on-save (workspace `o19-env`):** Python → Ruff. Markdown, XML, YAML, JSON → extensión **Prettier** (`esbenp.prettier-vscode`) con `editor.formatOnSave` en `.vscode/settings.json`. Abre **`o19-env.code-workspace`** o la carpeta **`o19-env`** (no un subrepo suelto). Una vez: `npm ci` en la raíz del env.
 
 ```bash
 # Setup (una sola vez)
-npm ci                        # Prettier en node_modules/ (format-on-save)
+npm ci                        # Prettier en node_modules/
 pre-commit install
 
 # Sobre archivos staged (default, rápido)

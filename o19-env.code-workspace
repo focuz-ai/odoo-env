@@ -1,0 +1,44 @@
+{
+  "folders": [
+    {
+      "name": "o19-env",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "prettier.enable": true,
+    "prettier.requireConfig": false,
+    "prettier.prettierPath": "${workspaceFolder}/node_modules/prettier/bin/prettier.cjs",
+    "prettier.configPath": "${workspaceFolder}/prettier.config.cjs",
+    "prettier.documentSelectors": ["**/*"],
+    "editor.formatOnSaveMode": "file",
+    "[markdown]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[xml]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[yaml]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[python]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "ruff.lineLength": 120
+  },
+  "extensions": {
+    "recommendations": ["esbenp.prettier-vscode", "charliermarsh.ruff"]
+  }
+}

@@ -266,49 +266,42 @@
     "editor.rename.enablePreview": true,
 
     // ═══════════════════════════════════════════════════════════════
-    // Prettier — all dev addons from o19-env workspace (Run on Save + extension)
-    // One-time: npm ci at o19-env root. Extension: emeraldwalk.runonsave + esbenp.prettier-vscode
+    // Prettier — format-on-save for .md/.xml/.yaml/.json (o19-env workspace)
+    // Requires: npm ci at o19-env root + ext. esbenp.prettier-vscode
+    // Open folder o19-env (or o19-env.code-workspace), not a subrepo alone.
     // ═══════════════════════════════════════════════════════════════
     "prettier.enable": true,
     "prettier.requireConfig": false,
     "prettier.prettierPath": "${workspaceFolder}/node_modules/prettier/bin/prettier.cjs",
+    "prettier.configPath": "${workspaceFolder}/prettier.config.cjs",
     "prettier.documentSelectors": ["**/*"],
     "editor.formatOnSaveMode": "file",
-    "emeraldwalk.runonsave": {
-        "commands": [
-            {
-                "match": "\\.(css|htm|html|js|json|jsx|less|md|scss|toml|ts|tsx|xml|yaml|yml)$",
-                "notMatch": "(^|[\\\\/])(odoo|enterprise|design-themes|vendor|node_modules|\\.venv)([\\\\/]|$)",
-                "cmd": "bash \"${workspaceFolder}/.vscode/prettier-format-on-save.sh\" \"${file}\""
-            }
-        ]
-    },
     "[markdown]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[xml]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[yaml]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[json]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[jsonc]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[css]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[html]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
 

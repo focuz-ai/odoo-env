@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
-# Run Prettier on a single saved file (Run on Save hook). Skips vendored trees.
+# Optional: format one file with workspace Prettier (same rules as format-on-save).
 set -euo pipefail
 
-file=${1:?missing file argument}
-
-case "$file" in
-  *"/odoo/"* | *"/enterprise/"* | *"/design-themes/"* | *"/vendor/"* | *"/node_modules/"* | *"/.venv/"*)
-    exit 0
-    ;;
-esac
-
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-prettier="${root}/node_modules/.bin/prettier"
-
-if [[ ! -x "$prettier" ]]; then
-    echo "Run 'npm ci' in ${root} to enable Prettier format-on-save." >&2
-    exit 0
+file=${1:?usage: format-on-save.sh <file>}
+if [[ ! -f "$file" ]]; then
+  echo "Not a file: $file" >&2
+  exit 1
 fi
 
-"$prettier" --write --ignore-unknown "$file"
+file_abs="$(realpath "$file")"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Skip vendored trees at o19-env root only (not src/dev/focuz-ai/enterprise).
+for skip in odoo enterprise design-themes vendor node_modules .venv; do
+  if [[ "$file_abs" == "${root}/${skip}" ]] || [[ "$file_abs" == "${root}/${skip}/"* ]]; then
+    exit 0
+  fi
+done
+
+prettier="${root}/node_modules/.bin/prettier"
+if [[ ! -x "$prettier" ]]; then
+  echo "Run 'npm ci' in ${root} first." >&2
+  exit 1
+fi
+
+"$prettier" --write --ignore-unknown "$file_abs"
