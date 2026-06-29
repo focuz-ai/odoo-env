@@ -15,12 +15,16 @@ check_untyped_defs = false
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pyright - Configuración para Odoo IDE
+# NOTA: pyrightconfig.json TIENE PRECEDENCIA sobre esta sección cuando existe
+# (es el que carga el Odoo IDE). Se mantiene aquí solo como fallback. Si superas
+# ~150k archivos en el scope, Pyright aborta la indexación y deja de resolver:
+# por eso se excluyen i18n/static-lib/migrate y se acota `include`.
 # ─────────────────────────────────────────────────────────────────────────────
 
 [tool.pyright]
-include = ["odoo/addons", "enterprise", "design-themes", "src"]
-exclude = ["**/node_modules", "**/__pycache__", "**/.*", "vendor"]
-extraPaths = ["odoo/addons", "enterprise", "design-themes", "src"]
+include = ["odoo", "enterprise", "design-themes", "vendor/OCA", "src/dev", "src/projects"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "**/i18n", "**/static/lib", "src/migrate", "documentation", "industry", "_tmp", "reports"]
+extraPaths = ["odoo", "odoo/addons", "enterprise", "design-themes", "vendor/OCA", "src/dev/focuz-ai/l10n-pe", "src/dev/focuz-ai/enterprise", "src/dev/focuz-ai/odoo-oca"]
 
 venvPath = "."
 venv = ".venv"

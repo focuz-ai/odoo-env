@@ -1,21 +1,45 @@
 {
+    // ─────────────────────────────────────────────────────────────────
+    // Config del Odoo IDE (trinhanhngoc.vscode-odoo ≥ 0.40, Pyright interno).
+    // La versión nueva YA NO lee odools.toml: descubre los addons indexando
+    // los __manifest__.py dentro de `include`. Si el workspace supera ~150k
+    // archivos, Pyright ABORTA la indexación (0 archivos) y deja de resolver
+    // .py/.xml/modelos. Por eso `include` es acotado y se excluyen los
+    // árboles pesados que no aportan a la resolución (i18n .po/.pot, libs JS).
+    // ─────────────────────────────────────────────────────────────────
     "include": [
         "odoo",
         "enterprise",
         "design-themes",
-        "src"
+        "vendor/OCA",
+        "src/dev",
+        "src/projects"
     ],
     "exclude": [
         "**/node_modules",
         "**/__pycache__",
         "**/.*",
-        "vendor"
+        "**/i18n",
+        "**/static/lib",
+        "src/migrate",
+        "documentation",
+        "industry",
+        "_tmp",
+        "reports"
     ],
     "extraPaths": [
         "odoo",
         "odoo/addons",
         "enterprise",
-        "design-themes"
+        "design-themes",
+        "vendor/OCA",
+        "src/dev/focuz-ai/l10n-pe",
+        "src/dev/focuz-ai/enterprise",
+        "src/dev/focuz-ai/odoo-oca",
+        "src/dev/focuz-ai/etl",
+        "src/dev/focuz-ai/ifrs",
+        "src/dev/focuz-ai/misc",
+        "src/dev/focuz-ai/ssoma"
     ],
     "venvPath": ".",
     "venv": ".venv",
