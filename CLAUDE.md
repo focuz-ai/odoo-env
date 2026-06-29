@@ -378,7 +378,7 @@ pre-commit install            # hooks al commitear (validan lo mismo que CI)
 
 ```bash
 npm run format:file -- src/dev/focuz-ai/enterprise/CLAUDE.md
-bash .vscode/prettier-format-on-save.sh path/to/file.md
+npm run format:file -- path/to/file.md
 ```
 
 **Hook vs CI:** `pre-commit install` corre al **`git commit`** (y aborta si reescribe archivos — vuelve a `git add` y

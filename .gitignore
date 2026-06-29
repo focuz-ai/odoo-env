@@ -10,7 +10,6 @@ _build/
 !.vscode/launch.json.example
 !.vscode/extensions.json
 !.vscode/settings.json
-!.vscode/prettier-format-on-save.sh
 # compiled python files
 *.py[co]
 __pycache__/
