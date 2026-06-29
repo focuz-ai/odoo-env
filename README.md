@@ -1,14 +1,37 @@
-<h1>Odoo & IDE Visual Studio Code</h1>
-Entorno de desarrollo de Odoo con IDE Visual Studio
+<h1>Odoo 19 — Entorno de desarrollo (o19-env)</h1>
+
+Entorno de desarrollo de **Odoo 19 Enterprise** con VS Code / Cursor, pensado para varios clientes y proyectos en
+paralelo. Aquí vive el servidor Odoo, las dependencias Python, la configuración del IDE y los addons que desarrollamos
+(foco en localización peruana `l10n_pe`).
 
 ![Odoo & Visual Studio Code](https://i.ytimg.com/vi/N1KjLdbv7kA/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLATEFBlsHpR1dYaHMiHvTApC3E4Qg)
 
+## ¿Qué es este repo y qué no es?
+
+| Es                                                | No es                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| El **contenedor** donde corres Odoo en tu máquina | El código fuente de Odoo (eso está en `odoo/` y `enterprise/`, clonado, no se edita) |
+| La config del IDE, linters y scripts de DB        | Un módulo Odoo individual (los módulos viven en `src/dev/` o `src/projects/`)        |
+| Un workspace compartido por el equipo focuz-ai    | Un proyecto de un solo cliente (hay carpetas `config/<client>/`)                     |
+
+**Conceptos clave para empezar:**
+
+- **`odoo/odoo-bin`** — el ejecutable del servidor Odoo.
+- **`config/<cliente>/dev.conf`** — archivo INI con `addons_path`, puerto HTTP, credenciales Postgres, etc.
+- **`src/dev/focuz-ai/`** — repos git de addons internos (p. ej. `l10n-pe`, `enterprise`).
+- **`src/projects/<cliente>/`** — addons específicos de un cliente.
+- **`.venv/`** — entorno virtual Python; actívalo siempre antes de correr Odoo.
+
+> Guía técnica completa del entorno: [CLAUDE.md](CLAUDE.md). Estándares de código Odoo: [docs/](docs/README.md).
+
 <h1>Contenido</h1>
 
+- [Primer día — checklist](#primer-día--checklist)
 - [Estructura](#estructura)
   - [Estructura de config](#estructura-de-config)
   - [Estructura de módulos](#estructura-de-módulos)
-- [Guía de configuración rápida:](#guía-de-configuración-rápida)
+- [Guía de configuración rápida](#guía-de-configuración-rápida)
+- [Prettier — instalar, configurar y usar](#prettier--instalar-configurar-y-usar)
 - [El archivo `.env`](#el-archivo-env)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script automático (Recomendado)](#script-automático-recomendado)
@@ -26,36 +49,57 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
 
+# Primer día — checklist
+
+Si es tu primera vez con Odoo y este repo, sigue este orden:
+
+1. **Clonar** `o19-env` (rama `19.0`) y abrir la carpeta **`o19-env`** o `o19-env.code-workspace` en Cursor/VS Code — no
+   abras solo un subrepo (`odoo-l10n-pe`, etc.).
+2. **Copiar plantillas:** `.env`, `config/<cliente>/dev.conf`, `.vscode/launch.json`.
+3. **Sistema:** `./setup_env.sh` (Python 3.12, libs de Odoo, PostgreSQL client, wkhtmltopdf).
+4. **Odoo CE/EE:** `./clone-addons.sh` (descarga `odoo/`, `enterprise/`, `design-themes/`).
+5. **Python:** `python3.12 -m venv .venv && source .venv/bin/activate` + instalar deps (ver sección
+   [dependencias](#crear-entorno-virtual-e-instalar-dependencias)).
+6. **Editor:** `npm ci` + extensión Prettier + `pre-commit install` (ver
+   [Prettier](#prettier--instalar-configurar-y-usar)).
+7. **Extensiones recomendadas:** acepta las que sugiere `.vscode/extensions.json` (Odoo IDE, Ruff, Prettier, …).
+8. **Base de datos:** Postgres en `127.0.0.1:5435` (user/pass `odoo`). Crea una DB o usa los scripts en `scripts/`.
+9. **Arrancar:** F5 con `Odoo: Development` o `python odoo/odoo-bin -c config/l10n-pe/dev.conf --dev=all`.
+10. **Leer:** [docs/conventions.md](docs/conventions.md) antes de tu primer módulo.
+
 # Estructura
 
 ### Estructura de config
 
 ```
 config/
-├── client_1/                 # Client 1
-│   ├── dev.config            # Staging branch config
-│   ├── main.config           # Main branch config
-│   └── temp.config           # Temp branch config
-└── client_2/                 # Client 2
+├── l10n-pe/                  # Cliente / proyecto Perú
+│   └── dev.conf              # Config de desarrollo
+├── alimts/
+│   └── dev.conf
+└── <client>/                 # Un directorio por cliente
+    ├── dev.conf              # Desarrollo local
+    └── prod.conf             # Producción (opcional)
 ```
 
 ### Estructura de módulos
 
 ```
 src/
-├── dev/                      # Development Addons
-│   └── focuz-ai/             # Organization
-│       ├── repository_1/     # repository 1
-│       └── repository_2/     # repository 2
-└── projects/                 # Client Project Addons
-    ├── client_1/             # Client 1
-    │   ├── dev/              # Staging branch
-    │   ├── main/             # Main branch
-    │   └── temp/             # Temp branch
-    └── client_2/             # Client 2
+├── dev/                      # Addons compartidos del equipo
+│   └── focuz-ai/
+│       ├── l10n-pe/          # Localización peruana
+│       ├── enterprise/       # Módulos EE propios
+│       ├── odoo-oca/         # Submódulos OCA
+│       └── …                 # etl, ifrs, misc, ssoma, …
+└── projects/                 # Addons por cliente
+    └── <client>/
+        ├── dev/              # Rama staging
+        ├── main/             # Producción
+        └── temp/             # Experimentos / features
 ```
 
-# Guía de configuración rápida:
+# Guía de configuración rápida
 
 **Clonar y configurar:**
 
@@ -63,7 +107,9 @@ src/
 git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
 cd o19-env
 cp .env.example .env
-cp odools.toml.example odools.toml
+# odools.toml es opcional/obsoleto — Odoo IDE ≥0.40 usa pyrightconfig.json
+cp config/dev.conf.example config/<client>/dev.conf
+cp .vscode/launch.json.example .vscode/launch.json
 ```
 
 **Copiar launch de VSCode para ejecutar y depurar Odoo**
@@ -100,20 +146,19 @@ El archivo `.vscode/settings.json` ya viene preconfigurado con:
 | `python.languageServer`           | `None` | Permite que Odoo IDE maneje la resolución        |
 | `odoo.selectedProfile`            | `""`   | Deshabilita extensión oficial (evita conflictos) |
 | `editor.quickSuggestions.strings` | `on`   | Autocompletado en strings (XML IDs)              |
-| `[python].editor.formatOnSave`    | `true` | Python → Ruff al guardar                         |
-| `[markdown].editor.formatOnSave`  | `true` | Markdown/XML/YAML/JSON → Prettier al guardar     |
+| `[python].editor.formatOnSave`    | `true` | Python → **Ruff** al guardar (no Prettier)       |
+| `[markdown].editor.formatOnSave`  | `true` | Markdown/XML/YAML/JSON → **Prettier** al guardar |
 
-**Format-on-save (setup una vez):**
+**Setup del editor (una vez):**
 
 ```bash
 cd o19-env
-npm ci                  # Prettier para el editor (node_modules/)
-pre-commit install      # validación al commitear
+npm ci                  # Instala Prettier en node_modules/
+pre-commit install      # Hooks al commitear (Ruff + pylint-odoo)
 ```
 
-Extensiones: [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo), **Ruff**,
-**Prettier**. Detalle de settings (`prettier.prettierPath`, troubleshooting) en
-[CLAUDE.md — Linting & Pre-commit](CLAUDE.md#linting--pre-commit).
+Extensiones imprescindibles: [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo),
+**Ruff**, **Prettier**. Guía completa de Prettier en la [sección dedicada](#prettier--instalar-configurar-y-usar).
 
 **Extensión Odoo IDE:**
 
@@ -122,6 +167,130 @@ Extensiones: [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trin
 - Comando: `Ctrl+Shift+P` → "Odoo IDE: Reindex" después de cambios
 
 > **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace.
+
+# Prettier — instalar, configurar y usar
+
+**Prettier** formatea automáticamente archivos que no son Python. En este entorno:
+
+| Formateador  | Archivos                                                           |
+| ------------ | ------------------------------------------------------------------ |
+| **Ruff**     | `.py` (Python)                                                     |
+| **Prettier** | `.md`, `.xml`, `.yaml`, `.yml`, `.json`, `.jsonc`, `.css`, `.html` |
+
+Python y Prettier conviven sin conflicto: cada tipo de archivo tiene su formateador en `.vscode/settings.json`.
+
+## 1. Requisitos previos
+
+- **Node.js 18+** y **npm** instalados en el sistema (`node --version`, `npm --version`).
+- Abrir el workspace desde la **raíz `o19-env`** (o `o19-env.code-workspace`). Si abres solo un subrepo, Prettier no
+  encuentra `node_modules/` ni `prettier.config.cjs`.
+
+## 2. Instalación
+
+Desde la raíz del entorno (una vez por clone o tras actualizar `package.json`):
+
+```bash
+cd o19-env
+npm ci
+```
+
+Esto instala en `node_modules/`:
+
+| Paquete                | Versión | Rol                             |
+| ---------------------- | ------- | ------------------------------- |
+| `prettier`             | 3.6.x   | Motor de formateo               |
+| `@prettier/plugin-xml` | 3.4.x   | Soporte para vistas XML de Odoo |
+
+> Usa **`npm ci`**, no `npm install`: respeta el lockfile y es reproducible en todo el equipo.
+
+## 3. Extensión del editor
+
+Instala en VS Code / Cursor:
+
+- **Prettier - Code formatter** (`esbenp.prettier-vscode`)
+
+La lista completa de extensiones recomendadas está en `.vscode/extensions.json` (el editor suele ofrecer instalarlas al
+abrir el workspace).
+
+## 4. Configuración
+
+### Archivos del proyecto
+
+| Archivo                 | Qué define                                                  |
+| ----------------------- | ----------------------------------------------------------- |
+| `package.json`          | Dependencias npm y scripts `npm run format` / `format:file` |
+| `prettier.config.cjs`   | Reglas de estilo compartidas (ancho 120, plugin XML, etc.)  |
+| `.vscode/settings.json` | Format-on-save y rutas para la extensión                    |
+
+Opciones relevantes de `prettier.config.cjs`:
+
+```javascript
+printWidth: 120,              // Misma línea máxima que Ruff/Odoo
+plugins: ["@prettier/plugin-xml"],
+xmlWhitespaceSensitivity: "preserve",  // Importante para vistas Odoo
+```
+
+### Settings del editor (ya preconfigurados)
+
+No deberías tocar esto salvo troubleshooting:
+
+| Setting                     | Valor                   | Por qué                                                   |
+| --------------------------- | ----------------------- | --------------------------------------------------------- |
+| `prettier.prettierPath`     | `node_modules/prettier` | Debe apuntar al **módulo**, no al binario `prettier.cjs`  |
+| `prettier.configPath`       | `prettier.config.cjs`   | Ruta **relativa** al workspace (sin `${workspaceFolder}`) |
+| `editor.formatOnSaveMode`   | `file`                  | Formatea el archivo completo al guardar                   |
+| `[xml].editor.formatOnSave` | `true`                  | Auto-formato de vistas y datos XML                        |
+
+### Pre-commit vs editor
+
+| Cuándo                      | Qué corre                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| Al **guardar** en el editor | Prettier (XML/MD/…) y Ruff (Python)                                                |
+| Al **`git commit`**         | pre-commit: Ruff + pylint-odoo + hooks de higiene (no Prettier en todos los tipos) |
+
+Si CI rechaza un push por formato Python, corre `ruff format` en el archivo. Si un `.md` o `.xml` quedó desalineado,
+guárdalo de nuevo con Prettier o usa los comandos de la sección siguiente.
+
+## 5. Uso diario
+
+### Format-on-save (recomendado)
+
+Con `npm ci` hecho y la extensión instalada, **Ctrl+S** formatea solo los tipos configurados. No hace falta comando
+manual.
+
+### Formatear desde la terminal
+
+```bash
+# Todo el workspace (tipos soportados por package.json)
+npm run format
+
+# Un archivo o carpeta concreta
+npm run format:file -- src/dev/focuz-ai/enterprise/README.md
+npm run format:file -- src/dev/focuz-ai/l10n-pe/mi_modulo/views/
+```
+
+### Formatear desde el editor
+
+- **Comando:** `Ctrl+Shift+P` → `Format Document`
+- **Atajo:** `Shift+Alt+F` (Linux/Windows) / `Shift+Option+F` (macOS)
+- Asegúrate de que el formateador activo sea **Prettier** (barra de estado inferior en archivos XML/MD).
+
+### ¿Qué pasa con addons en subrepos?
+
+La config de `o19-env` aplica a todo lo bajo `src/dev/` y `src/projects/` **si abriste el workspace raíz**. Un repo
+puede tener su propio `prettier.config.cjs` en su raíz; Prettier usa el config más cercano al archivo.
+
+## 6. Troubleshooting
+
+| Síntoma                                     | Solución                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------- |
+| "Cannot find module 'prettier'"             | `npm ci` en la raíz de `o19-env`                                                |
+| Prettier no formatea al guardar             | Verifica extensión instalada; abre **Output → Prettier**                        |
+| Formatea con reglas raras                   | Confirma `prettier.configPath`: `prettier.config.cjs` (relativo, sin variables) |
+| Solo falla en XML                           | Falta `@prettier/plugin-xml` → vuelve a correr `npm ci`                         |
+| Funciona en un archivo pero no en otro repo | Abre `o19-env` completo, no un subfolder suelto                                 |
+
+Más detalle en [CLAUDE.md — Linting & Pre-commit](CLAUDE.md#linting--pre-commit).
 
 <details>
 <summary><b>Configuraciones estilo PyCharm (productividad)</b></summary>
@@ -274,14 +443,14 @@ chmod +x setup_env.sh
 
 | Opción                 | Descripción                                                   |
 | ---------------------- | ------------------------------------------------------------- |
-| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.13 |
+| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.12 |
 | `-h, --help`           | Mostrar ayuda                                                 |
 
 **Ejemplos:**
 
 ```bash
-./setup_env.sh                  # Instalar con Python 3.13 (por defecto)
-./setup_env.sh -p 3.12          # Instalar con Python 3.12
+./setup_env.sh                  # Instalar con Python 3.12 (por defecto)
+./setup_env.sh -p 3.13          # Instalar con Python 3.13
 ./setup_env.sh --python 3.11    # Instalar con Python 3.11
 ```
 
@@ -358,10 +527,11 @@ sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
     libxml2-dev libxslt1-dev libevent-dev libffi-dev \
     libjpeg-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev \
     liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev \
-    node-less
+    libcairo2-dev node-less
 ```
 
-> **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`.
+> **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`. `libcairo2-dev`
+> es necesario para `rlPyCairo` (render PNG en reportes/barcode).
 
 </details>
 
@@ -392,7 +562,8 @@ wkhtmltopdf --version
 
 # Clonar repositorios de Odoo
 
-El script `clone-addons.sh` clona los repositorios de Odoo Community, Enterprise y Themes desde los forks de focuz-ai.
+El script `clone-addons.sh` clona **Odoo Community, Enterprise y Themes** desde los repos oficiales de Odoo (rama
+`ODOO_TAG` del `.env`, normalmente `19.0`).
 
 ```bash
 chmod +x clone-addons.sh
@@ -401,101 +572,81 @@ chmod +x clone-addons.sh
 
 **Opciones disponibles:**
 
-| Opción       | Descripción                                              |
-| ------------ | -------------------------------------------------------- |
-| `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
-| `-h, --help` | Mostrar ayuda del script                                 |
+| Opción       | Descripción                                                        |
+| ------------ | ------------------------------------------------------------------ |
+| `-s, --sync` | Sincronizar `origin` con upstream Odoo (fetch, merge, push a fork) |
+| `-h, --help` | Mostrar ayuda del script                                           |
 
 **Ejemplos:**
 
 ```bash
 ./clone-addons.sh              # Solo clonar repositorios
-./clone-addons.sh --sync       # Clonar y sincronizar con upstream Odoo
+./clone-addons.sh --sync       # Clonar y sincronizar fork con upstream
 ./clone-addons.sh --help       # Mostrar ayuda
 ```
 
-**Repositorios clonados:**
+**Repositorios clonados** (según `clone-addons.txt`):
 
-| Carpeta local    | Fork (focuz-ai)             | Upstream (Odoo)    |
-| ---------------- | --------------------------- | ------------------ |
-| `odoo/`          | focuz-ai/odoo               | odoo/odoo          |
-| `enterprise/`    | focuz-ai/odoo-enterprise    | odoo/enterprise    |
-| `design-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| Carpeta local    | Origen (clone)                | Upstream (`--sync`) |
+| ---------------- | ----------------------------- | ------------------- |
+| `odoo/`          | github.com/odoo/odoo          | odoo/odoo           |
+| `enterprise/`    | github.com/odoo/enterprise    | odoo/enterprise     |
+| `design-themes/` | github.com/odoo/design-themes | odoo/design-themes  |
 
-> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y
-> GITHUB_ACCESS_TOKEN).
+> **Nota:** Enterprise requiere token en `.env` (`ENTERPRISE_USER` / `ENTERPRISE_ACCESS_TOKEN`). `--sync` además
+> necesita `GITHUB_USER` y `GITHUB_ACCESS_TOKEN` si `origin` es un fork privado.
 
 # Crear entorno virtual e instalar dependencias
 
 > **Recomendado:** usa [`uv`](https://github.com/astral-sh/uv) en lugar de `pip` — drop-in replacement, 10-100x más
-> rápido. Detalles y benchmarks en [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
+> rápido. Detalles en [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
 >
 > Si prefieres `pip` clásico, sustituye `uv pip` por `pip` en los comandos siguientes.
 
-## Odoo 16 con Python 3.12 (Recomendado)
+## Odoo 19 con Python 3.12 (recomendado)
 
-**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren
-con Python 3.10.
+**Python 3.12** es la versión activa del `.venv` y la recomendada para Odoo 19: permite parchear CVEs en urllib3,
+cryptography, signxml, etc. (ver [CLAUDE.md](CLAUDE.md#security-vulnerabilities-and-mitigations)).
 
 ```bash
-# Crear entorno virtual con Python 3.12
+# Crear y activar entorno virtual
 python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Instalar uv (una sola vez)
 pip install uv
 
-# Instalar dependencias
+# Orden importa: primero Odoo, luego extras del proyecto
 uv pip install --upgrade pip setuptools wheel
 uv pip install -r odoo/requirements.txt
 uv pip install -r requirements.txt
 
-# Verificar instalación
+# Verificar que no hay conflictos
 uv pip check
 ```
 
-**Versiones clave instaladas:** | Paquete | Versión | Nota | |---------|---------|------| | gevent | 24.2.1 | Compatible
-con Python 3.12 | | greenlet | 3.0.3 | Compatible con Python 3.12 | | Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no
-compatible) |
-
 <details>
-<summary><b>Alternativa: Python 3.10 (solo si es requerido)</b></summary>
-
-Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
-
-**Error típico:**
-
-```
-Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
-ERROR: Failed to build 'gevent' when getting requirements to build wheel
-```
-
-**Solución:** Usar `setuptools<70` y `Cython<3` con `--no-build-isolation`:
+<summary><b>Alternativa: Python 3.13 o 3.14</b></summary>
 
 ```bash
-python3.10 -m venv .venv
+./setup_env.sh -p 3.13   # o 3.14
+python3.13 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip uv
-uv pip install "setuptools<70" wheel "Cython<3"
-uv pip install -r odoo/requirements.txt --no-build-isolation
+pip install uv
+uv pip install -r odoo/requirements.txt
 uv pip install -r requirements.txt
 uv pip check
 ```
 
 </details>
 
-## Odoo 17+ con Python 3.13
+<details>
+<summary><b>Python 3.10–3.11 (no recomendado)</b></summary>
 
-Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
+Versiones anteriores a 3.12 mantienen dependencias vulnerables por restricciones de Odoo. Solo úsalas si un proyecto
+legacy lo exige; el script `setup_env.sh` pedirá confirmación.
 
-```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
-pip install uv
-uv pip install --upgrade pip setuptools wheel
-uv pip install -r odoo/requirements.txt
-uv pip install -r requirements.txt
-```
+</details>
 
 ## Desactivar entorno virtual
 
@@ -507,35 +658,29 @@ deactivate
 
 ## Scaffold
 
-Ubicarse en la raiz del proyecto y ejecutar:
-
-Para Linux y MAC el comando:
+Crea la estructura base de un módulo nuevo (desde la raíz del proyecto, con `.venv` activo):
 
 ```bash
-python odoo/odoo-bin scaffold name_module src/addons/
+python odoo/odoo-bin scaffold nombre_modulo src/dev/focuz-ai/l10n-pe/
 ```
 
-Para Windows el comando:
-
-```bash
-python.exe odoo/odoo-bin scaffold name_module src/addons/
-```
+En Windows usa `python.exe` en lugar de `python`.
 
 ## Shell
 
-Para acceder a la shell de Odoo en Linux o Mac:
+Accede a la shell interactiva de Odoo (ORM en vivo sobre una base de datos):
 
 ```bash
-python odoo/odoo-bin shell -d <nombrebd> -c config/odoo.conf
+source .venv/bin/activate
+python odoo/odoo-bin shell -d <nombre_bd> -c config/l10n-pe/dev.conf
 ```
 
-Si ves “>>>”, entonces ya te encuentras en la línea de comandos de Odoo
+Si ves `>>>`, ya estás dentro. Ejemplo — cambiar clave del administrador (user id 2):
 
-Ejemplo de como cambiar la clave del administrador:
-
-    >>> self.env["res.users"].browse(2).login = "sadmin"
-    >>> self.env["res.users"].browse(2).password = "sadmin"
-    >>> self.env.cr.commit()
+```python
+>>> env["res.users"].browse(2).write({"password": "nueva_clave"})
+>>> env.cr.commit()  # Solo en shell exploratoria; evita commit() en código de módulos
+```
 
 ## Shell para usar IPython como REPL
 
@@ -552,7 +697,8 @@ uv pip install ipython
 Ahora que IPython está instalado, ejecutar:
 
 ```bash
-odoo/odoo-bin shell -c config/odoo.conf -d <db-name> --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
+python odoo/odoo-bin shell -c config/l10n-pe/dev.conf -d <nombre_bd> \
+  --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
 ```
 
 ## Modos de desarrollo
@@ -601,9 +747,7 @@ sudo sysctl -p
 
 # Coding Guidelines
 
-Seguimos las
-[Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html)
-oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
+Seguimos los estándares en **[docs/](docs/README.md)** (convenciones, ORM, seguridad, OWL, tests, git). Resumen:
 
 ## Estructura de Modelos
 
@@ -746,9 +890,12 @@ git push origin master
 
 # Documentación adicional
 
-Por favor, consulte la [sección de documentos](https://github.com/focuzai/odoo_vsc/tree/main/docs).
-
-Para guías detalladas de desarrollo, consulte [CLAUDE.md](CLAUDE.md).
+| Recurso                                                                      | Contenido                                                   |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [CLAUDE.md](CLAUDE.md)                                                       | Entorno completo: Python, IDE, DB, seguridad, Prettier/Ruff |
+| [docs/](docs/README.md)                                                      | Estándares de código Odoo 19                                |
+| [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md) | uv, Postgres dev, templates DB                              |
+| [docs/submodule.md](docs/submodule.md)                                       | Submódulos git (p. ej. `odoo-oca`)                          |
 
 # Fuentes
 
