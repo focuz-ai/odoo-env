@@ -36,6 +36,13 @@ img2pdf>=0.4.4,<0.6.0 ; python_version >= '3.10'
 fpdf>=1.7.2,<2.0.0 ; python_version >= '3.10'
 pdf417gen>=0.7.1,<1.0.0 ; python_version >= '3.10'
 
+# Graphics rendering - backend de render PNG para reportlab.graphics.renderPM
+# Los wheels de reportlab 4.x ya NO incluyen la extensión C `_rl_renderPM`,
+# así que rasterizar gráficos a PNG (p.ej. barcodes de stock_barcode en el
+# form de stock.location) requiere el backend rlPyCairo. Arrastra pycairo +
+# freetype-py. Requiere la lib de sistema libcairo2-dev (ver setup_env.sh).
+rlPyCairo>=0.3.0,<1.0.0 ; python_version >= '3.10'
+
 # XML signing and SOAP (Electronic Invoicing Peru)
 # signxml 4.x requiere cryptography>=43 y lxml>=5.2.1 (solo Python >=3.12)
 # CVE-2025-48994, CVE-2025-48995: HMAC algorithm confusion/timing attacks

@@ -134,6 +134,7 @@ BASE_DEPS=(
     libxml2-dev libxslt1-dev libevent-dev libffi-dev
     libjpeg-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev
     liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev
+    libcairo2-dev
     node-less
 )
 
