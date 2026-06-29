@@ -6,8 +6,8 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 <h1>Contenido</h1>
 
 - [Estructura](#estructura)
-    - [Estructura de config](#estructura-de-config)
-    - [Estructura de módulos](#estructura-de-módulos)
+  - [Estructura de config](#estructura-de-config)
+  - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida:](#guía-de-configuración-rápida)
 - [El archivo `.env`](#el-archivo-env)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
@@ -25,8 +25,11 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
+
 # Estructura
+
 ### Estructura de config
+
 ```
 config/
 ├── client_1/                 # Client 1
@@ -35,7 +38,9 @@ config/
 │   └── temp.config           # Temp branch config
 └── client_2/                 # Client 2
 ```
+
 ### Estructura de módulos
+
 ```
 src/
 ├── dev/                      # Development Addons
@@ -49,8 +54,11 @@ src/
     │   └── temp/             # Temp branch
     └── client_2/             # Client 2
 ```
+
 # Guía de configuración rápida:
+
 **Clonar y configurar:**
+
 ```bash
 git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
 cd o19-env
@@ -59,39 +67,59 @@ cp odools.toml.example odools.toml
 ```
 
 **Copiar launch de VSCode para ejecutar y depurar Odoo**
+
 ```bash
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
 Editar `launch.json` y reemplazar los placeholders:
+
 - `<database>` → nombre de tu base de datos
 - `<module_name>` → nombre del módulo a instalar/actualizar/testear
 
 **Configuraciones disponibles en launch.json:**
 
-| Configuración | Descripción |
-|---------------|-------------|
-| `Odoo: Development` | Servidor con hot reload (`--dev=all`) |
-| `Odoo: Install Module` | Instalar módulo y salir |
-| `Odoo: Update Module` | Actualizar módulo y salir |
-| `Odoo: Run Tests` | Ejecutar tests del módulo |
-| `Odoo: Shell (IPython)` | Shell interactivo con IPython |
-| `Odoo: Scaffold Module` | Crear estructura de nuevo módulo |
+| Configuración           | Descripción                           |
+| ----------------------- | ------------------------------------- |
+| `Odoo: Development`     | Servidor con hot reload (`--dev=all`) |
+| `Odoo: Install Module`  | Instalar módulo y salir               |
+| `Odoo: Update Module`   | Actualizar módulo y salir             |
+| `Odoo: Run Tests`       | Ejecutar tests del módulo             |
+| `Odoo: Shell (IPython)` | Shell interactivo con IPython         |
+| `Odoo: Scaffold Module` | Crear estructura de nuevo módulo      |
 
 **Configuración del workspace (settings.json):**
 
+Abre **`o19-env.code-workspace`** (recomendado) o la carpeta **`o19-env`** como workspace en Cursor/VS Code — no un
+subrepo suelto.
+
 El archivo `.vscode/settings.json` ya viene preconfigurado con:
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `python.languageServer` | `None` | Permite que Odoo IDE maneje la resolución |
-| `odoo.selectedProfile` | `""` | Deshabilita extensión oficial (evita conflictos) |
-| `editor.quickSuggestions.strings` | `on` | Autocompletado en strings (XML IDs) |
+| Setting                           | Valor  | Descripción                                      |
+| --------------------------------- | ------ | ------------------------------------------------ |
+| `python.languageServer`           | `None` | Permite que Odoo IDE maneje la resolución        |
+| `odoo.selectedProfile`            | `""`   | Deshabilita extensión oficial (evita conflictos) |
+| `editor.quickSuggestions.strings` | `on`   | Autocompletado en strings (XML IDs)              |
+| `[python].editor.formatOnSave`    | `true` | Python → Ruff al guardar                         |
+| `[markdown].editor.formatOnSave`  | `true` | Markdown/XML/YAML/JSON → Prettier al guardar     |
 
-**Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
+**Format-on-save (setup una vez):**
+
+```bash
+cd o19-env
+npm ci                  # Prettier para el editor (node_modules/)
+pre-commit install      # validación al commitear
+```
+
+Extensiones: [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo), **Ruff**,
+**Prettier**. Detalle de settings (`prettier.prettierPath`, troubleshooting) en
+[CLAUDE.md — Linting & Pre-commit](CLAUDE.md#linting--pre-commit).
+
+**Extensión Odoo IDE:**
+
 - Resolución de `_inherit` y navegación de modelos
-- Usa `odools.toml` para configuración de paths
-- Comando: `Ctrl+Shift+P` → "Odoo: Reindex Addons" después de cambios
+- Config de paths en `pyrightconfig.json` (Odoo IDE ≥ 0.40)
+- Comando: `Ctrl+Shift+P` → "Odoo IDE: Reindex" después de cambios
 
 > **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace.
 
@@ -102,51 +130,52 @@ El archivo `.vscode/settings.json` incluye configuraciones para mejorar producti
 
 **Límites de línea y formato:**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
-| `[python].editor.formatOnSave` | `true` | Auto-formato al guardar |
-| `[python].editor.defaultFormatter` | `autopep8` | Formateador por defecto |
+| Setting                            | Valor                | Descripción                                 |
+| ---------------------------------- | -------------------- | ------------------------------------------- |
+| `editor.rulers`                    | `[88, 120]`          | Guías visuales (Black: 88, Odoo: 120)       |
+| `[python].editor.formatOnSave`     | `true`               | Auto-formato Python (Ruff) al guardar       |
+| `[python].editor.defaultFormatter` | `charliermarsh.ruff` | Formateador Python                          |
+| `[markdown].editor.formatOnSave`   | `true`               | Auto-formato Markdown (Prettier) al guardar |
 
 **Navegación y contexto:**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
+| Setting                       | Valor  | Descripción                    |
+| ----------------------------- | ------ | ------------------------------ |
 | `editor.stickyScroll.enabled` | `true` | Mantener clase/función visible |
-| `breadcrumbs.enabled` | `true` | Ruta de navegación de código |
-| `editor.minimap.enabled` | `true` | Vista previa del archivo |
+| `breadcrumbs.enabled`         | `true` | Ruta de navegación de código   |
+| `editor.minimap.enabled`      | `true` | Vista previa del archivo       |
 
 **Colorización y guías:**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `editor.bracketPairColorization.enabled` | `true` | Colorear pares de paréntesis |
-| `editor.guides.bracketPairs` | `active` | Resaltar par activo |
-| `editor.guides.indentation` | `true` | Guías de indentación |
+| Setting                                  | Valor    | Descripción                  |
+| ---------------------------------------- | -------- | ---------------------------- |
+| `editor.bracketPairColorization.enabled` | `true`   | Colorear pares de paréntesis |
+| `editor.guides.bracketPairs`             | `active` | Resaltar par activo          |
+| `editor.guides.indentation`              | `true`   | Guías de indentación         |
 
 **Inlay hints (tipos y parámetros):**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `editor.inlayHints.enabled` | `onUnlessPressed` | Mostrar hints (Ctrl oculta) |
-| `python.analysis.inlayHints.functionReturnTypes` | `true` | Tipos de retorno |
-| `python.analysis.inlayHints.variableTypes` | `true` | Tipos de variables |
+| Setting                                          | Valor             | Descripción                 |
+| ------------------------------------------------ | ----------------- | --------------------------- |
+| `editor.inlayHints.enabled`                      | `onUnlessPressed` | Mostrar hints (Ctrl oculta) |
+| `python.analysis.inlayHints.functionReturnTypes` | `true`            | Tipos de retorno            |
+| `python.analysis.inlayHints.variableTypes`       | `true`            | Tipos de variables          |
 
 **Auto-guardado y limpieza:**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `files.autoSave` | `afterDelay` | Guardar automáticamente |
-| `files.autoSaveDelay` | `1000` | Delay de 1 segundo |
-| `files.trimTrailingWhitespace` | `true` | Eliminar espacios al final |
+| Setting                        | Valor        | Descripción                |
+| ------------------------------ | ------------ | -------------------------- |
+| `files.autoSave`               | `afterDelay` | Guardar automáticamente    |
+| `files.autoSaveDelay`          | `1000`       | Delay de 1 segundo         |
+| `files.trimTrailingWhitespace` | `true`       | Eliminar espacios al final |
 
 **Cursor y scrolling:**
 
-| Setting | Valor | Descripción |
-|---------|-------|-------------|
-| `editor.smoothScrolling` | `true` | Scroll suave |
-| `editor.cursorSmoothCaretAnimation` | `on` | Animación del cursor |
-| `editor.renderLineHighlight` | `all` | Resaltar línea actual |
+| Setting                             | Valor  | Descripción           |
+| ----------------------------------- | ------ | --------------------- |
+| `editor.smoothScrolling`            | `true` | Scroll suave          |
+| `editor.cursorSmoothCaretAnimation` | `on`   | Animación del cursor  |
+| `editor.renderLineHighlight`        | `all`  | Resaltar línea actual |
 
 </details>
 
@@ -156,11 +185,13 @@ El archivo `.vscode/settings.json` incluye configuraciones para mejorar producti
 Para ejecutar reindex automáticamente al abrir el workspace:
 
 1. Instalar extensión:
+
 ```bash
 code --install-extension gabrielgrinberg.auto-run-command
 ```
 
 2. Configuración ya incluida en `settings.json`:
+
 ```json
 "auto-run-command.rules": [
     {
@@ -188,6 +219,7 @@ Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
 > Cambiar `<client>` por el nombre del cliente: `config/cliente1/dev.conf`, `config/cliente2/dev.conf`, etc.
 
 **Copiar configuración por proyecto / cliente**
+
 ```bash
 # Para desarrollo local
 cp config/dev.conf.example config/<client>/dev.conf
@@ -198,17 +230,19 @@ cp config/prod.conf.example config/<client>/prod.conf
 
 **Archivos de configuración disponibles:**
 
-| Archivo | Uso | Características |
-|---------|-----|-----------------|
-| `dev.conf.example` | Desarrollo local | workers=0 (debug), logging verbose, límites relajados |
-| `prod.conf.example` | Producción | Multi-worker, logging mínimo, seguridad reforzada |
+| Archivo             | Uso              | Características                                       |
+| ------------------- | ---------------- | ----------------------------------------------------- |
+| `dev.conf.example`  | Desarrollo local | workers=0 (debug), logging verbose, límites relajados |
+| `prod.conf.example` | Producción       | Multi-worker, logging mínimo, seguridad reforzada     |
 
 Se recomienda crear una carpeta por cada cliente / proyecto con sus respectivos archivos de configuración.
 
 # El archivo `.env`
+
 Las variables de entorno ubicado en `.env` proporcionan configuraciones dinámicas a Odoo y al proyecto en general.
 
 Archivo de muestra `.env`
+
 ```bash
 # Odoo
 ODOO_TAG=19.0
@@ -217,14 +251,17 @@ ODOO_TAG=19.0
 GITHUB_USER=Hchumpitaz
 GITHUB_ACCESS_TOKEN=ghp_token
 ```
+
 # Preparar entorno de desarrollo
 
-El script `setup_env.sh` prepara automáticamente el entorno de desarrollo, instalando Python, dependencias de Odoo y PostgreSQL client.
+El script `setup_env.sh` prepara automáticamente el entorno de desarrollo, instalando Python, dependencias de Odoo y
+PostgreSQL client.
 
 **Distribuciones soportadas:**
+
 - Ubuntu 22.04, 24.04
 - Debian 11, 12
-- Linux Mint, Pop!_OS (basados en Ubuntu)
+- Linux Mint, Pop!\_OS (basados en Ubuntu)
 
 ## Script automático (Recomendado)
 
@@ -235,12 +272,13 @@ chmod +x setup_env.sh
 
 **Opciones disponibles:**
 
-| Opción | Descripción |
-|--------|-------------|
+| Opción                 | Descripción                                                   |
+| ---------------------- | ------------------------------------------------------------- |
 | `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.13 |
-| `-h, --help` | Mostrar ayuda |
+| `-h, --help`           | Mostrar ayuda                                                 |
 
 **Ejemplos:**
+
 ```bash
 ./setup_env.sh                  # Instalar con Python 3.13 (por defecto)
 ./setup_env.sh -p 3.12          # Instalar con Python 3.12
@@ -248,6 +286,7 @@ chmod +x setup_env.sh
 ```
 
 **El script instala automáticamente:**
+
 - Python (versión especificada) + pip + venv
 - Dependencias de compilación y librerías de Odoo
 - PostgreSQL client
@@ -255,21 +294,21 @@ chmod +x setup_env.sh
 
 **Versiones de wkhtmltopdf:**
 
-| ODOO_TAG | wkhtmltox |
-|----------|-----------|
+| ODOO_TAG    | wkhtmltox  |
+| ----------- | ---------- |
 | 14.0 - 19.0 | 0.12.6.1-3 |
-| 12.0 - 13.0 | 0.12.5-1 |
+| 12.0 - 13.0 | 0.12.5-1   |
 
 **⚠️ Advertencia de seguridad para Python <3.12:**
 
 Al seleccionar versiones de Python inferiores a 3.12, el script muestra una advertencia y requiere confirmación:
 
-| CVE | Paquete | Severidad |
-|-----|---------|-----------|
-| CVE-2025-66471, CVE-2025-66418 | urllib3 | 🔴 High |
-| CVE-2025-64512 | pdfminer.six | 🔴 High |
-| CVE-2025-48994, CVE-2025-48995 | signxml | 🟡 Medium |
-| CVE-2024-12797 | cryptography | 🟢 Low |
+| CVE                            | Paquete      | Severidad |
+| ------------------------------ | ------------ | --------- |
+| CVE-2025-66471, CVE-2025-66418 | urllib3      | 🔴 High   |
+| CVE-2025-64512                 | pdfminer.six | 🔴 High   |
+| CVE-2025-48994, CVE-2025-48995 | signxml      | 🟡 Medium |
+| CVE-2024-12797                 | cryptography | 🟢 Low    |
 
 > **Recomendación:** Usar Python 3.12 o superior para entornos de producción.
 
@@ -290,9 +329,11 @@ sudo apt-get install --no-install-recommends -y postgresql-client
 ```
 
 **Opcional - PostgreSQL servidor completo:**
+
 ```bash
 sudo apt-get install postgresql-16 -y
 ```
+
 </details>
 
 <details>
@@ -305,6 +346,7 @@ sudo apt update
 sudo apt install python3.13 python3.13-dev python3.13-venv -y
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
 ```
+
 </details>
 
 <details>
@@ -320,6 +362,7 @@ sudo apt-get install -y git build-essential wget curl gnupg lsb-release \
 ```
 
 > **Nota:** En Ubuntu 22.04/Debian 11 usar `libtiff5-dev`. En Ubuntu 24.04/Debian 12 usar `libtiff-dev`.
+
 </details>
 
 <details>
@@ -342,7 +385,9 @@ sudo apt-get install -f -y
 wkhtmltopdf --version
 ```
 
-> **Nota:** Para otras distribuciones, consulta [wkhtmltopdf releases](https://github.com/wkhtmltopdf/packaging/releases).
+> **Nota:** Para otras distribuciones, consulta
+> [wkhtmltopdf releases](https://github.com/wkhtmltopdf/packaging/releases).
+
 </details>
 
 # Clonar repositorios de Odoo
@@ -356,12 +401,13 @@ chmod +x clone-addons.sh
 
 **Opciones disponibles:**
 
-| Opción | Descripción |
-|--------|-------------|
+| Opción       | Descripción                                              |
+| ------------ | -------------------------------------------------------- |
 | `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
-| `-h, --help` | Mostrar ayuda del script |
+| `-h, --help` | Mostrar ayuda del script                                 |
 
 **Ejemplos:**
+
 ```bash
 ./clone-addons.sh              # Solo clonar repositorios
 ./clone-addons.sh --sync       # Clonar y sincronizar con upstream Odoo
@@ -370,23 +416,26 @@ chmod +x clone-addons.sh
 
 **Repositorios clonados:**
 
-| Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
-|---------------|-----------------|-----------------|
-| `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
+| Carpeta local    | Fork (focuz-ai)             | Upstream (Odoo)    |
+| ---------------- | --------------------------- | ------------------ |
+| `odoo/`          | focuz-ai/odoo               | odoo/odoo          |
+| `enterprise/`    | focuz-ai/odoo-enterprise    | odoo/enterprise    |
 | `design-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
 
-> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
+> **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y
+> GITHUB_ACCESS_TOKEN).
 
 # Crear entorno virtual e instalar dependencias
 
-> **Recomendado:** usa [`uv`](https://github.com/astral-sh/uv) en lugar de `pip` — drop-in replacement, 10-100x más rápido. Detalles y benchmarks en [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
+> **Recomendado:** usa [`uv`](https://github.com/astral-sh/uv) en lugar de `pip` — drop-in replacement, 10-100x más
+> rápido. Detalles y benchmarks en [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
 >
 > Si prefieres `pip` clásico, sustituye `uv pip` por `pip` en los comandos siguientes.
 
 ## Odoo 16 con Python 3.12 (Recomendado)
 
-**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren con Python 3.10.
+**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren
+con Python 3.10.
 
 ```bash
 # Crear entorno virtual con Python 3.12
@@ -405,12 +454,9 @@ uv pip install -r requirements.txt
 uv pip check
 ```
 
-**Versiones clave instaladas:**
-| Paquete | Versión | Nota |
-|---------|---------|------|
-| gevent | 24.2.1 | Compatible con Python 3.12 |
-| greenlet | 3.0.3 | Compatible con Python 3.12 |
-| Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no compatible) |
+**Versiones clave instaladas:** | Paquete | Versión | Nota | |---------|---------|------| | gevent | 24.2.1 | Compatible
+con Python 3.12 | | greenlet | 3.0.3 | Compatible con Python 3.12 | | Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no
+compatible) |
 
 <details>
 <summary><b>Alternativa: Python 3.10 (solo si es requerido)</b></summary>
@@ -418,6 +464,7 @@ uv pip check
 Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
 
 **Error típico:**
+
 ```
 Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
 ERROR: Failed to build 'gevent' when getting requirements to build wheel
@@ -457,24 +504,31 @@ deactivate
 ```
 
 # Extras de Odoo
+
 ## Scaffold
 
 Ubicarse en la raiz del proyecto y ejecutar:
 
 Para Linux y MAC el comando:
+
 ```bash
 python odoo/odoo-bin scaffold name_module src/addons/
 ```
+
 Para Windows el comando:
+
 ```bash
 python.exe odoo/odoo-bin scaffold name_module src/addons/
 ```
+
 ## Shell
 
 Para acceder a la shell de Odoo en Linux o Mac:
+
 ```bash
 python odoo/odoo-bin shell -d <nombrebd> -c config/odoo.conf
 ```
+
 Si ves “>>>”, entonces ya te encuentras en la línea de comandos de Odoo
 
 Ejemplo de como cambiar la clave del administrador:
@@ -485,25 +539,34 @@ Ejemplo de como cambiar la clave del administrador:
 
 ## Shell para usar IPython como REPL
 
-IPython es un shell interactivo de Python que proporciona funciones avanzadas como autocompletado, resaltado de sintaxis, historial de comandos y más. Utilizar IPython como REPL (Read-Eval-Print Loop) en lugar del shell estándar de Python puede mejorar nuestra experiencia de programación en Odoo.
+IPython es un shell interactivo de Python que proporciona funciones avanzadas como autocompletado, resaltado de
+sintaxis, historial de comandos y más. Utilizar IPython como REPL (Read-Eval-Print Loop) en lugar del shell estándar de
+Python puede mejorar nuestra experiencia de programación en Odoo.
 
 Instala IPython en tu sistema:
+
 ```bash
 uv pip install ipython
 ```
 
 Ahora que IPython está instalado, ejecutar:
+
 ```bash
 odoo/odoo-bin shell -c config/odoo.conf -d <db-name> --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
 ```
+
 ## Modos de desarrollo
-El parámetro ``--dev`` en Odoo se utiliza para habilitar diferentes modos de desarrollo que facilitan la depuración y el desarrollo de módulos. Algunos de los valores comunes que puede tomar son:
+
+El parámetro `--dev` en Odoo se utiliza para habilitar diferentes modos de desarrollo que facilitan la depuración y el
+desarrollo de módulos. Algunos de los valores comunes que puede tomar son:
+
 - all: Activa todas las opciones de desarrollo.
 - assets: Habilita la depuración de archivos estáticos como CSS y JavaScript.
 - qweb: Permite la depuración de plantillas QWeb.
 - xml: Activa la depuración de vistas XML.
 - rpc: Muestra las llamadas RPC (Remote Procedure Call) en la consola.
 - pdb: Inicia un depurador interactivo (Python Debugger) en caso de errores.
+
 # Errores comunes
 
 ## InterfaceError: connection already closed
@@ -516,7 +579,8 @@ psycopg2.InterfaceError: connection already closed
     pg_conn.poll()
 ```
 
-**Causa:** Cuando `max_cron_threads > 0` y se usa auto-reload (`--dev=all`), el hilo de cron mantiene conexiones PostgreSQL que se cierran abruptamente al recargar el servidor.
+**Causa:** Cuando `max_cron_threads > 0` y se usa auto-reload (`--dev=all`), el hilo de cron mantiene conexiones
+PostgreSQL que se cierran abruptamente al recargar el servidor.
 
 **Solución:** Deshabilitar cron en desarrollo:
 
@@ -537,7 +601,9 @@ sudo sysctl -p
 
 # Coding Guidelines
 
-Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html) oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
+Seguimos las
+[Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html)
+oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
 
 ## Estructura de Modelos
 
@@ -557,13 +623,13 @@ class MyModel(models.Model):
 
 ## Convenciones de Nombres
 
-| Elemento | Convención | Ejemplo |
-|----------|------------|---------|
-| Modelo | Singular, dot notation | `sale.order` |
-| Campo Many2one | Sufijo `_id` | `partner_id` |
-| Campo X2many | Sufijo `_ids` | `line_ids` |
-| Método compute | `_compute_<field>` | `_compute_total` |
-| Método action | `action_<verb>` | `action_confirm` |
+| Elemento       | Convención             | Ejemplo          |
+| -------------- | ---------------------- | ---------------- |
+| Modelo         | Singular, dot notation | `sale.order`     |
+| Campo Many2one | Sufijo `_id`           | `partner_id`     |
+| Campo X2many   | Sufijo `_ids`          | `line_ids`       |
+| Método compute | `_compute_<field>`     | `_compute_total` |
+| Método action  | `action_<verb>`        | `action_confirm` |
 
 ## Reglas Críticas
 
@@ -599,7 +665,8 @@ my_module/
 
 # Contribuir a Odoo
 
-Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
+Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las
+[Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
 
 ## Formato de Commits
 
@@ -614,18 +681,18 @@ References: task-123, Fixes #123
 
 ## Tags Disponibles
 
-| Tag | Uso |
-|-----|-----|
-| `[FIX]` | Bug fixes |
-| `[IMP]` | Mejoras incrementales |
-| `[ADD]` | Nuevos módulos |
-| `[REF]` | Refactoring |
-| `[REM]` | Eliminar código muerto |
-| `[REV]` | Revertir commits |
-| `[MOV]` | Mover archivos |
-| `[I18N]` | Traducciones |
-| `[PERF]` | Performance |
-| `[CLN]` | Limpieza de código |
+| Tag      | Uso                    |
+| -------- | ---------------------- |
+| `[FIX]`  | Bug fixes              |
+| `[IMP]`  | Mejoras incrementales  |
+| `[ADD]`  | Nuevos módulos         |
+| `[REF]`  | Refactoring            |
+| `[REM]`  | Eliminar código muerto |
+| `[REV]`  | Revertir commits       |
+| `[MOV]`  | Mover archivos         |
+| `[I18N]` | Traducciones           |
+| `[PERF]` | Performance            |
+| `[CLN]`  | Limpieza de código     |
 
 ## Workflow para Contribuir
 
