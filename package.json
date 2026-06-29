@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "description": "Workspace dev tooling: Prettier for format-on-save across src/dev and src/projects.",
+  "scripts": {
+    "format": "prettier --write --ignore-unknown \"**/*.{css,htm,html,js,json,jsx,less,md,scss,toml,ts,xml,yaml,yml}\""
+  },
+  "devDependencies": {
+    "@prettier/plugin-xml": "3.4.2",
+    "prettier": "3.6.2"
+  }
+}

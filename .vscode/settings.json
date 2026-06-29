@@ -1,5 +1,6 @@
 {
-    // Deshabilitar extensión oficial Odoo (usa trinhanhngoc.vscode-odoo con odools.toml)
+    // Deshabilitar extensión oficial Odoo (usamos trinhanhngoc.vscode-odoo / Odoo IDE)
+    // NOTA: Odoo IDE ≥ 0.40 ya NO lee odools.toml; su config vive en pyrightconfig.json
     "odoo.selectedProfile": "",
 
     // ═══════════════════════════════════════════════════════════════
@@ -22,9 +23,14 @@
     // Usar código de librería para tipos cuando no hay stubs disponibles
     "python.analysis.useLibraryCodeForTypes": true,
     "python.analysis.extraPaths": [
+        "${workspaceFolder}/odoo",
         "${workspaceFolder}/odoo/addons",
         "${workspaceFolder}/enterprise",
-        "${workspaceFolder}/design-themes"
+        "${workspaceFolder}/design-themes",
+        "${workspaceFolder}/vendor/OCA",
+        "${workspaceFolder}/src/dev/focuz-ai/l10n-pe",
+        "${workspaceFolder}/src/dev/focuz-ai/enterprise",
+        "${workspaceFolder}/src/dev/focuz-ai/odoo-oca"
     ],
     // Ignorar diagnósticos problemáticos para Odoo (librerías sin type stubs)
     "python.analysis.diagnosticSeverityOverrides": {
@@ -49,7 +55,7 @@
 
     // ═══════════════════════════════════════════════════════════════
     // Exclusiones — reducir CPU del file watcher y del search (Ctrl+Shift+F)
-    // No afectan a Odoo IDE (que usa odools.toml) ni a Pyright (extraPaths)
+    // No afectan al scope del Odoo IDE (que vive en pyrightconfig.json)
     // ═══════════════════════════════════════════════════════════════
     "files.watcherExclude": {
         "**/.git/objects/**": true,
@@ -163,7 +169,7 @@
     "editor.minimap.renderCharacters": false,
 
     // Auto Save - Guardar automáticamente (como PyCharm)
-    "files.autoSave": "afterDelay",
+    "files.autoSave": "off",
     "files.autoSaveDelay": 1000,
 
     // Smooth Scrolling y Cursor
@@ -257,7 +263,54 @@
     },
 
     // Refactoring - Preview antes de renombrar
-    "editor.rename.enablePreview": true
+    "editor.rename.enablePreview": true,
+
+    // ═══════════════════════════════════════════════════════════════
+    // Prettier — all dev addons from o19-env workspace (Run on Save + extension)
+    // One-time: npm ci at o19-env root. Extension: emeraldwalk.runonsave + esbenp.prettier-vscode
+    // ═══════════════════════════════════════════════════════════════
+    "prettier.enable": true,
+    "prettier.requireConfig": false,
+    "prettier.prettierPath": "${workspaceFolder}/node_modules/prettier/bin/prettier.cjs",
+    "prettier.documentSelectors": ["**/*"],
+    "editor.formatOnSaveMode": "file",
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.(css|htm|html|js|json|jsx|less|md|scss|toml|ts|tsx|xml|yaml|yml)$",
+                "notMatch": "(^|[\\\\/])(odoo|enterprise|design-themes|vendor|node_modules|\\.venv)([\\\\/]|$)",
+                "cmd": "bash \"${workspaceFolder}/.vscode/prettier-format-on-save.sh\" \"${file}\""
+            }
+        ]
+    },
+    "[markdown]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[xml]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[yaml]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[css]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
 
     // Environment variables → Ver .env y .env.example
 }

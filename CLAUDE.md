@@ -33,7 +33,7 @@ o19-env/
 | Intención | Archivo / directorio |
 |-----------|---------------------|
 | Agregar una config de cliente | `config/<client>/{dev,prod}.conf` (copiar de `*.example`) |
-| Agregar un addons-path para el IDE | `odools.toml` |
+| Agregar un addons-path para el IDE | `pyrightconfig.json` (`extraPaths`) — `odools.toml` está obsoleto |
 | Agregar un repo a clonar | `clone-addons.txt` |
 | Run/debug Odoo desde VSCode | `.vscode/launch.json` (copiar de `.example`) |
 | Configuración de linter | `ruff.toml` + `pyproject.toml` (`[tool.pyright]`, `[tool.mypy]`) |
@@ -135,7 +135,8 @@ uv pip check
 ## Configuration Files
 
 - **`.env`**: Environment variables (ODOO_TAG, GITHUB_USER, GITHUB_ACCESS_TOKEN)
-- **`odools.toml`**: Defines addons paths for the project
+- **`pyrightconfig.json`**: Scope y addons-paths del Odoo IDE (Pyright). Reemplaza a `odools.toml`, que quedó obsoleto en Odoo IDE ≥ 0.40 (ver "Límite de indexación del Odoo IDE")
+- **`odools.toml`**: ⚠️ Obsoleto — solo compatibilidad con entornos antiguos (o16/o17/o18)
 - **`config/<client>/<branch>.conf`**: Odoo configuration per client/branch
 - **`clone-addons.txt`**: Controls which repositories to clone via `clone-addons.sh`
 
@@ -146,7 +147,7 @@ uv pip check
 git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
 cd o19-env
 cp .env.example .env
-cp odools.toml.example odools.toml
+cp odools.toml.example odools.toml   # opcional/obsoleto: Odoo IDE ≥0.40 usa pyrightconfig.json
 cp config/dev.conf.example config/<client>/dev.conf
 # Para producción:
 # cp config/prod.conf.example config/<client>/prod.conf
@@ -276,7 +277,7 @@ enterprise https://github.com/focuz-ai/odoo-enterprise true
 
 Default PostgreSQL settings:
 - Host: 127.0.0.1
-- Port: 5454 (non-standard to avoid conflicts)
+- Port: 5435 (non-standard to avoid conflicts)
 - User: odoo
 - Password: odoo
 
@@ -308,8 +309,11 @@ Scripts en `scripts/` para acelerar el ciclo "DB limpia con módulos pre-instala
 
 El repo ships con `.pre-commit-config.yaml` (Ruff v0.15.12 + ruff-format + OCA `pylint-odoo` v10) y excluye automáticamente `odoo/`, `enterprise/`, `design-themes/`, `industry/`, `vendor/`, `.venv/` y `migrations/`.
 
+**Format-on-save (workspace `o19-env`):** Python → Ruff (`.vscode/settings.json`). Markdown, XML, YAML, JSON → Prettier vía extensión **Run on Save** (`.vscode/prettier-format-on-save.sh`; requiere `npm ci` en la raíz del env y ext. `emeraldwalk.runonsave`). Abre siempre la carpeta **`o19-env`** como workspace, no un subrepo suelto.
+
 ```bash
 # Setup (una sola vez)
+npm ci                        # Prettier en node_modules/ (format-on-save)
 pre-commit install
 
 # Sobre archivos staged (default, rápido)
@@ -425,19 +429,28 @@ Library stubs not installed for "dateutil"
 ### Configuración Pyright (`pyrightconfig.json`)
 
 **Arquitectura de configuración:**
-- **`settings.json` (`python.analysis.*`):** Configuración para Pylance
-- **`pyrightconfig.json`:** Configuración para Odoo IDE (su Pyright interno)
+- **`pyrightconfig.json`:** Config que **carga el Odoo IDE** (su Pyright interno). Es
+  la fuente de verdad del scope (`include`/`exclude`) y de `extraPaths`.
+- **`settings.json` (`python.analysis.*`):** Respaldo para Pylance (deshabilitado).
+- **`pyproject.toml [tool.pyright]`:** Fallback si se borra `pyrightconfig.json`
+  (Pyright prioriza `pyrightconfig.json` cuando existe).
 
-Ambos archivos tienen configuraciones similares para consistencia:
+> El `include` se mantiene **acotado** y se excluyen árboles que no aportan a la
+> resolución (`**/i18n`, `**/static/lib`, `src/migrate`) para aligerar el análisis.
+> Nota: ese `exclude` SÍ aplica al análisis de tipos, pero **NO** al gate de conteo
+> del indexador (ver "Límite de indexación del Odoo IDE").
 
 ```json
 {
+    "include": ["odoo", "enterprise", "design-themes", "vendor/OCA", "src/dev", "src/projects"],
+    "exclude": ["**/node_modules", "**/__pycache__", "**/.*", "**/i18n", "**/static/lib", "src/migrate"],
+    "extraPaths": [
+        "odoo", "odoo/addons", "enterprise", "design-themes", "vendor/OCA",
+        "src/dev/focuz-ai/l10n-pe", "src/dev/focuz-ai/enterprise", "src/dev/focuz-ai/odoo-oca"
+    ],
     "typeCheckingMode": "basic",
     "reportMissingTypeStubs": false,
-    "reportMissingModuleSource": false,
-    "reportUnknownMemberType": false,
-    "reportUnknownArgumentType": false,
-    "extraPaths": ["odoo", "odoo/addons", "enterprise"]
+    "reportMissingModuleSource": false
 }
 ```
 
@@ -451,25 +464,50 @@ Ambos archivos tienen configuraciones similares para consistencia:
 **Extensión requerida:** [Odoo IDE](https://marketplace.visualstudio.com/items?itemName=trinhanhngoc.vscode-odoo)
 - Resolución de `_inherit` y navegación de modelos
 - Autocompletado de campos y métodos
-- Usa `odools.toml` para configuración de paths
+- Descubre los addons indexando los `__manifest__.py` del workspace
 
-**Configuración de Odoo IDE (`odools.toml`):**
-```toml
-[[config]]
-name = "Odoo 19"
-odoo_path = "${workspaceFolder}/odoo"
-addons_paths = [
-    "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/enterprise",
-    "${workspaceFolder}/design-themes",
-]
-```
+> ⚠️ **`odools.toml` quedó OBSOLETO.** Las versiones de Odoo IDE **≥ 0.40** (la
+> instalada es 0.50.0) **ya no leen `odools.toml`** — son Pyright puro. La config
+> de paths vive ahora en **`pyrightconfig.json`** (que el LSP carga al arrancar) y,
+> como respaldo de Pylance, en `python.analysis.extraPaths` de `settings.json`.
+> El archivo `odools.toml` se conserva solo por compatibilidad con entornos
+> antiguos (o16/o17/o18) y no tiene efecto en este repo.
 
 **Comandos útiles de Odoo IDE:**
-- `Ctrl+Shift+P` → "Odoo: Reindex Addons" - Reindexar después de cambios
-- `Ctrl+Shift+P` → "Odoo: Restart Language Server" - Reiniciar si hay problemas
+- `Ctrl+Shift+P` → "Odoo IDE: Reindex" - Reindexar después de cambios de config
+- `Ctrl+Shift+P` → "Developer: Reload Window" - Recargar el LSP (re-lee `pyrightconfig.json`)
 
 > **Nota:** La extensión oficial `odoo.odoo` puede causar conflictos. Deshabilitar para el workspace si hay problemas.
+
+#### ⚠️ Límite de indexación del Odoo IDE (>150k archivos)
+
+El indexador del Odoo IDE (Pyright interno) tiene un **límite hardcodeado de
+150.498 archivos** en el workspace. Si se supera, **aborta TODA la indexación**
+(`BG: ... too many files for indexing` → `0 new files was indexed`) y deja de
+resolver `.py`, `.xml` y modelos (síntoma típico: *"Could not find model 'ir.ui.view'"*).
+
+**Importante:** ese gate **ignora el `exclude` de `pyrightconfig.json`** — camina el
+workspace entero saltando solo `.git`/dot-dirs, `__pycache__` y `node_modules`
+(e **incluye `.venv`** a propósito). La única forma de bajar del límite es **reducir
+archivos físicos** del workspace.
+
+**Convención `o19-offsite/`:** los árboles pesados que NO se desarrollan se reubican
+fuera del workspace, en `../o19-offsite/`, para no contar contra el límite:
+
+| Reubicado | Por qué | Runtime |
+|-----------|---------|---------|
+| `industry/` | módulos vendored, no se editan | el `addons_path` de los `config/*/dev.conf` apunta a `../o19-offsite/industry` |
+| `documentation/` | clon desechable de docs de Odoo (untracked) | sin uso en runtime |
+| `src/migrate/<ver>` | código de versiones viejas (GM v18, ADR-019); `.gitkeep` se conserva | sin uso en runtime; referencia histórica |
+
+Diagnóstico rápido del conteo y del log:
+```bash
+# Conteo real que ve el gate (replica su lógica: incluye .venv, salta dot-dirs)
+find . -type f -not -path '*/.git/*' -not -path '*/__pycache__/*' \
+  -not -path '*/node_modules/*' | grep -v '/\.[^/]*/' | grep -E '/\.venv/|^\./[^.]' | wc -l
+# Log del LSP (busca 'too many files' / 'need to be indexed')
+ls -t ~/.vscode-server/data/logs/*/exthost*/trinhanhngoc.vscode-odoo/"Odoo IDE.log" | head -1
+```
 
 ### Configuraciones Estilo PyCharm
 
@@ -659,6 +697,7 @@ Beyond Odoo's requirements, this environment includes:
 |----------|-----------|
 | XML/SOAP (Electronic Invoicing) | `signxml`, `xmlsig`, `suds-py3`, `PySimpleSOAP` |
 | PDF Processing | `pdfminer.six`, `img2pdf`, `fpdf`, `pdf417gen` |
+| Graphics Rendering | `rlPyCairo` (backend PNG de reportlab — barcodes de `stock_barcode`; requiere `libcairo2-dev`) |
 | Data Processing | `pandas`, `numpy`, `Pyarrow` |
 | Cryptography | `PyJWT`, `pycryptodome` |
 | Development | `ipython`, `pytest`, `pydevd-odoo`, `watchdog` |

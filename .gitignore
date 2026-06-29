@@ -10,6 +10,7 @@ _build/
 !.vscode/launch.json.example
 !.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/prettier-format-on-save.sh
 # compiled python files
 *.py[co]
 __pycache__/
@@ -44,13 +45,11 @@ src/projects/*
 src/migrate/*
 !src/migrate/.gitkeep
 
-# js tooling
-node_modules
+# js tooling (workspace root — lockfile tracked for format-on-save)
+node_modules/
 jsconfig.json
 tsconfig.json
-package-lock.json
-package.json
-.husky
+.husky/
 
 # Distribution / packaging
 # Odoo source code (cloned dynamically with clone-addons.sh)
@@ -104,7 +103,12 @@ coverage.lcov
 !.claude/commands
 !.claude/skills
 
+.claude/skills/openspec-*/
+.claude/commands/opsx/
+
 # WSL
 *.Identifier
 
 files/
+scripts/
+_tmp/

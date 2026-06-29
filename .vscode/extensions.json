@@ -62,6 +62,7 @@
     "alefragnani.project-manager",        // Navegación entre múltiples proyectos
     "formulahendry.code-runner",          // Ejecutar scripts rápidamente
     "tushortz.python-extended-snippets",  // Snippets útiles para Python
-    "esbenp.prettier-vscode"              // Formateo automático (JS, JSON, XML, etc.)
+    "esbenp.prettier-vscode",             // Formateo (Format Document; save via Run on Save)
+    "emeraldwalk.runonsave"               // Prettier al guardar .md/.xml/.yaml/.json (o19-env)
   ]
 }
