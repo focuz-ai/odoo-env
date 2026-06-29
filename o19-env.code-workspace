@@ -8,8 +8,9 @@
   "settings": {
     "prettier.enable": true,
     "prettier.requireConfig": false,
-    "prettier.prettierPath": "${workspaceFolder}/node_modules/prettier/bin/prettier.cjs",
-    "prettier.configPath": "${workspaceFolder}/prettier.config.cjs",
+    "prettier.prettierPath": "node_modules/prettier",
+    "prettier.configPath": "prettier.config.cjs",
+    "prettier.useEditorConfig": false,
     "prettier.documentSelectors": ["**/*"],
     "editor.formatOnSaveMode": "file",
     "[markdown]": {
