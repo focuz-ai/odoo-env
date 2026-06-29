@@ -39,11 +39,19 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 | `[REL]` | Commits de release (versiones major/minor) |
 | `[IMP]` | Mejoras incrementales (el más común) |
 | `[MERGE]` | Merge commits; forward-ports de fixes |
+| `[MIG]` | Migración de un módulo entre series Odoo (`[MIG] module: migration to 19.0`) |
 | `[CLA]` | Firma del Contributor License Agreement |
 | `[I18N]` | Cambios en archivos de traducción |
 | `[PERF]` | Parches de rendimiento |
 | `[CLN]` | Limpieza de código |
 | `[LINT]` | Pasadas de linting |
+
+## Ramas y PR
+
+- Programa siempre en `tmp.<serie>`.
+- No commitees directo en `19.0` ni en `main`.
+- El flujo es `tmp.<serie> -> staging.<serie> -> <serie> -> main`.
+- La CI corre los tests solo en `tmp.*`.
 
 ## Config de git
 Define `user.email` y `user.name` en tu git local antes de commitear:

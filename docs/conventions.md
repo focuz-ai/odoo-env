@@ -63,14 +63,17 @@ del proyecto). Sin `# -*- coding: utf-8 -*-` (innecesario en Python 3):
 # License OPL-1 (https://www.odoo.com/documentation/user/legal/licenses.html#odoo-apps).
 ```
 
-## Calidad y formato (estándar OCA, sin conflicto con EE)
-Convenciones de OCA que adoptamos (solo licencia/autor se sobreescriben a OPL-1 /
-Focuz AI S.A.C.):
+## Calidad y formato (capa de verificación EE)
+> Estas reglas se ejecutan con configs versionados y con el gate de verificación del
+> repo. Este documento explica el POR QUÉ; el scaffold aplica el CÓMO.
+
 - **Formato**: `ruff` + `ruff-format`; `isort` con secciones
   `stdlib → third-party → odoo → odoo.addons → first-party/local`; mccabe ≤ 16;
-  longitud de línea **88** (estándar OCA, `ruff`/`ruff-format`).
+  longitud de línea **120**.
 - **Lint Odoo**: `pylint-odoo` (manifest, XML, CSV, `.po`).
-- **pre-commit**: `trailing-whitespace`, `end-of-file-fixer`, `check-xml`, checks de `.po`.
+- **Seguridad**: `bandit` sobre el código.
+- **Pre-commit**: higiene básica, `ruff`, `pylint-odoo`, `bandit`, `prettier` y
+  commit-msg con `[TAG] module:`.
 - **editorconfig**: indent 4 (`.py`/`.xml`), 2 (`.json`/`.yml`/`.rst`/`.md`), UTF-8,
   newline final, sin espacios finales.
 - **Doc del módulo (OCA)**: fragmentos en `readme/` (`DESCRIPTION`, `USAGE`, `CONFIGURE`,
@@ -184,6 +187,11 @@ Herencia:
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
   cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
 
+> **Transición temporal — `.pot` no bloqueante en CI.** Mientras el export de i18n por
+> serie se termina de estandarizar en los repos, un `.pot` desactualizado se reporta
+> como warning y documentación, pero no bloquea el build. El estándar sigue vigente y
+> debe corregirse antes de release si el cambio añade o modifica cadenas traducibles.
+
 ## Datos y migración
 - Registros editables por el usuario con `noupdate="1"`.
 - Cambios de esquema → script en `migrations/<version>/` (ver [testing.md](testing.md)).
@@ -192,5 +200,5 @@ Herencia:
 Directorios `755`, archivos `644`.
 
 ## PEP8
-PEP8 con **longitud de línea 88** (estándar OCA; `E501` activo en `ruff`, no 79);
-`E301`/`E302` (líneas en blanco) relajadas.
+PEP8 con **longitud de línea 120** (`E501` activo en `ruff`, no 79); `E301`/`E302`
+(líneas en blanco) relajadas.

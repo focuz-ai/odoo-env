@@ -4,17 +4,22 @@
 - **Todo modelo nuevo** necesita reglas en `ir.model.access.csv`.
 - Permisos **mínimos por grupo**: no des `1,1,1,1` a todos por defecto.
 - Separa lectura/escritura/creación/borrado según el rol real.
+- Evita ACL para `base.group_public` y `base.group_portal` salvo que el caso de uso lo
+  requiera explícitamente y tenga pruebas.
 
 ## Grupos y record rules
 - Define grupos (`res.groups`) coherentes con los roles funcionales.
   XML ID `<modulo>_group_<nombre>`; record rules `<modelo>_rule_<grupo>`.
 - Usa **record rules** donde el dato es sensible o multi-usuario (global vs por-grupo).
 - Revisa `perm_read/write/create/unlink` de cada regla.
+- Las record rules globales deben ser simples y previsibles.
 
 ## Multi-compañía
 - Campos `company_id` donde corresponda; `company_dependent=True` cuando el valor
   varía por compañía.
 - Record rules de compañía (`company_ids`) para evitar fugas entre compañías.
+- En relaciones entre modelos con compañía, usa `check_company=True` cuando aplique.
+- Los datos globales sin `company_id` deben estar justificados.
 
 ## sudo()
 - Cada `sudo()` debe estar **justificado**. Prohibido usarlo para saltarse ACL por
@@ -25,10 +30,19 @@
 - Valida `request.params`; nunca confíes en la entrada del usuario.
 - Sin `eval`/`safe_eval` sobre entrada de usuario; SQL siempre parametrizado
   (ver [orm-performance.md](orm-performance.md)).
+- `sudo()` en controladores debe limitarse al record mínimo necesario y filtrar antes de
+  devolver datos.
+- Rutas `type='json'` públicas requieren autenticación funcional alternativa.
 
 ## Campos sensibles
 - Contraseñas/tokens con `groups=` y/o `password=True`.
 - PII no expuesta en vistas/portal sin control de acceso.
+- Credenciales en `res.company` o `ir.config_parameter` solo con acceso de administrador.
+
+## Adjuntos y binarios
+
+- `ir.attachment` hereda seguridad del `res_model/res_id`; enlaza al documento correcto.
+- Evita adjuntos huérfanos accesibles por URL.
 
 > Vulnerabilidades del entorno (CVEs de dependencias, versión de Python) se documentan
 > en el `CLAUDE.md` del entorno, no aquí: este documento cubre el **código** del módulo.

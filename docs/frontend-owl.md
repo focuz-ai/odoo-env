@@ -33,6 +33,13 @@
 
 ## i18n
 - Cadenas traducibles con el sistema del web client (`_t`).
+- Regenera `.pot` cuando cambies texto de UI.
+
+## Accesibilidad
+
+- Usa HTML semántico.
+- Asegura navegación por teclado.
+- No dependas solo del color para estados.
 
 ## Tests: HOOT (Odoo 19) — NO QUnit
 Ver [testing.md](testing.md). En Odoo 19 el framework web es **HOOT**
