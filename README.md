@@ -3,8 +3,87 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 
 ![Odoo & Visual Studio Code](https://i.ytimg.com/vi/N1KjLdbv7kA/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLATEFBlsHpR1dYaHMiHvTApC3E4Qg)
 
+## ¿Qué es este repositorio?
+
+**o16-env** es el entorno de desarrollo de Odoo **16.0** de focuz-ai. No es un módulo
+ni una app: es el "workspace" que junta todo lo necesario para correr y desarrollar
+Odoo en tu máquina — el código fuente de Odoo Community/Enterprise, la configuración
+de VSCode, y los módulos propios/de cliente (que viven en repos aparte, ver
+[Estructura](#estructura)).
+
+Si nunca trabajaste con Odoo: es un ERP modular escrito en Python. Cada funcionalidad
+(ventas, facturación, inventario...) es un **módulo/addon** — una carpeta con un
+`__manifest__.py` que declara sus dependencias, modelos, vistas y datos. Este repo no
+contiene esos módulos de negocio; contiene el motor (`odoo/`, `enterprise/`) y las
+herramientas para desarrollarlos. Los módulos reales viven en `src/dev/` (tuyos, en
+desarrollo) y `src/projects/<cliente>/` (de cada cliente).
+
+> **¿Vienes de otro stack (Django, Rails, Laravel)?** Odoo usa un ORM propio
+> (`self.env['modelo'].search(...)`), no SQLAlchemy/ActiveRecord. Las vistas son XML
+> declarativo (QWeb), no templates tipo Jinja/ERB. No hay migraciones tipo Alembic —
+> los cambios de esquema van en `migrations/<version>/` del propio módulo. Ver
+> [Conceptos clave](#conceptos-clave) más abajo antes de tocar código.
+
+## Primeros pasos (tu primer día)
+
+Camino lineal recomendado si es tu primera vez en este repo — en orden, sin saltarte
+pasos. Cada comando asume que ya estás en la raíz de `o16-env`.
+
+1. **Clonar y configurar** → sección [Guía de configuración rápida](#guía-de-configuración-rápida).
+2. **Preparar el sistema** (Python, PostgreSQL client, wkhtmltopdf) → sección
+   [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo). Usa el script
+   automático, no la instalación manual, salvo que algo falle.
+3. **Clonar Odoo Community/Enterprise/Themes** → sección
+   [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo). Esto tarda varios
+   minutos (son repos grandes).
+4. **Crear el venv e instalar dependencias Python** → sección
+   [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias).
+   Usa **Python 3.12** para este repo (Odoo 16), no 3.13.
+5. **Crear tu config de cliente** (copia de `dev.conf.example`) y tu `launch.json`
+   (copia de `launch.json.example`) → sección
+   [Guía de configuración rápida](#guía-de-configuración-rápida). Sin esto no hay
+   dónde apuntar `odoo-bin`.
+6. **Levantar el servidor por primera vez** — desde VSCode, `F5` con la configuración
+   `Odoo: Development`, o por terminal:
+   ```bash
+   source .venv/bin/activate
+   python odoo/odoo-bin -c config/<cliente>/dev.conf -d <tu_bd> --dev=xml,reload,qweb
+   ```
+   **Qué deberías ver:** líneas de log terminando en algo como
+   `odoo.modules.loading: Modules loaded.` y `HTTP service (werkzeug) running on
+   0.0.0.0:8069`. Si la base `<tu_bd>` no existe, Odoo te la crea al arrancar (o
+   créala desde `http://localhost:8069/web/database/manager`).
+7. **Confirmar que funciona**: abre `http://localhost:8069` en el navegador — deberías
+   ver la pantalla de login/selector de base de datos de Odoo. Si no carga, revisa
+   [Errores comunes](#errores-comunes).
+8. **Instalar tu primer módulo propio** → sección [Scaffold](#scaffold) para crear uno
+   vacío de prueba, o instala uno existente con `-i <module_name>`.
+9. **Antes de tu primer commit**: lee [Coding Guidelines](#coding-guidelines) y
+   configura [Linting, Formato y Pre-commit](#linting-formato-y-pre-commit) — el hook
+   corre automático al hacer `git commit`, pero es mejor entender qué valida.
+
+> Si algo de esta lista no aplica a tu cliente/proyecto (nombre de BD, config
+> específica), pregunta antes de improvisar — no inventes rutas o nombres.
+
+## Conceptos clave
+
+Glosario mínimo para orientarte en este repo si Odoo es nuevo para ti:
+
+| Término | Qué es |
+|---------|--------|
+| **Módulo / addon** | Carpeta con `__manifest__.py` que agrega funcionalidad a Odoo (un modelo, una vista, un reporte...). Todo lo que desarrollas es un módulo. |
+| **Manifest** (`__manifest__.py`) | Metadata del módulo: nombre, versión, dependencias (`depends`), qué archivos XML/CSV cargar (`data`). Sin esto, Odoo no reconoce la carpeta como módulo. |
+| **`addons_path`** | Lista de carpetas donde Odoo busca módulos. La define `dev.conf` (runtime) y `odools.toml` (para que el IDE resuelva `_inherit`/imports). |
+| **ORM** | La capa `self.env['modelo.tecnico']` que traduce operaciones Python a SQL. No escribas SQL crudo salvo que sea imprescindible (ver `docs/orm-performance.md`). |
+| **`_inherit`** | Mecanismo para extender un modelo/vista existente sin copiar su código — la base de "reúso primero" (ver `docs/conventions.md`). |
+| **`dev.conf` vs `.env`** | `dev.conf` es la config de **runtime de Odoo** (conexión a BD, addons_path). `.env` es config del **entorno/tooling** (qué repos clonar, credenciales de GitHub). No son intercambiables. |
+| **Cliente / proyecto** | Cada cliente de focuz-ai tiene su propia carpeta en `config/<cliente>/` y `src/projects/<cliente>/` — sus módulos y su config no se mezclan con los de otros clientes. |
+
 <h1>Contenido</h1>
 
+- [¿Qué es este repositorio?](#qué-es-este-repositorio)
+- [Primeros pasos (tu primer día)](#primeros-pasos-tu-primer-día)
+- [Conceptos clave](#conceptos-clave)
 - [Estructura](#estructura)
     - [Estructura de config](#estructura-de-config)
     - [Estructura de módulos](#estructura-de-módulos)
@@ -23,6 +102,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
   - [Modos de desarrollo](#modos-de-desarrollo)
+  - [Corre tu primer test](#corre-tu-primer-test)
 - [Errores comunes](#errores-comunes)
   - [InterfaceError: connection already closed](#interfaceerror-connection-already-closed)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
@@ -37,6 +117,7 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Workflow para Contribuir](#workflow-para-contribuir)
   - [Firmar el CLA](#firmar-el-cla)
   - [Sincronizar Fork con Upstream](#sincronizar-fork-con-upstream)
+- [Linting, Formato y Pre-commit](#linting-formato-y-pre-commit)
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
@@ -45,11 +126,13 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
 ```
 config/
 ├── client_1/                 # Client 1
-│   ├── dev.config            # Staging branch config
-│   ├── main.config           # Main branch config
-│   └── temp.config           # Temp branch config
+│   ├── dev.conf               # Staging branch config
+│   ├── main.conf               # Main branch config
+│   └── temp.conf               # Temp branch config
 └── client_2/                 # Client 2
 ```
+> Cada archivo se copia de `config/dev.conf.example` o `config/prod.conf.example`
+> (ver [Guía de configuración rápida](#guía-de-configuración-rápida)) — no se crean a mano.
 ### Estructura de módulos
 ```
 src/
@@ -86,7 +169,7 @@ Editar `launch.json` y reemplazar los placeholders:
 
 | Configuración | Descripción |
 |---------------|-------------|
-| `Odoo: Development` | Servidor con hot reload (`--dev=all`) |
+| `Odoo: Development` | Servidor con hot reload (`--dev=xml,reload,qweb`) |
 | `Odoo: Install Module` | Instalar módulo y salir |
 | `Odoo: Update Module` | Actualizar módulo y salir |
 | `Odoo: Run Tests` | Ejecutar tests del módulo |
@@ -121,7 +204,8 @@ El archivo `.vscode/settings.json` incluye configuraciones para mejorar producti
 |---------|-------|-------------|
 | `editor.rulers` | `[88, 120]` | Guías visuales (Black: 88, Odoo: 120) |
 | `[python].editor.formatOnSave` | `true` | Auto-formato al guardar |
-| `[python].editor.defaultFormatter` | `autopep8` | Formateador por defecto |
+| `[python].editor.defaultFormatter` | `charliermarsh.ruff` | Formateador por defecto (Ruff, no autopep8) |
+| `prettier.ignorePath` | `.prettierignore` | Format-on-save de XML/JSON/YAML/MD sin heredar `.gitignore` (ver [Linting, Formato y Pre-commit](#linting-formato-y-pre-commit)) |
 
 **Navegación y contexto:**
 
@@ -466,21 +550,40 @@ deactivate
 # Extras de Odoo
 ## Scaffold
 
-Ubicarse en la raiz del proyecto y ejecutar:
+Ubicarse en la raíz del proyecto y ejecutar (la carpeta destino real de este repo es
+`src/dev/<organización>/`, no `src/addons/` — ver [Estructura](#estructura)):
 
 Para Linux y MAC el comando:
 ```bash
-python odoo/odoo-bin scaffold name_module src/addons/
+python odoo/odoo-bin scaffold name_module src/dev/<organización>/
 ```
 Para Windows el comando:
 ```bash
-python.exe odoo/odoo-bin scaffold name_module src/addons/
+python.exe odoo/odoo-bin scaffold name_module src/dev/<organización>/
 ```
+
+**Ejemplo completo — de scaffold a módulo instalado:**
+```bash
+# 1. Genera el esqueleto del módulo
+python odoo/odoo-bin scaffold mi_primer_modulo src/dev/focuz-ai/
+
+# 2. Instálalo en tu BD de desarrollo
+python odoo/odoo-bin -c config/<cliente>/dev.conf -d <tu_bd> -i mi_primer_modulo --stop-after-init
+
+# 3. Verifica: entra a http://localhost:8069, activa el modo desarrollador
+#    (Ajustes → Activar modo desarrollador) y búscalo en Apps → quita el
+#    filtro "Apps" para ver módulos técnicos también.
+```
+El scaffold genera `__manifest__.py`, `models/`, `views/`, `security/`,
+`controllers/` con contenido de ejemplo — bórralo o edítalo según
+[Coding Guidelines](#coding-guidelines) antes de considerarlo terminado.
+
 ## Shell
 
-Para acceder a la shell de Odoo en Linux o Mac:
+Para acceder a la shell de Odoo en Linux o Mac (usa la config de tu cliente, no un
+`config/odoo.conf` genérico — esa ruta no existe en este repo):
 ```bash
-python odoo/odoo-bin shell -d <nombrebd> -c config/odoo.conf
+python odoo/odoo-bin shell -d <nombrebd> -c config/<cliente>/dev.conf
 ```
 Si ves “>>>”, entonces ya te encuentras en la línea de comandos de Odoo
 
@@ -489,6 +592,12 @@ Ejemplo de como cambiar la clave del administrador:
     >>> self.env["res.users"].browse(2).login = "sadmin"
     >>> self.env["res.users"].browse(2).password = "sadmin"
     >>> self.env.cr.commit()
+
+> **¿Por qué `commit()` manual aquí sí es correcto?** [Coding Guidelines](#coding-guidelines)
+> prohíbe `self.env.cr.commit()` dentro de modelos/controladores porque el framework
+> gestiona esa transacción automáticamente por request. La shell **no** corre dentro
+> de un request — es la única excepción real: sin `commit()` explícito, tus cambios
+> se pierden al salir.
 
 ## Shell para usar IPython como REPL
 
@@ -501,16 +610,49 @@ pip install ipython
 
 Ahora que IPython está instalado, ejecutar:
 ```bash
-odoo/odoo-bin shell -c config/odoo.conf -d <db-name> --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
+odoo/odoo-bin shell -c config/<cliente>/dev.conf -d <db-name> --xmlrpc-port 8888 --gevent-port 8899 --shell-interface ipython
 ```
 ## Modos de desarrollo
 El parámetro ``--dev`` en Odoo se utiliza para habilitar diferentes modos de desarrollo que facilitan la depuración y el desarrollo de módulos. Algunos de los valores comunes que puede tomar son:
-- all: Activa todas las opciones de desarrollo.
-- assets: Habilita la depuración de archivos estáticos como CSS y JavaScript.
+- all: Activa todas las opciones de desarrollo (incluye `assets`, que recompila JS/SCSS/XML en **cada request** — costoso).
+- reload: Reinicia el servidor automáticamente cuando guardas un archivo `.py`.
+- assets: Habilita la depuración de archivos estáticos como CSS y JavaScript (recompila bundles).
 - qweb: Permite la depuración de plantillas QWeb.
 - xml: Activa la depuración de vistas XML.
 - rpc: Muestra las llamadas RPC (Remote Procedure Call) en la consola.
-- pdb: Inicia un depurador interactivo (Python Debugger) en caso de errores.
+- pdb: Inicia un depurador interactivo (Python Debugger) en caso de errores.
+
+**Recomendado para el día a día:** `--dev=xml,reload,qweb` en vez de `--dev=all` —
+cubre la mayoría del trabajo en Python/XML sin la recompilación de assets en cada
+request. Usa `--dev=all` solo cuando estés tocando JS/OWL/SCSS.
+```bash
+python odoo/odoo-bin -c config/<cliente>/dev.conf --dev=xml,reload,qweb
+```
+
+## Corre tu primer test
+
+Para lógica de servidor (modelos, computes, permisos) se usa `TransactionCase`; para
+tests de componentes web, el framework JS de esta versión es **QUnit**, no HOOT (ver
+`docs/testing.md`). Ejemplo instalando y corriendo los tests de un módulo:
+
+```bash
+# Primera vez (instala el módulo y corre sus tests)
+python odoo/odoo-bin -c config/<cliente>/dev.conf -d <tu_bd> \
+    -i <module_name> --test-enable --stop-after-init
+
+# Módulo ya instalado: usa -u, no -i
+python odoo/odoo-bin -c config/<cliente>/dev.conf -d <tu_bd> \
+    -u <module_name> --test-enable --stop-after-init
+
+# Un solo test (clase y método), útil mientras iteras
+python odoo/odoo-bin -c config/<cliente>/dev.conf -d <tu_bd> \
+    -u <module_name> --test-enable --test-tags :TestClassName.test_method_name --stop-after-init
+```
+
+**Qué deberías ver:** líneas `INFO ... odoo.tests...` por cada test corrido y, al
+final, `0 failed, 0 error(s)` si todo pasó. Un test fallido imprime el traceback
+completo y el nombre exacto del test para que lo repitas con `--test-tags`.
+
 # Errores comunes
 
 ## InterfaceError: connection already closed
@@ -544,7 +686,12 @@ sudo sysctl -p
 
 # Coding Guidelines
 
-Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html) oficiales. Consulta [CLAUDE.md](CLAUDE.md) para guías detalladas.
+Seguimos las [Odoo Coding Guidelines](https://www.odoo.com/documentation/16.0/contributing/development/coding_guidelines.html)
+oficiales, adaptadas a Odoo 16 en **[`docs/conventions.md`](docs/conventions.md) — es
+la fuente de verdad**, no lo que sigue (un resumen ilustrativo que puede quedar
+desactualizado). `CLAUDE.md` también referencia `docs/` en vez de duplicar reglas.
+Ver el [índice completo de `docs/`](docs/README.md) para ORM/rendimiento, seguridad,
+frontend OWL, testing y EDI.
 
 ## Estructura de Modelos
 
@@ -575,7 +722,7 @@ class MyModel(models.Model):
 ## Reglas Críticas
 
 ```python
-# ❌ NUNCA hacer commit manual
+# ❌ NUNCA hacer commit manual en modelos/controladores (sí es correcto en la shell, ver arriba)
 self.env.cr.commit()  # PROHIBIDO
 
 # ❌ No usar _() en Selection de clase
@@ -588,6 +735,17 @@ state = fields.Selection([('draft', 'Draft')])  # BIEN
 @api.model_create_multi
 def create(self, vals_list):
     return super().create(vals_list)
+```
+
+```python
+# __manifest__.py — licencia y autor son SIEMPRE estos valores en este proyecto
+# (pylint-odoo del pre-commit rechaza cualquier otro license)
+{
+    'license': 'OPL-1',
+    'author': 'Focuz AI S.A.C.',
+    'version': '16.0.1.0.0',   # formato 16.0.x.y.z
+    'installable': True,        # explícito, aunque coincida con el default
+}
 ```
 
 ## Estructura de Módulo
@@ -606,7 +764,15 @@ my_module/
 
 # Contribuir a Odoo
 
-Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
+> **Esta sección es para contribuir código de vuelta a `odoo/odoo` (el core de Odoo,
+> upstream) — un caso poco frecuente.** Para tu trabajo del día a día en módulos de
+> cliente/focuz-ai, el formato de commit `[TAG] module: ...` es el mismo, pero el
+> flujo de ramas es distinto: **siempre `tmp.<serie>` → `staging.<serie>` →
+> `<serie>` → `main`**, nunca commits directos en `16.0` ni `main`. Detalle completo
+> en [`docs/git-guidelines.md`](docs/git-guidelines.md) — es la fuente de verdad,
+> lo que sigue es solo el caso "contribuir a Odoo core".
+
+Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las [Odoo Git Guidelines](https://www.odoo.com/documentation/16.0/contributing/development/git_guidelines.html).
 
 ## Formato de Commits
 
@@ -621,18 +787,22 @@ References: task-123, Fixes #123
 
 ## Tags Disponibles
 
+Tabla completa (con más tags) en [`docs/git-guidelines.md`](docs/git-guidelines.md#tags) — los más comunes:
+
 | Tag | Uso |
 |-----|-----|
 | `[FIX]` | Bug fixes |
-| `[IMP]` | Mejoras incrementales |
-| `[ADD]` | Nuevos módulos |
+| `[IMP]` | Mejoras incrementales (el más común) |
+| `[ADD]` | Módulos nuevos |
 | `[REF]` | Refactoring |
 | `[REM]` | Eliminar código muerto |
 | `[REV]` | Revertir commits |
 | `[MOV]` | Mover archivos |
+| `[MIG]` | Migración de un módulo entre series Odoo |
 | `[I18N]` | Traducciones |
 | `[PERF]` | Performance |
 | `[CLN]` | Limpieza de código |
+| `[CLA]` | Firma del Contributor License Agreement |
 
 ## Workflow para Contribuir
 
@@ -684,11 +854,58 @@ git merge upstream/16.0
 git push origin 16.0
 ```
 
+# Linting, Formato y Pre-commit
+
+Este repo usa [pre-commit](https://pre-commit.com/) para correr linters automáticamente
+al hacer `git commit`. Se instala una sola vez (ver [Primeros pasos](#primeros-pasos-tu-primer-día)):
+
+```bash
+pip install pre-commit
+pre-commit install   # engancha el hook a .git/hooks/pre-commit
+```
+
+**Qué corre en cada commit** (definido en [`.pre-commit-config.yaml`](.pre-commit-config.yaml)):
+
+| Herramienta | Qué valida |
+|-------------|-----------|
+| `ruff` | Lint + formato de Python (comillas simples, `line-length=120`, imports) |
+| `pylint-odoo` | Antipatrones específicos de Odoo (manifest, `sql-injection`, `super()` faltante...) |
+| `trailing-whitespace`, `end-of-file-fixer`, `check-xml`, `check-yaml` | Higiene básica de archivos |
+
+```bash
+# Correr manualmente sobre lo que tienes en staging
+pre-commit run
+
+# Correr sobre archivos puntuales (útil antes de un commit grande)
+pre-commit run --files src/dev/focuz-ai/mi_modulo/models/mi_modelo.py
+
+# Saltarse el hook puntualmente (evita si puedes)
+git commit --no-verify -m "WIP"
+```
+
+**Formato de XML/JSON/YAML/Markdown** con [Prettier](https://prettier.io/) (requiere
+`npm install` una vez, ver [`package.json`](package.json)):
+
+```bash
+npm run format                      # todo src/dev y src/projects
+npm run format:file -- ruta/archivo.xml
+```
+
+> ⚠️ **No corras `pre-commit run --all-files` ni `npm run format` (sin `--files`) sobre
+> código existente en tu primera pasada** — los hooks de auto-fix reformatearían toda
+> la base en un solo diff gigante. Corre estas herramientas solo sobre los archivos
+> que ya estás tocando, módulo por módulo. Más detalle (incluyendo por qué se
+> configuró `--license-allowed=OPL-1` y `quote-style=single`) en
+> [`docs/dev-environment-optimization.md`](docs/dev-environment-optimization.md).
+
 # Documentación adicional
 
-Por favor, consulte la [sección de documentos](https://github.com/focuzai/odoo_vsc/tree/main/docs).
+La fuente de verdad de los estándares de desarrollo vive en
+**[`docs/`](docs/README.md)** — consulta el índice ahí para convenciones, ORM/rendimiento,
+seguridad, frontend OWL, testing, EDI y migración entre series. `CLAUDE.md` referencia
+esos documentos en vez de duplicarlos.
 
-Para guías detalladas de desarrollo, consulte [CLAUDE.md](CLAUDE.md).
+Para guías del entorno (rutas, dependencias, VSCode, CVEs conocidos), consulte [CLAUDE.md](CLAUDE.md).
 
 # Fuentes
 

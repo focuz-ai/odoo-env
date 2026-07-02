@@ -64,8 +64,16 @@ python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -i <module_name>
 # Update module
 python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name>
 
-# Run tests for a module
+# Run tests for a module (installs it first)
 python odoo/odoo-bin -c config/<client>/dev.conf -d <database> --test-enable -i <module_name> --stop-after-init
+
+# Run a single test (module already installed: use -u, not -i)
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name> \
+    --test-enable --test-tags :TestClassName.test_method_name --stop-after-init
+
+# Run tests for one module without touching others (by module tag)
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name> \
+    --test-enable --test-tags /<module_name> --stop-after-init
 
 # Odoo shell
 python odoo/odoo-bin shell -d <database> -c config/<client>/dev.conf
@@ -76,9 +84,41 @@ python odoo/odoo-bin shell -d <database> -c config/<client>/dev.conf --xmlrpc-po
 # Scaffold new module
 python odoo/odoo-bin scaffold <module_name> src/dev/<organization>/
 
-# Development mode with auto-reload
+# Development mode with auto-reload (covers Python/XML/QWeb; cheaper than --dev=all)
+python odoo/odoo-bin -c config/<client>/dev.conf --dev=xml,reload,qweb
+
+# Use --dev=all only when touching JS/OWL/SCSS (recompiles assets on every request)
 python odoo/odoo-bin -c config/<client>/dev.conf --dev=all
 ```
+
+## Linting, Formatting & Pre-commit
+
+```bash
+# Run all hooks against staged files (what the git hook runs on commit)
+pre-commit run
+
+# Run against specific files
+pre-commit run --files path/to/file.py
+
+# Run everything (NOT recommended on first pass over existing code — see below)
+pre-commit run --all-files
+
+# Ruff directly (lint + format), scoped to your module
+ruff check src/dev/<organization>/<module>/
+ruff format src/dev/<organization>/<module>/
+
+# Prettier (JS/XML/YAML/MD) — requires --ignore-path .prettierignore, NOT the
+# default .gitignore-based ignore (src/dev/*, src/projects/* are gitignored
+# wholesale in this repo, which would silently skip all real module code)
+npm run format
+npm run format:file -- path/to/file.xml
+```
+
+> **First pass warning:** don't run `pre-commit run --all-files` or `npm run format`
+> (bare) over existing code — auto-fix hooks would reformat the whole tree in one
+> diff. Let hooks act on files you actually touch, module by module.
+> Details, gotchas, and the pylint-odoo/ruff config rationale (license-allowed,
+> quote-style, etc.) are in [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md).
 
 ## Dependencies Installation
 
@@ -355,7 +395,7 @@ Launch configurations in `.vscode/launch.json`:
 
 | Configuration | Description | Key Args |
 |---------------|-------------|----------|
-| `Odoo: Development` | Run server with hot reload | `--dev=all` |
+| `Odoo: Development` | Run server with hot reload | `--dev=xml,reload,qweb` |
 | `Odoo: Install Module` | Install module and exit | `-i <module> --stop-after-init` |
 | `Odoo: Update Module` | Update module and exit | `-u <module> --stop-after-init` |
 | `Odoo: Run Tests` | Run module tests | `--test-enable --log-level=test` |
@@ -378,9 +418,11 @@ cp .vscode/launch.json.example .vscode/launch.json
 | `odoo.selectedProfile` | `""` | Deshabilita extensión oficial Odoo |
 | `python.analysis.typeCheckingMode` | `"basic"` | Recomendado por Odoo IDE |
 | `python.analysis.diagnosticMode` | `"openFilesOnly"` | Solo archivos abiertos |
-| `python.analysis.extraPaths` | `[odoo, odoo/addons, ...]` | Paths para resolver imports |
+| `python.analysis.extraPaths` | `[odoo, odoo/addons, enterprise, design-themes, vendor/OCA]` | Paths para resolver imports |
 | `editor.quickSuggestions.strings` | `"on"` | Autocompletado en strings (XML IDs) |
 | `files.watcherInclude` | `["**"]` | Detectar cambios en symbolic links |
+| `files.watcherExclude` / `search.exclude` / `files.exclude` | `enterprise/`, `design-themes/`, `vendor/`, `.venv/`, `__pycache__/`, `.ruff_cache/` | Reducir CPU del file watcher y del `Ctrl+Shift+F` global (no afecta el scope del Odoo IDE, que vive en `pyrightconfig.json`) |
+| `prettier.ignorePath` | `".prettierignore"` | Evita que Prettier herede el `.gitignore` (que ignora `src/dev/*`/`src/projects/*` en bloque) |
 
 ### Odoo IDE como Language Server
 
@@ -602,12 +644,16 @@ Colores personalizados para elementos Python:
 | Extensión | Propósito |
 |-----------|-----------|
 | `charliermarsh.ruff` | Linter + Formatter ultra-rápido |
+| `ms-python.debugpy` | Depuración de Python (requerido por `launch.json`: `"type": "debugpy"`) |
+| `esbenp.prettier-vscode` | Format-on-save para JS/XML/YAML/MD (ver `.prettierignore`) |
 | `usernamehw.errorlens` | Errores inline en el código |
 | `ms-python.mypy-type-checker` | Type checking estricto |
 | `aaron-bond.better-comments` | Comentarios coloreados |
 | `mhutchie.git-graph` | Visualización de branches |
 | `eamodio.gitlens` | Git avanzado |
 | `mtxr.sqltools` | Database tools (como DataGrip) |
+| `DotJoshJohnson.xml`, `formulahendry.auto-complete-tag` | Soporte y autocompletado XML (vistas, QWeb) |
+| `mrorz.language-gettext` | Soporte para archivos `.po` (traducciones) |
 
 ### Environment Variables (`.env`)
 
@@ -769,7 +815,8 @@ pip install -r requirements.txt
 
 **InterfaceError: connection already closed**
 
-Occurs when editing Python code while Odoo runs with `--dev=all`:
+Occurs when editing Python code while Odoo runs with auto-reload (`--dev=all` or
+`--dev=...,reload,...`, e.g. the recommended `--dev=xml,reload,qweb`):
 ```
 psycopg2.InterfaceError: connection already closed
   File "odoo/service/server.py", line 507, in _run_cron
@@ -784,7 +831,7 @@ psycopg2.InterfaceError: connection already closed
 max_cron_threads = 0
 ```
 
-> **Note:** Use `max_cron_threads = 1` only when testing cron jobs, without `--dev=all`.
+> **Note:** Use `max_cron_threads = 1` only when testing cron jobs, without `reload` in `--dev`.
 
 **OSError: [Errno 24] inotify instance limit reached**
 ```bash
