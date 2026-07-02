@@ -421,10 +421,13 @@ viven ahora en **[`docs/`](docs/README.md)** — única fuente de verdad, estand
 | Tema                                                                                      | Documento                                                                    |
 | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Convenciones, estructura de módulo, orden de atributos, naming, XML, SCSS, i18n, permisos | [docs/conventions.md](docs/conventions.md)                                   |
+| SOLID/Clean Code en clave Odoo, manejo de errores, logging, anti-patrones                 | [docs/engineering-principles.md](docs/engineering-principles.md)             |
 | ORM, N+1, computes, índices, SQL, transacciones/savepoints, excepciones                   | [docs/orm-performance.md](docs/orm-performance.md)                           |
 | ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores                        | [docs/security.md](docs/security.md)                                         |
 | OWL 2, QWeb-JS, assets/registry, widgets, SCSS, tests del web client                      | [docs/frontend-owl.md](docs/frontend-owl.md)                                 |
 | TransactionCase/HttpCase + framework JS de la versión, trazabilidad, upgrade-safety       | [docs/testing.md](docs/testing.md)                                           |
+| EDI/autoridad fiscal: envío, idempotencia, seguridad, auditoría, golden-files             | [docs/edi-integrations.md](docs/edi-integrations.md)                         |
+| Migrar código de módulo entre series (APIs, vistas, frontend, OpenUpgrade)                | [docs/version-migration.md](docs/version-migration.md)                       |
 | Formato de commit, tags, ramas, PR (estilo Odoo)                                          | [docs/git-guidelines.md](docs/git-guidelines.md)                             |
 | Optimización del entorno (uv, Postgres dev, templates DB, VSCode)                         | [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md) |
 | Gestión de submódulos git (operativo)                                                     | [docs/submodule.md](docs/submodule.md)                                       |
