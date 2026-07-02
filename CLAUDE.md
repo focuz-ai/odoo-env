@@ -10,23 +10,30 @@ This is an Odoo 16.0 development environment (o16-env) configured for multi-clie
 
 ```
 o16-env/
-├── odoo/              # Odoo Community (cloned)
-├── odoo-enterprise/   # Odoo Enterprise (cloned)
-├── odoo-themes/       # Odoo Themes (cloned)
-├── config/            # Per-client config files (dev.conf, main.conf)
-│   └── <client>/      # Client-specific configurations
+├── odoo/              # Odoo Community (cloned, per clone-addons.txt)
+├── enterprise/        # Odoo Enterprise (cloned)
+├── design-themes/     # Odoo Design Themes (cloned)
+├── config/            # Per-client config files (dev.conf, main.conf, ...)
+│   └── <client>/      # Client-specific configurations (e.g. agrovet, jriffo, pancita)
 ├── src/
 │   ├── dev/           # Development addons (focuz-ai, yellow-brain-labs)
 │   ├── projects/      # Client-specific addons organized by branch
 │   │   └── <client>/{dev,main,temp}/
-│   └── migrate/       # Migration work
-├── vendor/            # Third-party addons
-└── .venv/             # Python 3.12 virtual environment
+│   └── migrate/       # Version-migration work-in-progress (e.g. 17.0/, 18.0/)
+├── vendor/            # Third-party addons (source dirs + packaged .zip releases)
+└── .venv/             # Python virtual environment (3.10-3.13, see below)
 ```
+
+> Los nombres de carpetas clonadas son `enterprise/` y `design-themes/` (no
+> `odoo-enterprise/`/`odoo-themes/` — nombres antiguos ya retirados de todo el repo,
+> incluyendo templates `.example`). Son configurables vía `ENTERPRISE_ADDONS`/`THEMES_ADDONS`
+> en `.env` (ver sección "Environment Variables" bajo VSCode Integration).
 
 ## Python Environment
 
-**Python 3.13** (current, stable)
+**Python 3.12 is recommended for this repo (Odoo 16.0)**. Python 3.13 is the recommendation
+for Odoo 17+ environments, not this one — don't default to 3.13 here without checking which
+Odoo series is actually targeted (`ODOO_TAG` in `.env`).
 
 ```bash
 # Activate virtual environment
@@ -37,10 +44,10 @@ source .venv/bin/activate
 
 | Python | Status | Notes |
 |--------|--------|-------|
-| 3.10 | ✅ Supported | Minimum version |
+| 3.10 | ⚠️ Works, needs workaround | `gevent` fails to build with modern setuptools/Cython (see Common Issues) |
 | 3.11 | ✅ Supported | Legacy stable |
-| 3.12 | ✅ Supported | Previous stable |
-| 3.13 | ✅ Current | Recommended, latest features |
+| 3.12 | ✅ **Recommended for Odoo 16** | Avoids gevent/Cython build issues; patches most CVEs |
+| 3.13 | ✅ Supported | Recommended for Odoo 17+, not this repo's primary target |
 
 ## Development Commands
 
@@ -129,8 +136,8 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.13 virtual environment
-python3.13 -m venv .venv
+# Create Python 3.12 virtual environment (recommended for Odoo 16)
+python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
@@ -138,7 +145,14 @@ pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 pip check
+
+# Code quality tooling (pre-commit: ruff + pylint-odoo; prettier: JS/XML/YAML/MD)
+pip install pre-commit
+pre-commit install
+npm install
 ```
+
+> Detalle de cada herramienta en [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md#8-pylint-odoo-oca-en-pre-commit).
 
 ## Setup Environment Script
 
@@ -147,10 +161,13 @@ The `setup_env.sh` script prepares the development environment automatically.
 ### Usage
 
 ```bash
-./setup_env.sh                  # Install with Python 3.13 (default)
-./setup_env.sh -p 3.12          # Install with Python 3.12
+./setup_env.sh                  # Install with Python 3.13 (script default)
+./setup_env.sh -p 3.12          # Install with Python 3.12 (recommended for this Odoo 16 repo)
 ./setup_env.sh --help           # Show help
 ```
+
+> El default del script (3.13) apunta a Odoo 17+; para este repo (Odoo 16) pasa siempre
+> `-p 3.12` explícitamente.
 
 ### What it installs
 
@@ -215,9 +232,15 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 
 | Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
 |--------------|-----------------|-----------------|
-| `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
-| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| `odoo/` | focuz-ai/odoo-fork | odoo/odoo |
+| `enterprise/` | focuz-ai/odoo-fork-enterprise | odoo/enterprise |
+| `design-themes/` | focuz-ai/odoo-fork-design-themes | odoo/design-themes |
+
+> El mapeo fork↔upstream real para cada carpeta lo define `clone-addons.txt` — puede
+> apuntar directo al upstream (p. ej. `odoo/odoo`, `odoo/design-themes`) en vez del fork
+> cuando no hay cambios propios que sincronizar en esa carpeta (típicamente solo
+> `enterprise/` necesita el fork). Verifica ese archivo antes de asumir de dónde se
+> clona cada carpeta.
 
 ### Sync Functionality (--sync)
 
@@ -241,9 +264,9 @@ GITHUB_ACCESS_TOKEN=ghp_your_token
 
 ```bash
 # Format: <type> <repo_url> <condition>
-public https://github.com/focuz-ai/odoo true
-themes https://github.com/focuz-ai/odoo-design-themes true
-enterprise https://github.com/focuz-ai/odoo-enterprise true
+public https://github.com/odoo/odoo true
+themes https://github.com/odoo/design-themes true
+enterprise https://github.com/focuz-ai/odoo-fork-enterprise true
 ```
 
 ## Database Configuration
@@ -262,16 +285,51 @@ fuente de verdad, estandarizada con la plantilla del sistema `odoo-openspec`:
 
 | Tema | Documento |
 |------|-----------|
+| Rutas del entorno, runtime, `odools.toml`, `dev.conf`, `launch.json` | [docs/environment.md](docs/environment.md) |
 | Convenciones, estructura de módulo, orden de atributos, naming, XML, SCSS, i18n, permisos | [docs/conventions.md](docs/conventions.md) |
+| SOLID/Clean Code en clave Odoo, manejo de errores, logging, anti-patrones | [docs/engineering-principles.md](docs/engineering-principles.md) |
 | ORM, N+1, computes, índices, SQL, transacciones/savepoints, excepciones | [docs/orm-performance.md](docs/orm-performance.md) |
 | ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores | [docs/security.md](docs/security.md) |
 | OWL 2, QWeb-JS, assets/registry, widgets, SCSS, tests del web client | [docs/frontend-owl.md](docs/frontend-owl.md) |
 | TransactionCase/HttpCase + framework JS de la versión, trazabilidad, upgrade-safety | [docs/testing.md](docs/testing.md) |
+| EDI/autoridad fiscal: envío (`account.edi.format`), idempotencia, seguridad, auditoría | [docs/edi-integrations.md](docs/edi-integrations.md) |
+| Migrar un módulo entre series Odoo (APIs, vistas, frontend, OpenUpgrade) | [docs/version-migration.md](docs/version-migration.md) |
 | Formato de commit, tags, ramas, PR (estilo Odoo) | [docs/git-guidelines.md](docs/git-guidelines.md) |
 
 > Los agentes IA del flujo resuelven `docs/<tema>.md` contra este `docs/` (estándar de
 > la versión activa). El resto de este `CLAUDE.md` cubre el **entorno** (Python, deps,
 > IDE, etc.), no el código del módulo.
+
+## Contributing Upstream to Odoo
+
+Este proyecto mantiene forks (`focuz-ai/odoo-fork*`) específicamente para poder contribuir
+fixes/features de vuelta a `odoo/odoo` — no solo para consumir código. Workflow real:
+
+```bash
+cd odoo
+git remote add upstream https://github.com/odoo/odoo.git   # si no existe aún
+git fetch upstream 16.0
+git checkout -b 16.0-fix-descripcion upstream/16.0
+
+# ... cambios + commit con formato [TAG] module: ... (ver docs/git-guidelines.md) ...
+
+git push origin 16.0-fix-descripcion
+gh pr create --repo odoo/odoo --base 16.0 \
+  --head focuz-ai:16.0-fix-descripcion \
+  --title "[FIX] module: descripción corta"
+```
+
+**CLA obligatorio antes de contribuir:** crear `odoo/doc/cla/individual/<github_username>.md`
+siguiendo el formato de archivos existentes y abrir PR con tag `[CLA]`.
+
+**Sincronizar fork con upstream** (equivalente manual de `./clone-addons.sh --sync`):
+```bash
+cd odoo
+git fetch upstream
+git checkout 16.0
+git merge upstream/16.0
+git push origin 16.0
+```
 
 ## Git Submodule Management
 
@@ -361,7 +419,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
     "reportMissingModuleSource": false,
     "reportUnknownMemberType": false,
     "reportUnknownArgumentType": false,
-    "extraPaths": ["odoo", "odoo/addons", "odoo-enterprise"]
+    "extraPaths": ["odoo", "odoo/addons", "enterprise", "design-themes"]
 }
 ```
 
@@ -384,8 +442,8 @@ name = "Odoo Master"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/odoo-enterprise",
-    "${workspaceFolder}/odoo-themes",
+    "${workspaceFolder}/enterprise",
+    "${workspaceFolder}/design-themes",
 ]
 ```
 
@@ -556,9 +614,14 @@ Colores personalizados para elementos Python:
 Variables de entorno para desarrollo Odoo. Copiar de `.env.example` y configurar:
 
 ```bash
+# Repository Paths (nombres de carpeta configurables)
+ENTERPRISE_ADDONS=enterprise
+THEMES_ADDONS=design-themes
+THIRD_PARTY_ADDONS=vendor
+
 # Odoo Runtime Configuration
 ODOO_RC=config/<client>/dev.conf
-PYTHONPATH=odoo:odoo-enterprise
+PYTHONPATH=odoo:enterprise:design-themes
 
 # Locale Settings (Peruvian Spanish)
 LANG=es_PE.UTF-8
@@ -568,8 +631,9 @@ TZ=America/Lima
 
 | Variable | Descripción | Nota |
 |----------|-------------|------|
+| `ENTERPRISE_ADDONS` / `THEMES_ADDONS` / `THIRD_PARTY_ADDONS` | Nombres de carpeta usados por `clone-addons.sh` | Default: `enterprise`, `design-themes`, `vendor` |
 | `ODOO_RC` | Archivo de configuración Odoo | **Cambiar `<client>` por nombre del cliente** |
-| `PYTHONPATH` | Rutas para imports Python | Odoo + Enterprise |
+| `PYTHONPATH` | Rutas para imports Python | Odoo + Enterprise + Design Themes |
 | `LANG/LC_ALL` | Locale del sistema | Español Perú |
 | `TZ` | Zona horaria | America/Lima |
 
@@ -685,6 +749,23 @@ The environment is set up for Peruvian electronic invoicing and compliance:
 - `l10n_pe_hr_payroll`: Payroll with PLAME, AFP, Renta 5ta
 
 ## Common Issues
+
+**gevent build failure on Python 3.10**
+
+```
+Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared name not builtin: long
+ERROR: Failed to build 'gevent' when getting requirements to build wheel
+```
+
+**Cause:** Odoo 16 pins `gevent==21.8.0`, which doesn't compile against modern setuptools/Cython
+on Python 3.10. This is why **Python 3.12 is the recommended interpreter for this repo**, not 3.10.
+
+**Solution (only if Python 3.10 is required):**
+```bash
+pip install "setuptools<70" wheel "Cython<3"
+pip install -r odoo/requirements.txt --no-build-isolation
+pip install -r requirements.txt
+```
 
 **InterfaceError: connection already closed**
 
