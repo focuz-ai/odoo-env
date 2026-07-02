@@ -1,26 +1,40 @@
 {
+    // ─────────────────────────────────────────────────────────────────
+    // Config del Odoo IDE (trinhanhngoc.vscode-odoo ≥ 0.40, Pyright interno).
+    // La versión nueva YA NO lee odools.toml: descubre los addons indexando
+    // los __manifest__.py dentro de `include`. Si el workspace supera ~150k
+    // archivos, Pyright ABORTA la indexación (0 archivos) y deja de resolver
+    // .py/.xml/modelos. Por eso `include` es acotado y se excluyen los
+    // árboles pesados que no aportan a la resolución (i18n .po/.pot, libs JS,
+    // fuente de otras series en src/migrate).
+    // ─────────────────────────────────────────────────────────────────
     "include": [
         "odoo",
-        "odoo-enterprise",
-        "odoo-themes",
-        "src"
+        "enterprise",
+        "design-themes",
+        "vendor/OCA",
+        "src/dev",
+        "src/projects"
     ],
     "exclude": [
         "**/node_modules",
         "**/__pycache__",
         "**/.*",
-        "vendor"
+        "**/i18n",
+        "**/static/lib",
+        "src/migrate"
     ],
     "extraPaths": [
         "odoo",
         "odoo/addons",
-        "odoo-enterprise",
-        "odoo-themes"
+        "enterprise",
+        "design-themes",
+        "vendor/OCA"
     ],
     "venvPath": ".",
     "venv": ".venv",
     "typeCheckingMode": "basic",
-    "pythonVersion": "3.13",
+    "pythonVersion": "3.12",
     "useLibraryCodeForTypes": true,
     "reportMissingTypeStubs": false,
     "reportMissingModuleSource": false,

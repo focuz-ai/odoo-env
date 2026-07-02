@@ -4,6 +4,13 @@
 # Line length limit (default 88 is too strict for Odoo)
 line-length = 120
 
+[format]
+# Odoo core y OCA usan comillas simples casi universalmente (verificado contra
+# odoo/addons/base y vendor/petty_cash: ~80% comillas simples). El default de
+# ruff-format es comillas dobles — sin esto, cada commit reescribiría strings
+# existentes en todos los módulos.
+quote-style = "single"
+
 [lint]
 # Rules to enable
 select = ["E", "F", "B", "SIM"]

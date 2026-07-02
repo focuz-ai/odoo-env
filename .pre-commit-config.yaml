@@ -1,0 +1,70 @@
+# =============================================================================
+# pre-commit hooks para entorno Odoo
+# =============================================================================
+# Instalar:    pre-commit install
+# Ejecutar:    pre-commit run                  (sobre staged)
+#              pre-commit run --files <files>  (sobre archivos específicos)
+#              pre-commit run --all-files      (NO recomendado en primera pasada)
+# =============================================================================
+
+# Excluir código vendored de Odoo y third-party
+exclude: |
+  (?x)^(
+      odoo/.*|
+      enterprise/.*|
+      design-themes/.*|
+      vendor/.*|
+      \.venv/.*|
+      .*/migrations/.*
+  )$
+
+repos:
+  # ---------- Higiene básica de archivos ----------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.po$        # archivos de traducción tienen espacios significativos
+      - id: end-of-file-fixer
+        exclude: \.(po|csv)$
+      - id: check-yaml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]   # advertir sobre archivos > 1MB
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # ---------- Ruff: linter + formatter Python ----------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # ---------- Pylint-Odoo: antipatrones específicos de Odoo ----------
+  # Las reglas Python genéricas las cubre Ruff; aquí solo las Odoo-específicas
+  - repo: https://github.com/OCA/pylint-odoo
+    rev: v10.0.2
+    hooks:
+      - id: pylint_odoo
+        files: \.py$
+        args:
+          - --load-plugins=pylint_odoo
+          - --disable=all
+          - --enable=odoolint
+          # Licencia del proyecto: pylint-odoo NO incluye OPL-1 en su default
+          # allowlist (solo OEEL-1) — sin esto, license-allowed rechaza TODOS
+          # los manifests de este org (ver docs/conventions.md: license OPL-1 siempre).
+          - --license-allowed=OPL-1
+          # Reglas OCA-específicas que NO aplican a focuz-ai:
+          - --disable=manifest-required-author      # OCA author obligatorio
+          - --disable=missing-readme                 # README.rst convention OCA
+          - --disable=manifest-author-string         # estilo OCA
+          - --disable=manifest-maintainers-list      # OCA maintainers
+          # installable=True explícito es convención del proyecto (docs/conventions.md),
+          # aunque coincida con el default de Odoo — no lo tratamos como superfluo.
+          - --disable=manifest-superfluous-key
+          - --rcfile=/dev/null
+          - -sn

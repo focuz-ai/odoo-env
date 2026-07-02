@@ -15,19 +15,23 @@ check_untyped_defs = false
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pyright - Configuración para Odoo IDE
+# NOTA: pyrightconfig.json TIENE PRECEDENCIA sobre esta sección cuando existe
+# (es el que carga el Odoo IDE). Se mantiene aquí solo como fallback. Si el
+# workspace supera ~150k archivos, Pyright aborta la indexación y deja de
+# resolver: por eso se excluyen i18n/static-lib/src-migrate y se acota `include`.
 # ─────────────────────────────────────────────────────────────────────────────
 
 [tool.pyright]
-include = ["odoo", "odoo-enterprise", "odoo-themes", "src"]
-exclude = ["**/node_modules", "**/__pycache__", "**/.*", "vendor"]
-extraPaths = ["odoo", "odoo/addons", "odoo-enterprise", "odoo-themes"]
+include = ["odoo", "enterprise", "design-themes", "vendor/OCA", "src/dev", "src/projects"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "**/i18n", "**/static/lib", "src/migrate"]
+extraPaths = ["odoo", "odoo/addons", "enterprise", "design-themes", "vendor/OCA"]
 
 venvPath = "."
 venv = ".venv"
 
 # Type checking básico (recomendado por Odoo IDE)
 typeCheckingMode = "basic"
-pythonVersion = "3.13"
+pythonVersion = "3.12"
 
 # Usar código de librería para tipos cuando no hay stubs
 useLibraryCodeForTypes = true

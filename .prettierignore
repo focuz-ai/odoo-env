@@ -1,0 +1,12 @@
+# Prettier respeta .gitignore por defecto, pero este entorno gitignorea en
+# bloque src/dev/* y src/projects/* (cada uno es un repo clonado aparte, no
+# trackeado por o16-env) — sin este archivo, `npm run format` no tocaría
+# ningún módulo real. Los scripts de package.json usan --ignore-path
+# .prettierignore explícitamente para no heredar esas reglas de git.
+odoo/
+enterprise/
+design-themes/
+vendor/
+.venv/
+node_modules/
+**/migrations/**
