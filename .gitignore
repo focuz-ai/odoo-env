@@ -44,19 +44,22 @@ src/projects/*
 src/migrate/*
 !src/migrate/.gitkeep
 
-# js tooling
+# js tooling (ignora package.json/lock de módulos/addons anidados; el de la raíz
+# es tooling del propio entorno — prettier — y sí se trackea, ver excepciones abajo)
 node_modules
 jsconfig.json
 tsconfig.json
 package-lock.json
 package.json
 .husky
+!/package.json
+!/package-lock.json
 
 # Distribution / packaging
 # Odoo source code (cloned dynamically with clone-addons.sh)
 odoo/
-odoo-enterprise/
-odoo-themes/
+enterprise/
+design-themes/
 clone.log
 env/
 env-*/
@@ -80,6 +83,7 @@ var/
 *.egg
 *.eggs
 .env
+.tmp
 
 #PyDev
 .project

@@ -40,8 +40,8 @@ ENVIRONMENT VARIABLES (.env):
     GITHUB_ACCESS_TOKEN         - GitHub token for private repos
     ENTERPRISE_USER             - GitHub username for Enterprise repo
     ENTERPRISE_ACCESS_TOKEN     - GitHub token for Enterprise repo
-    ENTERPRISE_ADDONS           - Local folder for Enterprise (default: odoo-enterprise)
-    THEMES_ADDONS               - Local folder for Themes (default: odoo-themes)
+    ENTERPRISE_ADDONS           - Local folder for Enterprise (default: enterprise)
+    THEMES_ADDONS               - Local folder for Themes (default: design-themes)
     THIRD_PARTY_ADDONS          - Local folder for vendor addons (default: vendor)
 
 EOF
@@ -243,7 +243,7 @@ clone_and_copy_modules() {
         fi
         # Delete repository
         if [[ $repo_type == "themes" ]]; then
-            repo_name=$THEMES_ADDONS   
+            repo_name=$THEMES_ADDONS
         fi
         if [[ $should_clone == true && -d "$repo_name" ]]; then
             delete_repository $repo_name
