@@ -68,7 +68,8 @@ Convenciones de OCA que adoptamos (solo licencia/autor se sobreescriben a OPL-1 
 Focuz AI S.A.C.):
 - **Formato**: `ruff` + `ruff-format`; `isort` con secciones
   `stdlib → third-party → odoo → odoo.addons → first-party/local`; mccabe ≤ 16;
-  longitud de línea **88** (estándar OCA, `ruff`/`ruff-format`).
+  longitud de línea **120** (estándar del proyecto — ver `ruff.toml` en la raíz del
+  entorno; no el límite 88 de OCA/Black).
 - **Lint Odoo**: `pylint-odoo` (manifest, XML, CSV, `.po`).
 - **pre-commit**: `trailing-whitespace`, `end-of-file-fixer`, `check-xml`, checks de `.po`.
 - **editorconfig**: indent 4 (`.py`/`.xml`), 2 (`.json`/`.yml`/`.rst`/`.md`), UTF-8,
@@ -192,5 +193,5 @@ Herencia:
 Directorios `755`, archivos `644`.
 
 ## PEP8
-PEP8 con **longitud de línea 88** (estándar OCA; `E501` activo en `ruff`, no 79);
-`E301`/`E302` (líneas en blanco) relajadas.
+PEP8 con **longitud de línea 120** (estándar del proyecto; `E501` activo en `ruff`,
+no 79); `E301`/`E302` (líneas en blanco) relajadas.

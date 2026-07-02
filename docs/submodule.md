@@ -1,5 +1,11 @@
 <h1>Tabla de contenido</h1>
 
+## Documentos relacionados
+
+- [**Optimización del entorno de desarrollo**](dev-environment-optimization.md) — Postgres dev mode, `uv`, VSCode, Git, pytest-odoo, etc.
+
+## Índice de esta guía
+
 - [Gestión de submódulos (sub-proyecto o sub-repositorio)](#gestión-de-submódulos-sub-proyecto-o-sub-repositorio)
   - [Cómo agregar un nuevo submódulo](#cómo-agregar-un-nuevo-submódulo)
   - [Cómo descargar actualizaciones de superproyectos](#cómo-descargar-actualizaciones-de-superproyectos)
@@ -49,7 +55,7 @@
 ## Cómo agregar un nuevo submódulo
 
     git submodule add -b <branch> <url> <path>
-    git commit -m "feat: Se agrego nuevo submódulo <name>"
+    git commit -m "[ADD] submodule: add <name>"
 
 ## Cómo descargar actualizaciones de superproyectos
 De forma predeterminada, el repositorio del submódulo se recupera, pero no se actualiza cuando ejecuta `git pull` en el superproyecto. Se necesita usar `git submodule update`, o agregar `--recurse-submodules` a pull:
@@ -137,7 +143,7 @@ Este comando asegura que los submódulos estén inicializados y actualizados des
 ### 5. Confirma los cambios:
 Confirma los cambios en la rama de destino, incluyendo las actualizaciones de los submódulos:
 
-    git commit -m "Merge rama_origen into rama_destino"
+    git commit -m "[MERGE] submodule: merge rama_origen into rama_destino"
 
 ### 6. Empuja los cambios:
 Empuja los cambios a la rama de destino en el repositorio remoto:
@@ -169,7 +175,7 @@ Esto elimina los archivos del submódulo de tu sistema de archivos.
 
 ### 4. Confirmar los cambios
 
-    git commit -m "Eliminado submódulo: ruta_del_submodulo"
+    git commit -m "[REM] submodule: remove ruta_del_submodulo"
 
 Este comando confirma los cambios en el repositorio principal.
 
@@ -179,7 +185,7 @@ Abre el archivo .gitmodules y elimina la entrada correspondiente al submódulo q
 ### 6. Confirmar la eliminación del submódulo en el repositorio principal
 
     git add .gitmodules
-    git commit -m "Eliminada la configuración del submódulo: ruta_del_submodulo"
+    git commit -m "[REM] submodule: remove submodule config ruta_del_submodulo"
 
 ### 7. (Opcional) Empujar los cambios
 Si deseas aplicar estos cambios al repositorio remoto:

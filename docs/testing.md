@@ -4,6 +4,12 @@
 - **Cada `#### Scenario` de las specs debe tener un test** que lo ejercite.
 - El reviewer empieza siempre por la tabla escenario → test (cubierto / hueco).
 
+## Desarrollo por tarea con gates
+- Cada tarea debe dejar evidencia proporcional antes de marcarse como hecha.
+- Si el módulo todavía no es instalable, registra un gate parcial.
+- El gate completo sigue siendo instalación + tests + cobertura.
+- Usa `--test-tags` para focalizar cuando haga falta.
+
 ## Tipo de test correcto
 | Escenario | Test |
 |-----------|------|
@@ -16,6 +22,12 @@
 - Casos de borde, permisos (`with_user`) y multi-compañía.
 - `setUpClass`/factories; sin `commit()`; `tagged('post_install', '-at_install')` cuando aplique.
 - Tests de denegación de acceso (`AccessError`) cuando la spec lo pide.
+
+## AAA y cobertura
+- Sigue Arrange / Act / Assert.
+- Cubre camino feliz, errores, bordes, permisos y multi-compañía.
+- No persigas 100% de cobertura; prioriza lógica de negocio y seguridad.
+- La cobertura se mide con `coverage.py` y el build falla por debajo del umbral.
 
 ## Tests de frontend (QUnit, Odoo 16) — NO HOOT
 - `QUnit.module(...)` / `QUnit.test(...)`; `assert.*` para las aserciones.
@@ -40,3 +52,7 @@ odoo-bin -c config/<cliente>/dev.conf -d <BD-del-target> -i <modulo> --test-enab
 # usa -u <modulo> si ya está instalado
 ```
 Si falta la configuración o la BD, pídela; no inventes el comando.
+
+## Cerrar el loop
+- El gate completo es instalación + tests + cobertura.
+- Si un artefacto de verificación se guarda, debe incluir comando, resultado y veredicto.

@@ -5,6 +5,7 @@
 - Usa `read_group`, `search_read`, `mapped`, `filtered`, o prefetch/agrupación.
 - Operaciones por lote: `create`/`write` en batch, no registro a registro.
 - En Odoo 16, `create` recibe siempre una lista vía `@api.model_create_multi`.
+- Si una override de `create` itera registro a registro, es un hallazgo.
 
 ## Computes
 - `@api.depends` **completo y correcto**: declara todos los campos que el compute
@@ -19,6 +20,11 @@
 ## Índices y búsqueda
 - `index=True` en campos usados en filtros/búsquedas frecuentes y en `_order`.
 - Evita buscar por campos computados no almacenados.
+
+## Medir rendimiento
+- Las regresiones N+1 se prueban con `assertQueryCount` (`odoo.tests.common.TransactionCase`).
+- Para depurar consultas puntuales: `--log-sql` o `odoo.tools.profiler` (`odoo/tools/profiler.py`,
+  disponible en el fuente de 16.0).
 
 ## Constraints
 - `@api.constrains` para validación Python; preferir `_sql_constraints` cuando el
