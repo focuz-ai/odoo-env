@@ -92,7 +92,11 @@ jsonschema>=4.21.1,<5.0.0 ; python_version >= '3.10'
 inotify>=0.2.10,<1.0.0 ; python_version >= '3.10'
 unoconv>=0.9.0,<1.0.0 ; python_version >= '3.10'
 html5lib>=1.1,<2.0.0 ; python_version >= '3.10'
-google_auth
+# google-auth: desde 2.24.0 exige cryptography>=38.0.3, incompatible con el pin
+# cryptography 3.4.8 que Odoo 16 impone en Python <3.12 (pyopenssl 20.0.1). Sin este
+# pin, pip toma la última y rompe pip check / el arranque en 3.10/3.11.
+google_auth<2.24 ; python_version < '3.12'
+google_auth ; python_version >= '3.12'
 user-agents
 
 ## ===============================================
