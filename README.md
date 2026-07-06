@@ -38,7 +38,8 @@ pasos. Cada comando asume que ya estás en la raíz de `o16-env`.
    minutos (son repos grandes).
 4. **Crear el venv e instalar dependencias Python** → sección
    [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias).
-   Usa **Python 3.12** para este repo (Odoo 16), no 3.13.
+   Usa **Python 3.11** para este repo (Odoo 16) — **no uses 3.12+**, rompe el firmado
+   EDI de SUNAT (ver [Errores comunes](#errores-comunes)).
 5. **Crear tu config de cliente** (copia de `dev.conf.example`) y tu `launch.json`
    (copia de `launch.json.example`) → sección
    [Guía de configuración rápida](#guía-de-configuración-rápida). Sin esto no hay
@@ -94,8 +95,8 @@ Glosario mínimo para orientarte en este repo si Odoo es nuevo para ti:
   - [Instalación manual](#instalación-manual)
 - [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo)
 - [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias)
-  - [Odoo 16 con Python 3.12 (Recomendado)](#odoo-16-con-python-312-recomendado)
-  - [Odoo 17+ con Python 3.13](#odoo-17-con-python-313)
+  - [Odoo 16 con Python 3.11 (Recomendado)](#odoo-16-con-python-311-recomendado)
+  - [Odoo 17+/18+ con Python 3.13/3.12](#odoo-1718-con-python-313312)
   - [Desactivar entorno virtual](#desactivar-entorno-virtual)
 - [Extras de Odoo](#extras-de-odoo)
   - [Scaffold](#scaffold)
@@ -104,6 +105,7 @@ Glosario mínimo para orientarte en este repo si Odoo es nuevo para ti:
   - [Modos de desarrollo](#modos-de-desarrollo)
   - [Corre tu primer test](#corre-tu-primer-test)
 - [Errores comunes](#errores-comunes)
+  - [AttributeError: module 'OpenSSL.crypto' has no attribute 'sign' (Python ≥3.12)](#attributeerror-module-opensslcrypto-has-no-attribute-sign-python-312)
   - [InterfaceError: connection already closed](#interfaceerror-connection-already-closed)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
 - [Coding Guidelines](#coding-guidelines)
@@ -370,7 +372,11 @@ Al seleccionar versiones de Python inferiores a 3.12, el script muestra una adve
 | CVE-2025-48994, CVE-2025-48995 | signxml | 🟡 Medium |
 | CVE-2024-12797 | cryptography | 🟢 Low |
 
-> **Recomendación:** Usar Python 3.12 o superior para entornos de producción.
+> **Recomendación:** En **Odoo 16 usa Python 3.11** (`./setup_env.sh -p 3.11`). **No subas a
+> 3.12+**: aunque parchea estos CVEs, rompe el firmado EDI de SUNAT (pyOpenSSL 24 eliminó
+> `OpenSSL.crypto.sign`, ver [Errores comunes](#errores-comunes)). El salto a Python 3.12 como
+> mejora de seguridad solo aplica desde **Odoo 18.0+**. En 3.10/3.11 estos CVEs se asumen y se
+> mitigan operativamente (usuario sin privilegios, firewall).
 
 ## Instalación manual
 
@@ -479,35 +485,52 @@ chmod +x clone-addons.sh
 
 # Crear entorno virtual e instalar dependencias
 
-## Odoo 16 con Python 3.12 (Recomendado)
+## Odoo 16 con Python 3.11 (Recomendado)
 
-**Python 3.12** es la versión recomendada para Odoo 16. Evita problemas de compatibilidad con gevent/Cython que ocurren con Python 3.10.
+**Python 3.11** es la versión recomendada para Odoo 16. **No uses Python 3.12+**: aunque
+parchea varios CVEs, Odoo 16 pasa a `pyopenssl==24.1.0`, que eliminó `OpenSSL.crypto.sign` y
+**rompe el firmado EDI de SUNAT** (`AttributeError: module 'OpenSSL.crypto' has no attribute
+'sign'`, ver [Errores comunes](#errores-comunes)). El salto a 3.12 solo aplica desde Odoo 18.0+.
+
+> En Python 3.10/3.11 los markers de `requirements.txt` caen al set *legacy* de dependencias,
+> que necesita tres ajustes: `setuptools<81` (Odoo 16 y `pandas==1.3.5` importan `pkg_resources`,
+> eliminado en setuptools ≥81), `pandas` compilado con `--no-build-isolation`, y `cryptography`
+> fijado en `3.4.8` (pyOpenSSL 20 no funciona con cryptography moderna). `google-auth` ya está
+> pineado `<2.24` en `requirements.txt` para no arrastrar `cryptography>=38`.
 
 ```bash
-# Crear entorno virtual con Python 3.12
-python3.12 -m venv .venv
+# Crear entorno virtual con Python 3.11
+python3.11 -m venv .venv
 source .venv/bin/activate
 
-# Instalar dependencias
-pip install --upgrade pip setuptools wheel
-pip install -r odoo/requirements.txt
-pip install -r requirements.txt
+# pip + pin de setuptools (mantiene pkg_resources) + build-deps de pandas 1.3.5
+pip install --upgrade pip
+pip install "setuptools<81" wheel "Cython<3" "numpy<2"
 
-# Verificar instalación
+# Dependencias de Odoo primero, luego las del proyecto (sin build isolation)
+pip install --no-build-isolation -r odoo/requirements.txt
+pip install --no-build-isolation -r requirements.txt
+
+# Restaurar la cryptography que Odoo 16 exige en Python <3.12 (pip la sube vía pdfminer.six)
+pip install "cryptography==3.4.8"
+
+# Verificar instalación (debe decir: No broken requirements found)
 pip check
 ```
 
-**Versiones clave instaladas:**
+**Versiones clave instaladas (Python 3.11):**
 | Paquete | Versión | Nota |
 |---------|---------|------|
-| gevent | 24.2.1 | Compatible con Python 3.12 |
-| greenlet | 3.0.3 | Compatible con Python 3.12 |
+| pyopenssl | 20.0.1 | Conserva `crypto.sign` → EDI SUNAT funciona |
+| cryptography | 3.4.8 | Requerido por pyOpenSSL 20 (fijar tras el install) |
 | Werkzeug | 2.0.2 | Requerido por Odoo 16 (3.x no compatible) |
+| pandas | 1.3.5 | Se compila desde sdist (por eso `--no-build-isolation`) |
 
 <details>
 <summary><b>Alternativa: Python 3.10 (solo si es requerido)</b></summary>
 
-Python 3.10 tiene problemas con setuptools/Cython modernos que no compilan gevent 21.8.0.
+Python 3.10 añade, sobre lo anterior, un problema con gevent: setuptools/Cython modernos no
+compilan `gevent==21.8.0`.
 
 **Error típico:**
 ```
@@ -515,26 +538,28 @@ Error compiling Cython file: src/gevent/libev/corecext.pyx:60:26: undeclared nam
 ERROR: Failed to build 'gevent' when getting requirements to build wheel
 ```
 
-**Solución:** Usar `setuptools<70` y `Cython<3` con `--no-build-isolation`:
+**Solución:** mismos ajustes que 3.11, pero con `setuptools<70` para que gevent compile:
 
 ```bash
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install "setuptools<70" wheel "Cython<3"
-pip install -r odoo/requirements.txt --no-build-isolation
-pip install -r requirements.txt
+pip install "setuptools<70" wheel "Cython<3" "numpy<2"
+pip install --no-build-isolation -r odoo/requirements.txt
+pip install --no-build-isolation -r requirements.txt
+pip install "cryptography==3.4.8"
 pip check
 ```
 
 </details>
 
-## Odoo 17+ con Python 3.13
+## Odoo 17+/18+ con Python 3.13/3.12
 
-Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
+**Esto NO aplica a este repo (Odoo 16).** Para Odoo 17 usar Python 3.13, y desde Odoo 18.0+
+Python 3.12 es la recomendación (ahí sí, sin romper EDI). Instalación estándar:
 
 ```bash
-python3.13 -m venv .venv
+python3.13 -m venv .venv   # o python3.12 para Odoo 18+
 source .venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
@@ -654,6 +679,22 @@ final, `0 failed, 0 error(s)` si todo pasó. Un test fallido imprime el tracebac
 completo y el nombre exacto del test para que lo repitas con `--test-tags`.
 
 # Errores comunes
+
+## AttributeError: module 'OpenSSL.crypto' has no attribute 'sign' (Python ≥3.12)
+
+Ocurre al firmar comprobantes EDI (SUNAT / l10n_pe) si corres **Odoo 16 sobre Python 3.12+**:
+
+```
+AttributeError: module 'OpenSSL.crypto' has no attribute 'sign'
+```
+
+**Causa:** En Python ≥3.12, `odoo/requirements.txt` fija `pyopenssl==24.1.0`. pyOpenSSL 24
+**eliminó las funciones `OpenSSL.crypto.sign` / `verify`** (deprecadas desde 3.0), que el
+firmado de comprobantes usa. En Python 3.10/3.11 Odoo fija `pyopenssl==20.0.1`, que sí las tiene.
+
+**Solución:** Usa **Python 3.11** (o 3.10) para Odoo 16 — ver
+[Crear entorno virtual](#odoo-16-con-python-311-recomendado). No ejecutes Odoo 16 en Python
+3.12+; ese salto solo es válido desde Odoo 18.0+.
 
 ## InterfaceError: connection already closed
 
