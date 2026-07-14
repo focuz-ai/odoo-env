@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "locale": "es_419",
+    "description": "Glosario de terminología canónica para traducciones PE (SUNAT/fiscal + términos Odoo comunes). Usado por la skill pe-i18n --translate para mantener consistencia entre módulos.",
+    "rules": [
+      "Preservar exactos los format specifiers: %s, %(name)s, {name}",
+      "Respetar la sintaxis exacta de plurales gettext (msgid_plural)",
+      "No traducir siglas SUNAT salvo que el glosario indique lo contrario",
+      "Entries traducidas por IA siempre quedan #, fuzzy para revisión humana"
+    ]
+  },
+  "fiscal_sunat": {
+    "RUC": "RUC",
+    "IGV": "IGV",
+    "SUNAT": "SUNAT",
+    "percepción": "percepción",
+    "retención": "retención",
+    "comprobante": "comprobante",
+    "comprobante de pago": "comprobante de pago",
+    "padrón": "padrón",
+    "ESSALUD": "ESSALUD",
+    "ONP": "ONP",
+    "AFP": "AFP",
+    "CTS": "CTS",
+    "PLAME": "PLAME",
+    "PLE": "PLE",
+    "Renta 5ta": "Renta 5ta",
+    "detracción": "detracción",
+    "guía de remisión": "guía de remisión"
+  },
+  "odoo_common": {
+    "Config Settings": "Ajustes de configuración",
+    "Display Name": "Nombre en pantalla",
+    "ID": "ID",
+    "Product": "Producto",
+    "Product Category": "Categoría del producto",
+    "Product Variant": "Variante del producto",
+    "Sequence": "Secuencia",
+    "Internal Reference": "Referencia interna"
+  }
+}
