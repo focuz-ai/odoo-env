@@ -102,5 +102,8 @@ coverage.lcov
 .claude/*
 !.claude/agents
 
+# Antigravity
+.antigravitycli/*
+
 # WSL
 *.Identifier
