@@ -8,7 +8,7 @@
 - **Un salto de serie a la vez** (o16→o17→o18), no de golpe: cada salto tiene su
   conjunto de cambios y OpenUpgrade asume saltos consecutivos.
 - **No inventes APIs**: ante cualquier duda, verifica la firma/el patrón en el fuente
-  18.0 de este entorno (`odoo/`, `odoo-enterprise/` — solo lectura).
+  18.0 de este entorno (`odoo/`, `enterprise/` — solo lectura).
 - **Cierra con los gates normales** apuntando a 18.0: `/odoo-verify-build` (instala +
   tests + cobertura) y `/odoo-adversarial-review`. Las lentes cazan lo incorrecto para
   la serie (p.ej. el `odoo-tests-reviewer` marca QUnit nuevo: 18.0 usa HOOT).

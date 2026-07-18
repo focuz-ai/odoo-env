@@ -18,9 +18,9 @@ check_untyped_defs = false
 # ─────────────────────────────────────────────────────────────────────────────
 
 [tool.pyright]
-include = ["odoo", "odoo-enterprise", "odoo-themes", "src"]
+include = ["odoo", "enterprise", "design-themes", "src"]
 exclude = ["**/node_modules", "**/__pycache__", "**/.*", "vendor"]
-extraPaths = ["odoo", "odoo/addons", "odoo-enterprise", "odoo-themes"]
+extraPaths = ["odoo", "odoo/addons", "enterprise", "design-themes"]
 
 venvPath = "."
 venv = ".venv"

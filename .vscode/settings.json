@@ -24,8 +24,8 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/odoo",
         "${workspaceFolder}/odoo/addons",
-        "${workspaceFolder}/odoo-enterprise",
-        "${workspaceFolder}/odoo-themes"
+        "${workspaceFolder}/enterprise",
+        "${workspaceFolder}/design-themes"
     ],
     // Ignorar diagnósticos problemáticos para Odoo (librerías sin type stubs)
     "python.analysis.diagnosticSeverityOverrides": {
@@ -81,8 +81,8 @@
     // Excluir código core de Odoo (solo analizar src/)
     "ruff.exclude": [
         "odoo/**",
-        "odoo-enterprise/**",
-        "odoo-themes/**",
+        "enterprise/**",
+        "design-themes/**",
         "vendor/**"
     ],
     // Deshabilitar reglas problemáticas para Odoo:

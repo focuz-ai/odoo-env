@@ -40,8 +40,8 @@ ENVIRONMENT VARIABLES (.env):
     GITHUB_ACCESS_TOKEN         - GitHub token for private repos
     ENTERPRISE_USER             - GitHub username for Enterprise repo
     ENTERPRISE_ACCESS_TOKEN     - GitHub token for Enterprise repo
-    ENTERPRISE_ADDONS           - Local folder for Enterprise (default: odoo-enterprise)
-    THEMES_ADDONS               - Local folder for Themes (default: odoo-themes)
+    ENTERPRISE_ADDONS           - Local folder for Enterprise (default: enterprise)
+    THEMES_ADDONS               - Local folder for Themes (default: design-themes)
     THIRD_PARTY_ADDONS          - Local folder for vendor addons (default: vendor)
 
 EOF
