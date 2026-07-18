@@ -25,6 +25,15 @@ o18-env/
 └── .venv/             # Python 3.12 virtual environment
 ```
 
+> **Meta-repo**: este repo versiona SOLO el entorno (`config/`, `docs/`, scripts,
+> `.vscode/`, requirements). `odoo/`, `enterprise/`, `design-themes/`, `industry/`,
+> `src/**` y `vendor/**` están **gitignorados**: son clones/repos git independientes,
+> cada uno con su remote y ramas propias (los de `src/dev` y `src/projects` tienen su
+> propio `CLAUDE.md` y flujo openspec). Un commit de este repo nunca incluye código de
+> módulos; al trabajar bajo `src/...` se commitea EN ese repo con su flujo de ramas
+> `tmp.18.0` (docs/git-guidelines.md §Ramas). Este repo de entorno commitea directo
+> en `18.0`.
+
 ## Python Environment
 
 **Python 3.12** (current, stable)
@@ -58,8 +67,8 @@ python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -i <module_name>
 # Update module
 python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name>
 
-# Run tests for a module
-python odoo/odoo-bin -c config/<client>/dev.conf -d <database> --test-enable -i <module_name> --stop-after-init
+# Run tests for a module (--test-tags implies --test-enable; usa -i/-u según esté instalado)
+python odoo/odoo-bin -c config/<client>/dev.conf -d <database> -u <module_name> --test-tags /<module_name> --stop-after-init
 
 # Odoo shell
 python odoo/odoo-bin shell -d <database> -c config/<client>/dev.conf
@@ -282,7 +291,10 @@ fuente de verdad, estandarizada con la plantilla del sistema `odoo-openspec`:
 
 ## Git Submodule Management
 
-This project uses git submodules for organization-specific module repositories.
+Los submódulos **no** están en este repo (aquí no hay `.gitmodules`): viven en los
+repos de proyecto de cliente (`src/projects/<client>/{dev,main}/`), que agregan los
+repos de módulos como submódulos. Ejecuta estos comandos **dentro** del repo del
+proyecto:
 
 ```bash
 # Update all submodules
@@ -300,7 +312,10 @@ git submodule update --init --recursive
 
 ## VSCode Integration
 
-Launch configurations in `.vscode/launch.json`:
+Launch configurations in `.vscode/launch.json`. Los nombres de la tabla son los del
+`launch.json.example`; el `launch.json` real define **targets por cliente** (`PE: FZ`,
+`Hanoi: Dev`, `Triada: Main`, …) y cada target fija la **BD destino** (`-d`/
+`--db-filter`) — de ahí sale la BD para tests (ver docs/testing.md §Cerrar el loop):
 
 | Configuration | Description | Key Args |
 |---------------|-------------|----------|
@@ -687,9 +702,9 @@ pip show urllib3 cryptography pdfminer.six signxml
 ## Peruvian Localization Modules
 
 The environment is set up for Peruvian electronic invoicing and compliance:
-- `l10n_pe_base`: EDI, partner extensions, POS, detractions
-- `l10n_pe_accounting`: PLE books, SIRE with SUNAT API integration
-- `l10n_pe_hr_payroll`: Payroll with PLAME, AFP, Renta 5ta
+- `l10n_pe_base`: EDI, partner extensions, POS, detractions (`src/dev/yellow-brain-labs/l10n_pe_base`)
+- `l10n_pe_accounting`: PLE books, SIRE with SUNAT API integration (`src/dev/yellow-brain-labs/l10n_pe_accounting`)
+- `l10n_pe_hr_payroll` + familia HR: Payroll with PLAME, AFP, Renta 5ta (`src/dev/focuz-ai/odoo-l10n-pe-hr`, con `CLAUDE.md` propio)
 
 ## Common Issues
 
