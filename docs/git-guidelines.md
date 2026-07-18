@@ -39,11 +39,28 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 | `[REL]` | Commits de release (versiones major/minor) |
 | `[IMP]` | Mejoras incrementales (el más común) |
 | `[MERGE]` | Merge commits; forward-ports de fixes |
+| `[MIG]` | Migración de un módulo entre series Odoo (`[MIG] module: migration to 18.0`) |
 | `[CLA]` | Firma del Contributor License Agreement |
 | `[I18N]` | Cambios en archivos de traducción |
 | `[PERF]` | Parches de rendimiento |
 | `[CLN]` | Limpieza de código |
 | `[LINT]` | Pasadas de linting |
+
+## Ramas y PR (flujo focuz-ai)
+- **SIEMPRE se programa en una rama `tmp.<serie>`** (p.ej. `tmp.18.0`). Nunca commitees
+  directo a `<serie>` (`18.0`) ni a `main`. Modelo de ramas:
+  `tmp.<serie>` (trabajo) → `staging.<serie>` (integración) → `<serie>` (estable) → `main` (base).
+- **Flujo automatizado por CI** (GitHub Actions): push a `tmp.<serie>` → CI (pre-commit +
+  **unit tests** + manifests) → **auto-PR `tmp.<serie>` → `staging.<serie>`** (auto-merge)
+  → **PR de release `staging.<serie>` → `<serie>` y `main`** (merge MANUAL con review).
+- **La CI corre los tests SOLO en `tmp.*`** (como `enterprise`) — NO en `staging.*`,
+  `<serie>`/`main` ni en PRs (se valida UNA vez en `tmp`; el auto-merge a `staging` no
+  re-dispara CI). Los tests se scopean a los módulos del repo (`--test-tags=/<modulo>`),
+  no a los de Odoo base.
+- **Gates antes de fusionar a `<serie>`/`main`** (no negociables): **CI verde** y, para
+  entregables de cliente, la **aceptación del PM** (`/odoo-uat`, sign-off en el ticket).
+- Un cambio lógico = un commit (un módulo por commit). Para deshacer en producción,
+  revierte con `[REV]` (ver tabla de tags).
 
 ## Config de git
 Define `user.email` y `user.name` en tu git local antes de commitear:

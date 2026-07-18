@@ -32,7 +32,19 @@
 - No pises las variables core de Odoo.
 
 ## i18n
-- Cadenas traducibles con el sistema del web client (`_t`).
+- Cadenas traducibles con el sistema del web client (`_t`); regenera el `.pot`
+  (ver [conventions.md](conventions.md) §Lógica y traducciones).
+
+## Accesibilidad (a11y)
+- **HTML semántico**: `<button>` para acciones (no `<div t-on-click>`), encabezados y
+  listas reales; reutiliza los componentes accesibles del web client antes de crear uno.
+- **Teclado**: todo lo operable con ratón debe serlo con teclado (foco visible, `Tab`,
+  `Enter`/`Esc`); gestiona el foco al abrir/cerrar diálogos.
+- **ARIA y etiquetas**: `aria-label`/`aria-labelledby` en controles sin texto visible;
+  `role`/`aria-expanded`/`aria-selected` donde el patrón lo pida; los iconos decorativos
+  con `aria-hidden`.
+- **No solo color**: estados (error/éxito) con texto o icono además del color; respeta
+  el contraste de los temas Odoo (no pises variables core).
 
 ## Tests: HOOT (Odoo 18) — NO QUnit
 Ver [testing.md](testing.md). En Odoo 18 el framework web es **HOOT**

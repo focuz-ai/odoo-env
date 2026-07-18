@@ -4,7 +4,11 @@
 - Nunca `search`/`read`/`browse` dentro de un `for`.
 - Usa `read_group`, `search_read`, `mapped`, `filtered`, o prefetch/agrupación.
 - Operaciones por lote: `create`/`write` en batch, no registro a registro.
-- En Odoo 18, `create` recibe siempre una lista vía `@api.model_create_multi`.
+
+## Creación por lotes
+- Sobrescribe `create` con **`@api.model_create_multi`** y recibe `vals_list` (lista de
+  dicts), no `vals`. Es el contrato en Odoo 18: `create([{...}, {...}])` en una llamada.
+- No iteres `super().create(vals)` registro a registro dentro del override.
 
 ## Computes
 - `@api.depends` **completo y correcto**: declara todos los campos que el compute
@@ -19,6 +23,15 @@
 ## Índices y búsqueda
 - `index=True` en campos usados en filtros/búsquedas frecuentes y en `_order`.
 - Evita buscar por campos computados no almacenados.
+
+## Medir el rendimiento (no adivinar)
+- Las regresiones N+1 se *prueban*, no se opinan: en los flujos calientes (overrides de
+  `create`/`write`, computes `store`, acciones masivas) añade un test con
+  **`self.assertQueryCount(n)`** (o `with self.assertQueryCount(n):`) que fije el número
+  de queries; un cambio que lo dispare rompe el test.
+- Ese assert es el contraejemplo que pide el `odoo-orm-perf-reviewer`: un hallazgo de
+  «será lento» se confirma o descarta con un query-count real.
+- Para depurar consultas puntualmente: `odoo-bin … --log-sql` o `odoo.tools.profiler`.
 
 ## Constraints
 - `@api.constrains` para validación Python; preferir `_sql_constraints` cuando el

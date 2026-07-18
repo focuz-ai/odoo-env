@@ -262,12 +262,15 @@ fuente de verdad, estandarizada con la plantilla del sistema `odoo-openspec`:
 
 | Tema | Documento |
 |------|-----------|
-| Convenciones, estructura de módulo, orden de atributos, naming, XML, SCSS, i18n, permisos | [docs/conventions.md](docs/conventions.md) |
-| ORM, N+1, computes, índices, SQL, transacciones/savepoints, excepciones | [docs/orm-performance.md](docs/orm-performance.md) |
-| ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores | [docs/security.md](docs/security.md) |
-| OWL 2, QWeb-JS, assets/registry, widgets, SCSS, HOOT | [docs/frontend-owl.md](docs/frontend-owl.md) |
-| TransactionCase/HttpCase/HOOT, trazabilidad, upgrade-safety | [docs/testing.md](docs/testing.md) |
-| Formato de commit, tags, ramas, PR (estilo Odoo) | [docs/git-guidelines.md](docs/git-guidelines.md) |
+| Convenciones, estructura de módulo, manifest/versionado, naming, XML, SCSS, i18n, demo data | [docs/conventions.md](docs/conventions.md) |
+| SOLID y Clean Code en clave Odoo, manejo de errores, logging, anti-patrones | [docs/engineering-principles.md](docs/engineering-principles.md) |
+| ORM, N+1, computes, índices, `assertQueryCount`, SQL, transacciones/savepoints, excepciones | [docs/orm-performance.md](docs/orm-performance.md) |
+| ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores, adjuntos | [docs/security.md](docs/security.md) |
+| OWL 2, QWeb-JS, assets/registry, widgets, SCSS, a11y, HOOT | [docs/frontend-owl.md](docs/frontend-owl.md) |
+| TransactionCase/HttpCase/HOOT, trazabilidad, tests de integridad, golden-file, cobertura, upgrade-safety | [docs/testing.md](docs/testing.md) |
+| EDI/autoridad fiscal: `account.move.send`, deconflicción, firma, idempotencia, `neutralize.sql` | [docs/edi-integrations.md](docs/edi-integrations.md) |
+| Migrar un módulo a la serie 18.0 (APIs, vistas `<list>`, HOOT, OpenUpgrade) | [docs/version-migration.md](docs/version-migration.md) |
+| Formato de commit, tags, ramas `tmp.<serie>`, PR y CI (estilo Odoo) | [docs/git-guidelines.md](docs/git-guidelines.md) |
 
 > Los agentes IA del flujo resuelven `docs/<tema>.md` contra este `docs/` (estándar de
 > la versión activa, 18.0). El resto de este `CLAUDE.md` cubre el **entorno**
