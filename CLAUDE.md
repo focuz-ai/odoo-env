@@ -26,7 +26,7 @@ o18-env/
 
 ## Python Environment
 
-**Python 3.13** (current, stable)
+**Python 3.12** (current, stable)
 
 ```bash
 # Activate virtual environment
@@ -39,8 +39,8 @@ source .venv/bin/activate
 |--------|--------|-------|
 | 3.10 | ✅ Supported | Minimum version |
 | 3.11 | ✅ Supported | Legacy stable |
-| 3.12 | ✅ Supported | Previous stable |
-| 3.13 | ✅ Current | Recommended, latest features |
+| 3.12 | ✅ Current | Recommended stable |
+| 3.13 | ⚠️ Experimental | Supported, potential dependency warnings |
 
 ## Development Commands
 
@@ -129,8 +129,8 @@ cp .vscode/launch.json.example .vscode/launch.json
 # Clone Odoo repositories
 ./clone-addons.sh
 
-# Create Python 3.13 virtual environment
-python3.13 -m venv .venv
+# Create Python 3.12 virtual environment
+python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
@@ -147,8 +147,8 @@ The `setup_env.sh` script prepares the development environment automatically.
 ### Usage
 
 ```bash
-./setup_env.sh                  # Install with Python 3.13 (default)
-./setup_env.sh -p 3.12          # Install with Python 3.12
+./setup_env.sh                  # Install with Python 3.12 (default)
+./setup_env.sh -p 3.13          # Install with Python 3.13
 ./setup_env.sh --help           # Show help
 ```
 
@@ -598,8 +598,8 @@ Beyond Odoo's requirements, this environment includes:
 
 | Python | Estado | Vulnerabilidades Abiertas |
 |--------|--------|---------------------------|
-| 3.13+ | ✅ **Recomendado** | 1 (sin parche disponible) |
-| 3.12 | ✅ Seguro | 1 (sin parche disponible) |
+| 3.12 | ✅ **Recomendado** | 1 (sin parche disponible) |
+| 3.13+ | ✅ Seguro (Exp.) | 1 (sin parche disponible) |
 | 3.10-3.11 | ⚠️ **No recomendado** | 7+ (restricciones de Odoo) |
 
 ### CVEs Conocidos y Estado

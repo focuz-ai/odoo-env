@@ -27,7 +27,7 @@ venv = ".venv"
 
 # Type checking básico (recomendado por Odoo IDE)
 typeCheckingMode = "basic"
-pythonVersion = "3.13"
+pythonVersion = "3.12"
 
 # Usar código de librería para tipos cuando no hay stubs
 useLibraryCodeForTypes = true

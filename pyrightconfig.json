@@ -20,7 +20,7 @@
     "venvPath": ".",
     "venv": ".venv",
     "typeCheckingMode": "basic",
-    "pythonVersion": "3.13",
+    "pythonVersion": "3.12",
     "useLibraryCodeForTypes": true,
     "reportMissingTypeStubs": false,
     "reportMissingModuleSource": false,

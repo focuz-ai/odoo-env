@@ -237,13 +237,13 @@ chmod +x setup_env.sh
 
 | Opción | Descripción |
 |--------|-------------|
-| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.13 |
+| `-p, --python VERSION` | Versión de Python a instalar (3.10 - 3.14). Por defecto: 3.12 |
 | `-h, --help` | Mostrar ayuda |
 
 **Ejemplos:**
 ```bash
-./setup_env.sh                  # Instalar con Python 3.13 (por defecto)
-./setup_env.sh -p 3.12          # Instalar con Python 3.12
+./setup_env.sh                  # Instalar con Python 3.12 (por defecto)
+./setup_env.sh -p 3.13          # Instalar con Python 3.13
 ./setup_env.sh --python 3.11    # Instalar con Python 3.11
 ```
 
@@ -296,14 +296,14 @@ sudo apt-get install postgresql-16 -y
 </details>
 
 <details>
-<summary>Instalación de Python 3.13 (Ubuntu)</summary>
+<summary>Instalación de Python 3.12 (Ubuntu)</summary>
 
 ```bash
 sudo apt install software-properties-common -y
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install python3.13 python3.13-dev python3.13-venv -y
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
+sudo apt install python3.12 python3.12-dev python3.12-venv -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 ```
 </details>
 
@@ -430,12 +430,12 @@ pip check
 
 </details>
 
-## Odoo 17+ con Python 3.13
+## Odoo 17+ con Python 3.12
 
-Para Odoo 17 o superior, usar Python 3.13 con instalación estándar:
+Para Odoo 17 o superior, usar Python 3.12 con instalación estándar:
 
 ```bash
-python3.13 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r odoo/requirements.txt
