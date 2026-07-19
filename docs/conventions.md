@@ -19,6 +19,10 @@ o mixins (`mail.thread`, `mail.activity.mixin`, `portal.mixin`, `rating.mixin`,
 ## Específico de Odoo 19
 - Usa `@api.model_create_multi` en los `create` (no `@api.model`).
 - Todo modelo requiere `_description`.
+- Constraints SQL como **atributo de clase `models.Constraint`** — `_sql_constraints`
+  está muerto en 19 (0 usos en el fuente):
+  `_name_uniq = models.Constraint('unique (name)', "A tag with the same name already exists.")`
+  (cf. `helpdesk/models/helpdesk_tag.py`, `planning/models/planning_slot.py`).
 - Atributos booleanos de campo deben ser booleanos reales (`readonly=True`, no `readonly="True"`).
 - Sin `_()` en las definiciones de `Selection` a nivel de clase (Odoo traduce solo).
 - Los campos `related` no redefinen `selection`.
@@ -51,6 +55,10 @@ my_module/
 - `version` con formato **`19.0.x.y.z`**.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
+- `auto_install` acepta **lista de dependencias-gatillo** para módulos-unión:
+  `'auto_install': ['l10n_pe']` (cf. `l10n_pe_edi`) — es el patrón de glue-module
+  del fuente; no existen módulos `*_bridge`.
+- `sequence` cuando el módulo es una app con menú propio (orden en el home de apps).
 - `data` en orden correcto: **security antes** de las vistas que lo usan.
 - `assets` declarados en el bundle correcto (ver [frontend-owl.md](frontend-owl.md)).
 - Datos demo en `demo`, nunca en `data`.
@@ -100,7 +108,7 @@ from odoo.addons.sale.models.sale_order import SaleOrder
 1. Atributos privados (`_name`, `_description`, `_inherit`, `_order`).
 2. `default`/`default_get`.
 3. Declaración de campos.
-4. `_sql_constraints` e índices.
+4. Constraints SQL (`models.Constraint`) e índices.
 5. Métodos compute/inverse/search (en el orden de los campos).
 6. Métodos `_selection_*`.
 7. `@api.constrains` y `@api.onchange`.
@@ -123,9 +131,10 @@ class SaleOrder(models.Model):
     ], string='Status', default='draft', tracking=True)
     amount_total = fields.Monetary(compute='_compute_amount', store=True)
 
-    _sql_constraints = [
-        ('name_uniq', 'unique(name, company_id)', 'Order reference must be unique!'),
-    ]
+    _name_uniq = models.Constraint(
+        'unique (name, company_id)',
+        'Order reference must be unique!',
+    )
 
     @api.depends('order_line_ids.price_subtotal')
     def _compute_amount(self):
@@ -173,8 +182,11 @@ Naming de XML IDs: menús `<modelo>_menu`; vistas `<modelo>_view_<tipo>`; action
 
 Herencia:
 - Mismo `id` base + `name` `…form.inherit.<modulo>` + `inherit_id` correcto.
-- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`); evita `replace`
-  frágil (rompe ante cambios upstream). No dupliques IDs.
+- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`); `position="move"`
+  reordena un nodo existente sin re-declararlo. Prefiere `attributes`/`after`/`before`;
+  `replace` es legítimo cuando sustituyes un bloque completo (el fuente lo usa a
+  gran escala), pero exige re-sincronizar ante cambios upstream — úsalo con juicio,
+  no por comodidad. No dupliques IDs.
 
 ## SCSS
 - Prefijo obligatorio `o_<modulo>`; variables SCSS scoped (`$-padding`) y CSS vars
@@ -186,6 +198,8 @@ Herencia:
 - Lógica de negocio en los modelos, **nunca en las vistas**.
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
   cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
+- Locale canónico para PE: **`es_419`** — todos los módulos `l10n_pe_*` del fuente
+  publican solo `i18n/es_419.po`. No crees `es_PE.po`.
 
 > **Transición temporal — `.pot` no bloqueante en CI.** Mientras el export de i18n por
 > serie se termina de estandarizar en los repos, un `.pot` desactualizado se reporta
@@ -194,7 +208,8 @@ Herencia:
 
 ## Datos y migración
 - Registros editables por el usuario con `noupdate="1"`.
-- Cambios de esquema → script en `migrations/<version>/` (ver [testing.md](testing.md)).
+- Cambios de esquema → script en `migrations/<version>/` con la **versión corta** del
+  manifest, p.ej. `migrations/1.1/` (ver [version-migration.md](version-migration.md)).
 
 ## Permisos de archivo
 Directorios `755`, archivos `644`.

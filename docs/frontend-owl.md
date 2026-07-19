@@ -4,16 +4,47 @@
 - `Component`, `useState`, `setup`, hooks; props **validados**.
 - Nada de jQuery legacy nuevo; usa OWL + utilidades del web client.
 - Plantillas QWeb-JS: `t-name`, `t-if`, `t-foreach` (con `t-key`), `t-on-*`, `t-att-*`.
+- Herencia de plantillas: `t-inherit="modulo.Plantilla"` + `t-inherit-mode` con
+  `xpath`. No escribas `owl="1"` (extinto en 19).
+
+## Extensión del web client
+- `patch()` de `@web/core/utils/patch` es el mecanismo estándar para extender
+  componentes/servicios existentes (el más usado del fuente).
+- Estado compartido vía `useService(...)`, no estado local duplicado; un servicio
+  propio es un objeto `{dependencies: [...], start(env, deps) {...}}` registrado en
+  `registry.category("services")`.
 
 ## Registry y assets
 - Registra en la categoría correcta:
-  `registry.category("fields" | "view_widgets" | "services" | "actions" | ...)`.
+  `registry.category("fields" | "views" | "view_widgets" | "services" | "actions" | ...)`.
+- Vista nueva en `views` = **descriptor MVC por spread** de la vista base:
+  `{...ganttView, Controller: MiController, Renderer: MiRenderer, Model: MiModel}`
+  (cf. `planning/static/src/views/planning_gantt/planning_gantt_view.js`).
 - Declara los assets en el bundle adecuado desde `__manifest__.py`:
-  `web.assets_backend` (backend), `web.assets_frontend` (web público/portal).
+  `web.assets_backend` (backend), `web.assets_frontend` (web público/portal),
+  `web.assets_backend_lazy` para vistas secundarias pesadas (patrón
+  `("remove", ...)` del bundle principal + re-add en el lazy).
+- SCSS de tema: variables `*.variables.scss` con `!default` van en
+  `web._assets_primary_variables`; las variantes dark en `*.dark.scss` dentro de los
+  bundles dark (`web.dark_mode_variables`, `*_dark`).
 - Respeta el orden de assets.
 
 ## Widgets de campo personalizados
-- Extiende `standardFieldProps` y registra en `registry.category("fields")`.
+- Extiende un componente de campo existente (`X2ManyField`, `CharField`, ...) con
+  spread de sus `static props`, y registra un **objeto descriptor** en
+  `registry.category("fields")` — nunca el componente pelado
+  (cf. `sign/static/src/fields/signer_x2many.js`):
+```js
+export const signerX2Many = {
+    component: SignerX2Many,
+    displayName: _t("Signer One 2 Many"),
+    supportedTypes: ["one2many"],
+    relatedFields: () => [...],      // campos extra que el widget necesita
+    fieldDependencies: [...],
+    extractProps: x2ManyField.extractProps,
+};
+registry.category("fields").add("signer_x2many", signerX2Many);
+```
 - **Frontera con backend**: el campo Python lo define el desarrollador backend; tú
   posees el componente OWL, su registro y los assets. El handoff es el
   `__manifest__.py`/registry.
