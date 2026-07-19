@@ -13,8 +13,8 @@ o mixins (`mail.thread`, `mail.activity.mixin`, `portal.mixin`, `rating.mixin`,
   otros módulos puedan necesitar extender (refuerza «reúso primero»).
 - **Propaga el contexto**: pasa/mezcla el `context` en las llamadas
   (`records.with_context(**extra).do_stuff()`) para preservar preferencias y entorno.
-- Ver también en [orm-performance.md](orm-performance.md): nunca `commit()` manual,
-  captura de excepciones específica e idioms de Python.
+- Ver también en [orm-performance.md](orm-performance.md): sin `commit()` manual
+  (salvo por-lote en crons batch), captura de excepciones específica e idioms de Python.
 
 ## Específico de Odoo 17
 - Usa `@api.model_create_multi` en los `create` (no `@api.model`).
@@ -33,7 +33,7 @@ my_module/
 ├── demo/                 # solo datos demo (nunca en data/)
 ├── models/               # un archivo por modelo principal: sale_order.py
 ├── controllers/
-├── wizard/               # TransientModel + sus vistas
+├── wizard/               # TransientModel + sus vistas (SINGULAR, como el fuente)
 ├── security/             # ir.model.access.csv + *_groups.xml + *_security.xml
 ├── views/                # <modelo>_views.xml
 ├── report/               # *.py (SQL views) + *_templates.xml (QWeb)
@@ -51,6 +51,9 @@ my_module/
 - `version` con formato **`17.0.x.y.z`**.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
+- Módulos puente/glue: `auto_install` acepta una **lista** de dependencias
+  desencadenantes (`'auto_install': ['account']`), no solo `True`.
+- `sequence` solo si importa el orden en el listado de Apps.
 - `data` en orden correcto: **security antes** de las vistas que lo usan.
 - `assets` declarados en el bundle correcto (ver [frontend-owl.md](frontend-owl.md)).
 - Datos demo en `demo`, nunca en `data`.
@@ -170,8 +173,11 @@ Naming de XML IDs: menús `<modelo>_menu`; vistas `<modelo>_view_<tipo>`; action
 
 Herencia:
 - Mismo `id` base + `name` `…form.inherit.<modulo>` + `inherit_id` correcto.
-- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`); evita `replace`
-  frágil (rompe ante cambios upstream). No dupliques IDs.
+- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`); para reordenar
+  nodos existe `position="move"` (mueve el nodo del xpath al destino), no
+  dupliques-y-ocultes. `replace` con juicio: legítimo para sustituir un nodo
+  completo, pero rompe herencias de terceros ante cambios upstream — prefiere
+  `attributes`/`move` cuando basten. No dupliques IDs.
 
 ## SCSS
 - Prefijo obligatorio `o_<modulo>`; variables SCSS scoped (`$-padding`) y CSS vars
@@ -183,6 +189,8 @@ Herencia:
 - Lógica de negocio en los modelos, **nunca en las vistas**.
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
   cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
+- **i18n PE**: el locale canónico es `es_419` (los `l10n_pe*` de 17 traen
+  `i18n/es_419.po`); traduce ahí, no en `es_PE.po` ni `es.po`.
 
 ## Datos y migración
 - Registros editables por el usuario con `noupdate="1"`.

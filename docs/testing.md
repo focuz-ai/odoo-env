@@ -8,11 +8,20 @@
 | Escenario | Test |
 |-----------|------|
 | Lógica de servidor (modelos, computes, constraints, permisos, estados) | `TransactionCase` |
-| Flujo de UI server-driven | `HttpCase` (tours) |
-| Lógica de componentes / web client | **QUnit** (JS) |
+| Flujo de formulario (onchange/defaults/readonly como los ve el usuario) | `odoo.tests.Form` dentro de un `TransactionCase` |
+| Flujo de UI server-driven | `HttpCase` + tour (`self.start_tour(url, 'nombre_tour', login=...)`; pasos JS en `web.assets_tests`) |
+| Lógica de componentes / web client | **QUnit** (JS, en `static/tests/`) |
+| Presupuesto de queries / rendimiento | `assertQueryCount` + `@users` + `@warmup` (patrón del fuente 17) |
 
 ## Tests de servidor (Python)
+- Hereda de la **Common del addon padre** (p.ej. `AccountTestInvoicingCommon` de
+  `account`) en vez de rearmar fixtures: datos coherentes y menos setup propio.
 - Asserts reales sobre el resultado (no solo "no lanza excepción").
+- **Densidad por-assert**: un método de test por **escenario de negocio**; fusiona
+  los asserts de un mismo flujo con `assertRecordValues(records, [{...}])` en vez
+  de un método por campo. Menos tests, más densos.
+- `odoo.tests.Form` para ejercitar onchanges/defaults como en el cliente (no
+  llames `_onchange_*` a mano).
 - Casos de borde, permisos (`with_user`) y multi-compañía.
 - `setUpClass`/factories; sin `commit()`; `tagged('post_install', '-at_install')` cuando aplique.
 - Tests de denegación de acceso (`AccessError`) cuando la spec lo pide.
