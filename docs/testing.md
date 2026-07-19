@@ -19,12 +19,19 @@
 
 ## Tests de servidor (Python)
 - Asserts reales sobre el resultado (no solo "no lanza excepción").
+- Hereda de la **Common del addon padre** (`AccountTestInvoicingCommon` de
+  `account.tests.common` para contabilidad) en vez de rearmar el setup a mano.
+- `odoo.tests.Form` para flujos que dependen de onchanges/vistas (simula la UI en Python).
 - Casos de borde, permisos (`with_user`) y multi-compañía.
 - `setUpClass`/factories; sin `commit()`; `tagged('post_install', '-at_install')` cuando aplique.
 - Tests de denegación de acceso (`AccessError`) cuando la spec lo pide.
+- Regresiones de rendimiento: `assertQueryCount` con `@users` + `@warmup`
+  (patrón core `test_performance.py`).
 
 ## AAA y cobertura
 - Sigue Arrange / Act / Assert.
+- Densidad: **un método de test por escenario de negocio**; fusiona los asserts del
+  mismo flujo con `assertRecordValues` en vez de multiplicar métodos de un assert.
 - Cubre camino feliz, errores, bordes, permisos y multi-compañía.
 - No persigas 100% de cobertura; prioriza lógica de negocio y seguridad.
 - La cobertura se mide con `coverage.py` y el build falla por debajo del umbral.

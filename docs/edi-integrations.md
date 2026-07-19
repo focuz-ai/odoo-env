@@ -21,7 +21,11 @@ fiscal u OSE. Esta guía cubre el framework de envío, seguridad, idempotencia y
 
 ## Coexistencia
 
-- Evita el doble envío del mismo documento.
+- Evita el doble envío del mismo documento: filename EDI **determinista y único** por
+  documento (constraint de unicidad si tu módulo genera el suyo). Ante «ya registrado»
+  del OSE/SUNAT (códigos CDR `1033`/`4000` con el mismo filename), **re-fetch del CDR**
+  en lugar de re-emitir (patrón `_l10n_pe_edi_post_invoice_web_service`); con filename
+  distinto, deja subir el error de duplicado.
 - Si conviven localizaciones legacy y nuevas, el gate de aplicabilidad
   (`_get_move_applicability`) debe ser claro.
 - La migración debe documentar cuándo se sigue usando el mecanismo legacy y por qué.
@@ -42,13 +46,20 @@ fiscal u OSE. Esta guía cubre el framework de envío, seguridad, idempotencia y
 
 - Un record por interacción externa (`account.edi.document`).
 - Conserva request/response, estado y timestamps.
-- Los adjuntos deben quedar vinculados al documento correcto.
+- Los adjuntos deben quedar vinculados al documento correcto; conserva XML firmado y
+  CDR juntos en un zip adjunto al move (patrón `_l10n_pe_edi_zip_edi_document`).
 
 ## Seguridad
 
-- `data/neutralize.sql` para no-producción cuando aplique.
-- Credenciales en `res.company` o `ir.config_parameter` solo con acceso de admin.
-- Entorno demo/test/prod debe ser explícito.
+- `data/neutralize.sql` para no-producción: estándar del proyecto — además de activar
+  el flag de sandbox (lo único que hace el core), **anula las credenciales**
+  (divergencia deliberada).
+- Credenciales del proveedor en `res.company` con `groups='base.group_system'` en cada
+  campo (patrón `l10n_pe_edi_provider_username/password` en 16 EE); nunca en campos
+  sin `groups`.
+- Entorno demo/test/prod debe ser explícito. El flag de entorno de pruebas EDI se
+  declara con `default=True` (divergencia deliberada del proyecto: nadie emite a
+  producción por omisión).
 
 ## Tests
 

@@ -1,7 +1,7 @@
 # Migración de módulos entre series Odoo
 
-Esta guía cubre la migración de **código** entre series Odoo, no las migraciones de
-esquema/datos dentro de una misma serie.
+Esta guía cubre la migración de **código** entre series Odoo y las reglas de los
+scripts `migrations/` del módulo.
 
 ## Principios
 
@@ -37,10 +37,33 @@ esquema/datos dentro de una misma serie.
   (ver [edi-integrations.md](edi-integrations.md)).
 - `create` usa `@api.model_create_multi` (ya vigente desde antes de 16, sin cambio).
 
+## Scripts de migración (`migrations/`) y hooks
+
+- Nombra la carpeta con la **versión corta** — igual al `version` del manifest sin la
+  serie: el motor (`convert_version` en `odoo/modules/migration.py`) le antepone la
+  serie activa, y el script acompaña al módulo al migrar de serie. Patrón core:
+  manifest `'version': '3.3'` ↔ `migrations/3.3/` (`l10n_nl`).
+- **No** fijes la serie completa (`16.0.x.y.z`) en la carpeta: queda clavada a esa
+  serie y deja de disparar tras la migración de serie (misfire).
+- Ojo con el motor: una carpeta con **dos o más puntos** se toma como versión completa
+  tal cual. Con nuestro versionado `16.0.x.y.z`, la carpeta corta es `x.y` (dos
+  componentes) y la migración exige bumpear al menos el minor; `x.y.z` a secas se
+  interpretaría como versión completa antigua y no correría nunca.
+- `migrations/0.0.0/` es especial: corre en **cualquier** cambio de versión (primera
+  en `pre`, última en `post`/`end`).
+- Retoques de datos XML → SQL sobre `ir_model_data`: flip de `noupdate` a `TRUE`,
+  altas idempotentes con `INSERT … ON CONFLICT DO NOTHING` (patrón core:
+  `l10n_nl/migrations/3.3/`, `l10n_it/migrations/15.0.0.3/`).
+- Hooks **idempotentes y compartidos**: la misma función sirve de `post_init_hook`
+  (instalación limpia) y se llama desde el script de `migrations/` (upgrade) —
+  escríbela una sola vez, tolerante a re-ejecución.
+
 ## OpenUpgrade
 
-Usa OpenUpgrade como referencia para cambios del core entre series. Si tu módulo
-necesita script de datos, colócalo en `migrations/<version-destino-completa>/`.
+**Cero OpenUpgrade en módulos EE**: ni dependencia ni imports (`openupgradelib`) —
+el upgrade entre series es el servicio oficial de Odoo. Sus registros de análisis
+sirven solo como **referencia** de qué cambió en el core; los scripts propios van en
+`migrations/` del módulo.
 
 ## Commit
 
