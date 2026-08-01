@@ -1,6 +1,6 @@
 # Convenciones y arquitectura — Odoo 19.0 EE
 
-> Fuente oficial: https://www.odoo.com/documentation/19.0/contributing/development/coding_guidelines.html
+> Fuente oficial: https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
 
 ## Reúso primero
 Antes de crear, busca en el fuente qué heredar o reutilizar: `_inherit`, `_inherits`,

@@ -1,6 +1,6 @@
 # Optimización del entorno de desarrollo Odoo
 
-Guía consolidada de optimizaciones aplicadas a este entorno (`o19-env`) para acelerar el ciclo de iteración día-a-día. Las primeras 3 secciones ya están aterrizadas; el resto son recomendaciones listas para aplicar.
+Guía consolidada de optimizaciones aplicadas a este entorno (`omaster-env`) para acelerar el ciclo de iteración día-a-día. Las primeras 3 secciones ya están aterrizadas; el resto son recomendaciones listas para aplicar.
 
 > **Contexto:** desarrollo Odoo 19 EE en WSL2, Postgres 17 en Docker en el host Windows.
 

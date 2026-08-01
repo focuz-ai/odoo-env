@@ -255,9 +255,9 @@
   "editor.rename.enablePreview": true,
 
   // ═══════════════════════════════════════════════════════════════
-  // Prettier — format-on-save for .md/.xml/.yaml/.json (o19-env workspace)
-  // Requires: npm ci at o19-env root + ext. esbenp.prettier-vscode
-  // Open folder o19-env (or o19-env.code-workspace), not a subrepo alone.
+  // Prettier — format-on-save for .md/.xml/.yaml/.json (omaster-env workspace)
+  // Requires: npm ci at omaster-env root + ext. esbenp.prettier-vscode
+  // Open folder omaster-env (or omaster-env.code-workspace), not a subrepo alone.
   // ═══════════════════════════════════════════════════════════════
   "prettier.enable": true,
   "prettier.requireConfig": false,

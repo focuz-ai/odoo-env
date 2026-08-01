@@ -1,6 +1,6 @@
 # Git guidelines — Odoo 19.0 (commits estilo Odoo)
 
-> Fuente oficial: https://www.odoo.com/documentation/19.0/contributing/development/git_guidelines.html
+> Fuente oficial: https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
 >
 > **Estándar único de commits del proyecto**: este formato (`[TAG] module: …`) se usa
 > en TODO — módulos focuz-ai y contribuciones a Odoo. No uses Conventional Commits.

@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Odoo 19 development environment (o19-env) configured for multi-client/multi-project development with VSCode
+This is an Odoo master development environment (omaster-env) configured for multi-client/multi-project development with VSCode
 integration. It supports Odoo Community, Enterprise, and custom modules with a focus on Peruvian localization (l10n_pe).
 
 ## Repository Structure
 
 ```
-o19-env/
+omaster-env/
 ├── odoo/              # Odoo Community (clon de odoo/odoo — no editar)
 ├── enterprise/        # Odoo Enterprise (clon de odoo/enterprise — no editar)
 ├── design-themes/     # Odoo Themes (clon de odoo/design-themes — no editar)
@@ -29,8 +29,8 @@ o19-env/
 ├── docs/              # Estándares de desarrollo + guías del entorno
 └── .venv/             # Python 3.12 virtual environment (active)
 
-# Fuera del workspace (convención o19-offsite/ — ver sección Odoo IDE):
-../o19-offsite/industry/   # Industry modules (runtime vía addons_path en dev.conf)
+# Fuera del workspace (convención omaster-offsite/ — ver sección Odoo IDE):
+../omaster-offsite/industry/   # Industry modules (runtime vía addons_path en dev.conf)
 ```
 
 ### Repos `src/dev/focuz-ai/`
@@ -170,8 +170,8 @@ uv pip check
 
 ```bash
 # Clone and configure
-git clone -b 19.0 git@github.com:focuz-ai/odoo-env.git o19-env
-cd o19-env
+git clone -b main git@github.com:focuz-ai/odoo-env.git omaster-env
+cd omaster-env
 cp .env.example .env
 cp odools.toml.example odools.toml   # opcional/obsoleto: Odoo IDE ≥0.40 usa pyrightconfig.json
 cp config/dev.conf.example config/<client>/dev.conf
@@ -349,7 +349,7 @@ automáticamente `odoo/`, `enterprise/`, `design-themes/`, `industry/`, `vendor/
 
 ### Format-on-save (editor)
 
-Abre siempre el workspace **`o19-env`** (`o19-env.code-workspace` o la carpeta raíz), **no un subrepo suelto**
+Abre siempre el workspace **`omaster-env`** (`omaster-env.code-workspace` o la carpeta raíz), **no un subrepo suelto**
 (`odoo-enterprise`, `odoo-l10n-pe`, …). La config vive en `.vscode/settings.json` del env.
 
 | Tipo de archivo                      | Formateador al guardar | Extensión                |
@@ -357,14 +357,14 @@ Abre siempre el workspace **`o19-env`** (`o19-env.code-workspace` o la carpeta r
 | Python (`.py`)                       | Ruff                   | `charliermarsh.ruff`     |
 | Markdown, XML, YAML, JSON, CSS, HTML | Prettier               | `esbenp.prettier-vscode` |
 
-**Setup (una sola vez, desde la raíz de `o19-env`):**
+**Setup (una sola vez, desde la raíz de `omaster-env`):**
 
 ```bash
 npm ci                        # Prettier + @prettier/plugin-xml en node_modules/
 pre-commit install            # hooks al commitear (validan lo mismo que CI)
 ```
 
-**Settings clave** (`.vscode/settings.json` / `o19-env.code-workspace`):
+**Settings clave** (`.vscode/settings.json` / `omaster-env.code-workspace`):
 
 | Setting                          | Valor                   | Notas                                                                                           |
 | -------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
@@ -450,7 +450,7 @@ Comandos slash en `.claude/commands/opsx/` (`propose`, `apply`, `explore`, `arch
 
 ## Git Submodule Management
 
-El superproyecto `o19-env` **no** usa `.gitmodules` en la raíz. Los repos en `src/dev/focuz-ai/` son repositorios git
+El superproyecto `omaster-env` **no** usa `.gitmodules` en la raíz. Los repos en `src/dev/focuz-ai/` son repositorios git
 independientes; algunos (p. ej. `odoo-oca`) sí contienen submódulos OCA anidados. Guía operativa completa:
 **[docs/submodule.md](docs/submodule.md)**.
 
@@ -613,12 +613,12 @@ resolver `.py`, `.xml` y modelos (síntoma típico: _"Could not find model 'ir.u
 `.git`/dot-dirs, `__pycache__` y `node_modules` (e **incluye `.venv`** a propósito). La única forma de bajar del límite
 es **reducir archivos físicos** del workspace.
 
-**Convención `o19-offsite/`:** los árboles pesados que NO se desarrollan se reubican fuera del workspace, en
-`../o19-offsite/`, para no contar contra el límite:
+**Convención `omaster-offsite/`:** los árboles pesados que NO se desarrollan se reubican fuera del workspace, en
+`../omaster-offsite/`, para no contar contra el límite:
 
 | Reubicado           | Por qué                                                              | Runtime                                                                        |
 | ------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `industry/`         | módulos vendored, no se editan                                       | el `addons_path` de los `config/*/dev.conf` apunta a `../o19-offsite/industry` |
+| `industry/`         | módulos vendored, no se editan                                       | el `addons_path` de los `config/*/dev.conf` apunta a `../omaster-offsite/industry` |
 | `documentation/`    | clon desechable de docs de Odoo (untracked)                          | sin uso en runtime                                                             |
 | `src/migrate/<ver>` | código de versiones viejas (GM v18, ADR-019); `.gitkeep` se conserva | sin uso en runtime; referencia histórica                                       |
 

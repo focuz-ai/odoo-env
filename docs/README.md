@@ -34,5 +34,5 @@
 - Para APIs dudosas, verifica contra el fuente de **esta** versión (community/enterprise), de solo lectura.
 
 ## Fuentes oficiales
-- Coding guidelines: https://www.odoo.com/documentation/19.0/contributing/development/coding_guidelines.html
-- Git guidelines: https://www.odoo.com/documentation/19.0/contributing/development/git_guidelines.html
+- Coding guidelines: https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
+- Git guidelines: https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
