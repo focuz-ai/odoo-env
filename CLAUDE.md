@@ -222,10 +222,10 @@ The `setup_env.sh` script prepares the development environment automatically.
 
 The script automatically selects the correct wkhtmltopdf version based on `ODOO_TAG` in `.env`:
 
-| ODOO_TAG    | wkhtmltox Version |
-| ----------- | ----------------- |
-| 14.0 - 19.0 | 0.12.6.1-3        |
-| 12.0 - 13.0 | 0.12.5-1          |
+| ODOO_TAG            | wkhtmltox Version |
+| ------------------- | ----------------- |
+| 14.0 - 19.0, master | 0.12.6.1-3        |
+| 12.0 - 13.0         | 0.12.5-1          |
 
 The script handles fallback for distributions without official packages (e.g., noble → jammy).
 

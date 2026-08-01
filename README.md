@@ -414,7 +414,7 @@ Archivo de muestra `.env`
 
 ```bash
 # Odoo
-ODOO_TAG=19.0
+ODOO_TAG=master
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -463,10 +463,10 @@ chmod +x setup_env.sh
 
 **Versiones de wkhtmltopdf:**
 
-| ODOO_TAG    | wkhtmltox  |
-| ----------- | ---------- |
-| 14.0 - 19.0 | 0.12.6.1-3 |
-| 12.0 - 13.0 | 0.12.5-1   |
+| ODOO_TAG            | wkhtmltox  |
+| ------------------- | ---------- |
+| 14.0 - 19.0, master | 0.12.6.1-3 |
+| 12.0 - 13.0         | 0.12.5-1   |
 
 **⚠️ Advertencia de seguridad para Python <3.12:**
 
@@ -563,7 +563,7 @@ wkhtmltopdf --version
 # Clonar repositorios de Odoo
 
 El script `clone-addons.sh` clona **Odoo Community, Enterprise y Themes** desde los repos oficiales de Odoo (rama
-`ODOO_TAG` del `.env`, normalmente `19.0`).
+`ODOO_TAG` del `.env`, normalmente `master`).
 
 ```bash
 chmod +x clone-addons.sh
