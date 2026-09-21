@@ -5,13 +5,19 @@ fiscal u OSE. Esta guía cubre el framework de envío, seguridad, idempotencia y
 
 ## Framework de envío
 
-- **`l10n_pe_edi` sigue en el framework legacy `account.edi.format`** (formato
-  `pe_ubl_2_1`, aplicabilidad vía `_get_move_applicability`). Extender PE = extender
-  los hooks provider del legacy — **no** forkear el módulo ni migrarlo por tu cuenta.
-- Flujos EDI **nuevos** (sin legacy que extender) cuelgan de `account.move.send`
-  (+ `_get_all_extra_edis`), como `l10n_mx_edi`. No inventes un `account.edi.format`
-  nuevo.
-- Usa hooks por proveedor y callbacks de aplicabilidad por movimiento.
+> **Cambio de la serie 20.0.** `l10n_pe_edi` **ya no usa el framework legacy
+> `account.edi.format`**: se migró a `account.move.send`. El módulo `account_edi` sigue
+> en el core, pero en 20.0 su único consumidor real es Ecuador (`l10n_ec_edi*`).
+
+- **PE cuelga de `account.move.send`**: registra su EDI en `_get_all_extra_edis` con la
+  clave `pe_ubl_2_1` y un callback de aplicabilidad `_is_pe_edi_applicable`
+  (`l10n_pe_edi/models/account_move_send.py`). El XML lo genera
+  `account.edi.xml.ubl_21` vía `account_edi_ubl_cii`.
+- Extender PE = extender esos hooks — **no** forkear el módulo ni volver al legacy.
+- Flujos EDI **nuevos** siguen el mismo patrón (`account.move.send` +
+  `_get_all_extra_edis`), como `l10n_mx_edi`. No crees un `account.edi.format` nuevo.
+- Los avisos previos al envío van en `_get_alerts` (patrón PE: bloquea los moves que no
+  cumplen `_l10n_pe_edi_check_move_constraints`).
 
 ## Coexistencia y alcance PE
 
@@ -26,17 +32,21 @@ fiscal u OSE. Esta guía cubre el framework de envío, seguridad, idempotencia y
 
 - Reutiliza el módulo `certificate` (`certificate.certificate`) para la firma
   digital; no re-modeles certificados.
-- Dispatch por provider vía `getattr`:
-  `_l10n_pe_edi_sign_invoices_%s % provider` (digiflow/sunat/iap). Un OSE nuevo =
-  `selection_add` en el campo provider + su método `_l10n_pe_edi_sign_invoices_<provider>`.
+- Provider en `res.company.l10n_pe_edi_provider`: `digiflow` (etiquetado «Estela
+  (formerly Digiflow)»), `sunat` e `iap` (default). El dispatch en 20.0 es explícito —
+  `_l10n_pe_edi_sign_invoices_iap` o, para los dos OSE por SOAP,
+  `_l10n_pe_edi_sign_invoices_sunat_estela` — no el `getattr('..._%s' % provider)` de
+  series anteriores. Un OSE nuevo = `selection_add` en el campo provider + su rama en
+  ese dispatch.
 - Credenciales del provider en `res.company` con `groups='base.group_system'`; no las
   embebas en sitios no seguros.
 
 ## Durabilidad e idempotencia
 
-- Asincronía/lock/estados vienen del `account_edi` base: `lock_for_update()` sobre
-  documento+move antes de procesar, estados `to_send/sent/...` + `blocking_level`
-  para reintentos.
+- El lock y los estados son **propios del módulo**, ya no del `account_edi` base:
+  `lock_for_update()` (ORM, `odoo/orm/models.py`) sobre el move antes de firmar, y el
+  campo computado `l10n_pe_edi_status` con `to_send/sent/cancelled`. No existe
+  `blocking_level` en PE 20.0; los avisos van en `l10n_pe_edi_warnings` (JSON).
 - Persistir estado entre round-trips cuando el proveedor lo requiera.
 - Reintentos deben ser idempotentes.
 - Anti-doble-envío PE: unicidad de filename (nombre del documento + VAT). Ante los
@@ -48,8 +58,10 @@ fiscal u OSE. Esta guía cubre el framework de envío, seguridad, idempotencia y
 ## Errores del regulador
 
 - Mapea los códigos CDR a **mensajes accionables**: el fuente mantiene un diccionario
-  de ~40 códigos → mensaje.
-- Doble parser de SOAP faults: el dialecto de SUNAT difiere del de Estela/Digiflow.
+  de 27 códigos → mensaje (`_l10n_pe_edi_get_cdr_error_messages`), más los genéricos de
+  `_l10n_pe_edi_get_general_error_messages`.
+- El dialecto SOAP de SUNAT difiere del de Estela/Digiflow: el namespace del fault se
+  resuelve por proveedor (`fault_ns` en las credenciales) antes de parsear.
 - SUNAT devuelve **HTTP 500 con SOAP válido** cuando el documento ya existe: parsea
   el fault antes de tratarlo como error de transporte.
 

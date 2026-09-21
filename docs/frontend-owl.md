@@ -5,7 +5,8 @@
 - Nada de jQuery legacy nuevo; usa OWL + utilidades del web client.
 - Plantillas QWeb-JS: `t-name`, `t-if`, `t-foreach` (con `t-key`), `t-on-*`, `t-att-*`.
 - Herencia de plantillas: `t-inherit="modulo.Plantilla"` + `t-inherit-mode` con
-  `xpath`. No escribas `owl="1"` (extinto en 19).
+  `xpath`. `owl="1"` es opcional y no aporta nada en plantillas nuevas — no lo añadas
+  (sigue apareciendo en 25 ficheros del fuente CE 20.0, es residuo, no patrón).
 
 ## Extensión del web client
 - `patch()` de `@web/core/utils/patch` es el mecanismo estándar para extender
@@ -74,6 +75,7 @@ registry.category("fields").add("signer_x2many", signerX2Many);
 
 ## Tests: HOOT (Odoo 20) — NO QUnit
 Ver [testing.md](testing.md). En Odoo 20 el framework web es **HOOT**
-(`@odoo/hoot`, `@odoo/hoot-dom`, `@odoo/hoot-mock`). QUnit solo existe en código
-heredado bajo `static/tests/legacy/`. Consulta los helpers reales en el fuente
-(`odoo/addons/web/static/tests/`) antes de escribir — no inventes APIs.
+(`@odoo/hoot`, `@odoo/hoot-dom`, `@odoo/hoot-mock`): 1390 ficheros JS en CE. **QUnit ya
+no existe en el fuente 20.0** — ni siquiera bajo `static/tests/legacy/` — así que
+cualquier test nuevo en QUnit es framework muerto. Consulta los helpers reales en el
+fuente (`addons/web/static/tests/`) antes de escribir — no inventes APIs.

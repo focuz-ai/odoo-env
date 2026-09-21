@@ -423,7 +423,7 @@ viven ahora en **[`docs/`](docs/README.md)** — única fuente de verdad, estand
 | Convenciones, estructura de módulo, orden de atributos, naming, XML, SCSS, i18n, permisos | [docs/conventions.md](docs/conventions.md)                                   |
 | SOLID/Clean Code en clave Odoo, manejo de errores, logging, anti-patrones                 | [docs/engineering-principles.md](docs/engineering-principles.md)             |
 | ORM, N+1, computes, índices, SQL, transacciones/savepoints, excepciones                   | [docs/orm-performance.md](docs/orm-performance.md)                           |
-| ACL/CSV, grupos, record rules, sudo, multi-compañía, controladores                        | [docs/security.md](docs/security.md)                                         |
+| `ir.access.csv` (ACL + dominios), grupos, sudo, multi-compañía, controladores             | [docs/security.md](docs/security.md)                                         |
 | OWL 2, QWeb-JS, assets/registry, widgets, SCSS, tests del web client                      | [docs/frontend-owl.md](docs/frontend-owl.md)                                 |
 | TransactionCase/HttpCase + framework JS de la versión, trazabilidad, upgrade-safety       | [docs/testing.md](docs/testing.md)                                           |
 | EDI/autoridad fiscal: envío, idempotencia, seguridad, auditoría, golden-files             | [docs/edi-integrations.md](docs/edi-integrations.md)                         |

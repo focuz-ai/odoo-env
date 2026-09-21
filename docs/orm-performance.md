@@ -46,7 +46,7 @@
   `SQL(", ").join(...)` para listas) — no strings a `cr.execute`.
 - **Siempre** `flush_model()` antes de leer por SQL e `invalidate_recordset()` tras
   escribir por SQL: el ORM no ve lo que pasa por el cursor.
-- El SQL crudo se salta ACL/record rules y multi-compañía: pasa `company_ids`
+- El SQL crudo se salta las reglas de `ir.access` y la multi-compañía: pasa `company_ids`
   explícito en el WHERE y valídalo a mano (ver [security.md](security.md)).
 
 ## Transacciones y savepoints

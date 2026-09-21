@@ -801,7 +801,7 @@ my_module/
 ├── __manifest__.py
 ├── models/          # Un archivo por modelo
 ├── views/           # <modelo>_views.xml
-├── security/        # ir.model.access.csv, *_groups.xml
+├── security/        # ir.access.csv, *_groups.xml
 ├── wizard/          # Transient models
 ├── data/            # *_data.xml, *_demo.xml
 └── static/src/      # js/, scss/, xml/
@@ -810,7 +810,7 @@ my_module/
 # Contribuir a Odoo
 
 Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las
-[Odoo Git Guidelines](https://www.odoo.com/documentation/20.0/contributing/development/git_guidelines.html).
+[Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
 
 ## Formato de Commits
 

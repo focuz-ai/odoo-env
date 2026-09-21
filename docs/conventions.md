@@ -1,6 +1,6 @@
 # Convenciones y arquitectura — Odoo 20.0 EE
 
-> Fuente oficial: https://www.odoo.com/documentation/20.0/contributing/development/coding_guidelines.html
+> Fuente oficial: https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
 
 ## Reúso primero
 Antes de crear, busca en el fuente qué heredar o reutilizar: `_inherit`, `_inherits`,
@@ -19,8 +19,9 @@ o mixins (`mail.thread`, `mail.activity.mixin`, `portal.mixin`, `rating.mixin`,
 ## Específico de Odoo 20
 - Usa `@api.model_create_multi` en los `create` (no `@api.model`).
 - Todo modelo requiere `_description`.
-- Constraints SQL como **atributo de clase `models.Constraint`** — `_sql_constraints`
-  está muerto en 19 (0 usos en el fuente):
+- Constraints SQL como **atributo de clase `models.Constraint`** (201 ficheros en CE
+  20.0, 212 en EE) — `_sql_constraints` es residual: 1 solo uso en el fuente CE
+  (`lunch`), con script de conversión automática en `odoo/upgrade_code/`:
   `_name_uniq = models.Constraint('unique (name)', "A tag with the same name already exists.")`
   (cf. `helpdesk/models/helpdesk_tag.py`, `planning/models/planning_slot.py`).
 - Atributos booleanos de campo deben ser booleanos reales (`readonly=True`, no `readonly="True"`).
@@ -38,7 +39,7 @@ my_module/
 ├── models/               # un archivo por modelo principal: sale_order.py
 ├── controllers/
 ├── wizard/               # TransientModel + sus vistas
-├── security/             # ir.model.access.csv + *_groups.xml + *_security.xml
+├── security/             # ir.access.csv (ACL + dominios) + *_groups.xml
 ├── views/                # <modelo>_views.xml
 ├── report/               # *.py (SQL views) + *_templates.xml (QWeb)
 ├── static/
@@ -178,7 +179,8 @@ Modelos y campos en `snake_case`; métodos privados con prefijo `_`.
 </record>
 ```
 Naming de XML IDs: menús `<modelo>_menu`; vistas `<modelo>_view_<tipo>`; actions
-`<modelo>_action`; grupos `<modulo>_group_<nombre>`; rules `<modelo>_rule_<grupo>`.
+`<modelo>_action`; grupos `<modulo>_group_<nombre>`; filas de `ir.access.csv`
+`access_<modelo>_<rol>` (ver [security.md](security.md)).
 
 Herencia:
 - Mismo `id` base + `name` `…form.inherit.<modulo>` + `inherit_id` correcto.
@@ -198,6 +200,8 @@ Herencia:
 - Lógica de negocio en los modelos, **nunca en las vistas**.
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
   cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
+  `self.env._(...)` es equivalente y va ganando terreno en el fuente (766 ficheros EE
+  frente a 1054 con el `_` importado): ambas formas valen, no mezcles en un mismo módulo.
 - Locale canónico para PE: **`es_419`** — todos los módulos `l10n_pe_*` del fuente
   publican solo `i18n/es_419.po`. No crees `es_PE.po`.
 

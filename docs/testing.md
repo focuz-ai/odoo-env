@@ -23,13 +23,15 @@
 - Casos de borde, permisos (`with_user`) y multi-compañía.
 - `setUpClass`/factories; sin `commit()`; `tagged('post_install', '-at_install')` cuando aplique.
 - Hereda de la clase `*Common` del addon padre en vez de duplicar fixtures fiscales:
-  `AccountTestInvoicingCommon`, `AccountEdiTestCommon` con
-  `@AccountEdiTestCommon.setup_country('pe')` (cf. `l10n_pe_edi/tests/common.py`).
+  `AccountTestInvoicingCommon` con `@AccountTestInvoicingCommon.setup_country('pe')`
+  (cf. `l10n_pe_edi/tests/common.py`). `AccountEdiTestCommon` solo aplica al framework
+  EDI legacy, que en 20.0 ya únicamente usa Ecuador.
 - `odoo.tests.Form` para ejercitar onchanges/defaults como lo haría el cliente web,
   sin navegador.
 - Tests de denegación de acceso (`AccessError`) cuando la spec lo pide.
-- Regresiones de rendimiento y de N+1 (incl. en ACL): `assertQueryCount` con los
-  decoradores `@users` y `@warmup` (cf. `documents/tests/test_documents_access.py`).
+- Regresiones de rendimiento y de N+1 (incl. en ACL): `assertQueryCount` con el
+  decorador `@users` de `odoo.tests` (cf. `documents/tests/test_documents_access.py`);
+  `@warmup` se usa en los `tests/test_performance.py` de los addons.
 - Densidad: fusiona los asserts de un mismo flujo
   (`assertRecordValues(records, [{...}, ...])`) manteniendo **un método por escenario
   de negocio**; no fusiones métodos de escenarios distintos.
@@ -52,8 +54,8 @@
   `static/tests/mock_server/mock_models/*.js`.
 - **Fuente de verdad de la API**: copia patrones vigentes de `addons/web/static/tests/`
   y de los módulos EE; no inventes firmas.
-- Todo test JS nuevo en QUnit fuera de `static/tests/legacy/` es framework **obsoleto**
-  → marcar como hallazgo.
+- QUnit ya no existe en el fuente 20.0 (ni en `static/tests/legacy/`): cualquier test
+  JS en QUnit es framework **muerto** → marcar como hallazgo.
 
 ## Tours
 - Registro en `registry.category("web_tour.tours")` con `steps: () => [...]`
