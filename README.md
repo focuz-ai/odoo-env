@@ -28,23 +28,50 @@ paralelo. Aquí vive el servidor Odoo, las dependencias Python, la configuració
 
 - [Primer día — checklist](#primer-día--checklist)
 - [Estructura](#estructura)
-  - [Estructura de config](#estructura-de-config)
-  - [Estructura de módulos](#estructura-de-módulos)
+    - [Estructura de config](#estructura-de-config)
+    - [Estructura de módulos](#estructura-de-módulos)
 - [Guía de configuración rápida](#guía-de-configuración-rápida)
 - [Prettier — instalar, configurar y usar](#prettier--instalar-configurar-y-usar)
+  - [1. Requisitos previos](#1-requisitos-previos)
+  - [2. Instalación](#2-instalación)
+  - [3. Extensión del editor](#3-extensión-del-editor)
+  - [4. Configuración](#4-configuración)
+    - [Archivos del proyecto](#archivos-del-proyecto)
+    - [Settings del editor (ya preconfigurados)](#settings-del-editor-ya-preconfigurados)
+    - [Pre-commit vs editor](#pre-commit-vs-editor)
+  - [5. Uso diario](#5-uso-diario)
+    - [Format-on-save (recomendado)](#format-on-save-recomendado)
+    - [Formatear desde la terminal](#formatear-desde-la-terminal)
+    - [Formatear desde el editor](#formatear-desde-el-editor)
+    - [¿Qué pasa con addons en subrepos?](#qué-pasa-con-addons-en-subrepos)
+  - [6. Troubleshooting](#6-troubleshooting)
 - [El archivo `.env`](#el-archivo-env)
 - [Preparar entorno de desarrollo](#preparar-entorno-de-desarrollo)
   - [Script automático (Recomendado)](#script-automático-recomendado)
   - [Instalación manual](#instalación-manual)
 - [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo)
 - [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias)
+  - [Odoo 20 con Python 3.12 (recomendado)](#odoo-20-con-python-312-recomendado)
+  - [Desactivar entorno virtual](#desactivar-entorno-virtual)
 - [Extras de Odoo](#extras-de-odoo)
   - [Scaffold](#scaffold)
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
   - [Modos de desarrollo](#modos-de-desarrollo)
 - [Errores comunes](#errores-comunes)
+  - [InterfaceError: connection already closed](#interfaceerror-connection-already-closed)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
+- [Coding Guidelines](#coding-guidelines)
+  - [Estructura de Modelos](#estructura-de-modelos)
+  - [Convenciones de Nombres](#convenciones-de-nombres)
+  - [Reglas Críticas](#reglas-críticas)
+  - [Estructura de Módulo](#estructura-de-módulo)
+- [Contribuir a Odoo](#contribuir-a-odoo)
+  - [Formato de Commits](#formato-de-commits)
+  - [Tags Disponibles](#tags-disponibles)
+  - [Workflow para Contribuir](#workflow-para-contribuir)
+  - [Firmar el CLA](#firmar-el-cla)
+  - [Sincronizar Fork con Upstream](#sincronizar-fork-con-upstream)
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
@@ -108,13 +135,7 @@ git clone -b 20.0 git@github.com:focuz-ai/odoo-env.git o20-env
 cd o20-env
 cp .env.example .env
 # odools.toml es opcional/obsoleto — Odoo IDE ≥0.40 usa pyrightconfig.json
-cp config/dev.conf.example config/<client>/dev.conf
-cp .vscode/launch.json.example .vscode/launch.json
-```
-
-**Copiar launch de VSCode para ejecutar y depurar Odoo**
-
-```bash
+install -Dpm 644 config/dev.conf.example config/<client>/dev.conf
 cp .vscode/launch.json.example .vscode/launch.json
 ```
 
