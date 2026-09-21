@@ -1,7 +1,7 @@
 # Entorno: rutas y runtime (odools.toml + dev.conf + launch.json)
 
 El sistema no mantiene su propio archivo de rutas. Se apoya en archivos que ya
-existen en el entorno de desarrollo (`omaster-env`):
+existen en el entorno de desarrollo (`o20-env`):
 
 | Fuente | Aporta | Uso |
 |--------|--------|-----|
@@ -21,12 +21,12 @@ existen en el entorno de desarrollo (`omaster-env`):
 
 ## Versión de Odoo
 
-La versión activa se deduce de `odools.toml` o de la rama del repo (`main` → `ODOO_TAG=master`).
+La versión activa se deduce de `odools.toml` o de la rama del repo (`20.0` → `ODOO_TAG=20.0`).
 Los estándares específicos de esa versión viven en este `docs/`.
 
 ## Resolución de docs
 
-Los agentes globales deben resolver primero `<raíz omaster-env>/docs/<tema>.md`.
+Los agentes globales deben resolver primero `<raíz o20-env>/docs/<tema>.md`.
 Mientras tanto, `~/.local/share/odoo-openspec/docs/<tema>.md` actúa como respaldo.
 
 ## Validación determinista

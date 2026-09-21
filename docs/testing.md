@@ -1,4 +1,4 @@
-# Tests, trazabilidad y upgrade-safety — Odoo 19.0 EE
+# Tests, trazabilidad y upgrade-safety — Odoo 20.0 EE
 
 ## Trazabilidad escenario → test
 - **Cada `#### Scenario` de las specs debe tener un test** que lo ejercite.
@@ -41,7 +41,7 @@
 - No persigas 100% de cobertura; prioriza lógica de negocio y seguridad.
 - La cobertura se mide con `coverage.py` y el build falla por debajo del umbral.
 
-## Tests de frontend (HOOT, Odoo 19) — NO QUnit
+## Tests de frontend (HOOT, Odoo 20) — NO QUnit
 - Ficheros `static/tests/*.test.js`, en el bundle `web.assets_unit_tests`.
 - `@odoo/hoot` → `describe`, `test`, `expect`, `beforeEach`.
 - `@odoo/hoot-dom` → interacción/consulta DOM (`click`, `queryOne`, `queryAll`...).

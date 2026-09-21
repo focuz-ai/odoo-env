@@ -1,4 +1,4 @@
-# Seguridad y permisos — Odoo 19.0 EE
+# Seguridad y permisos — Odoo 20.0 EE
 
 ## Reglas de acceso (ACL)
 - **Todo modelo nuevo** necesita reglas en `ir.model.access.csv`.

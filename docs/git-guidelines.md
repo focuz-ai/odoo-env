@@ -1,6 +1,6 @@
-# Git guidelines — Odoo 19.0 (commits estilo Odoo)
+# Git guidelines — Odoo 20.0 (commits estilo Odoo)
 
-> Fuente oficial: https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
+> Fuente oficial: https://www.odoo.com/documentation/20.0/contributing/development/git_guidelines.html
 >
 > **Estándar único de commits del proyecto**: este formato (`[TAG] module: …`) se usa
 > en TODO — módulos focuz-ai y contribuciones a Odoo. No uses Conventional Commits.
@@ -39,7 +39,7 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 | `[REL]` | Commits de release (versiones major/minor) |
 | `[IMP]` | Mejoras incrementales (el más común) |
 | `[MERGE]` | Merge commits; forward-ports de fixes |
-| `[MIG]` | Migración de un módulo entre series Odoo (`[MIG] module: migration to 19.0`) |
+| `[MIG]` | Migración de un módulo entre series Odoo (`[MIG] module: migration to 20.0`) |
 | `[CLA]` | Firma del Contributor License Agreement |
 | `[I18N]` | Cambios en archivos de traducción |
 | `[PERF]` | Parches de rendimiento |
@@ -49,7 +49,7 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 ## Ramas y PR
 
 - Programa siempre en `tmp.<serie>`.
-- No commitees directo en `19.0` ni en `main`.
+- No commitees directo en `20.0` ni en `main`.
 - El flujo es `tmp.<serie> -> staging.<serie> -> <serie> -> main`.
 - La CI corre los tests solo en `tmp.*`.
 

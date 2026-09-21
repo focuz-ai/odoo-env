@@ -1,6 +1,6 @@
-# Convenciones y arquitectura — Odoo 19.0 EE
+# Convenciones y arquitectura — Odoo 20.0 EE
 
-> Fuente oficial: https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
+> Fuente oficial: https://www.odoo.com/documentation/20.0/contributing/development/coding_guidelines.html
 
 ## Reúso primero
 Antes de crear, busca en el fuente qué heredar o reutilizar: `_inherit`, `_inherits`,
@@ -16,7 +16,7 @@ o mixins (`mail.thread`, `mail.activity.mixin`, `portal.mixin`, `rating.mixin`,
 - Ver también en [orm-performance.md](orm-performance.md): nunca `commit()` manual,
   captura de excepciones específica e idioms de Python.
 
-## Específico de Odoo 19
+## Específico de Odoo 20
 - Usa `@api.model_create_multi` en los `create` (no `@api.model`).
 - Todo modelo requiere `_description`.
 - Constraints SQL como **atributo de clase `models.Constraint`** — `_sql_constraints`
@@ -52,7 +52,7 @@ my_module/
 ## Manifest (`__manifest__.py`)
 - `license`: **`OPL-1`** siempre (estándar del proyecto; no AGPL/LGPL de OCA ni OEEL-1 de EE).
 - `author`: **`"Focuz AI S.A.C."`**; `website` de Focuz.
-- `version` con formato **`19.0.x.y.z`**.
+- `version` con formato **`20.0.x.y.z`**.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
 - `auto_install` acepta **lista de dependencias-gatillo** para módulos-unión:

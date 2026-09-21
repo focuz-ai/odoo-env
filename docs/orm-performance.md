@@ -1,4 +1,4 @@
-# ORM y rendimiento — Odoo 19.0 EE
+# ORM y rendimiento — Odoo 20.0 EE
 
 ## N+1 / consultas en bucles
 - Nunca `search`/`read`/`browse` dentro de un `for`.
@@ -8,7 +8,7 @@
 - `search_fetch(domain, ['campo', ...])` y `records.fetch([...])` precargan **solo**
   los campos necesarios en una consulta.
 - Operaciones por lote: `create`/`write` en batch, no registro a registro.
-- En Odoo 19, `create` recibe siempre una lista vía `@api.model_create_multi`.
+- En Odoo 20, `create` recibe siempre una lista vía `@api.model_create_multi`.
 - Si una override de `create` itera registro a registro, es un hallazgo.
 
 ## Computes

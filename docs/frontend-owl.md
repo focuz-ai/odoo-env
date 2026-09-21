@@ -1,4 +1,4 @@
-# Frontend — OWL 2 y assets — Odoo 19.0 EE
+# Frontend — OWL 2 y assets — Odoo 20.0 EE
 
 ## Componentes OWL 2 (`@odoo/owl`)
 - `Component`, `useState`, `setup`, hooks; props **validados**.
@@ -72,8 +72,8 @@ registry.category("fields").add("signer_x2many", signerX2Many);
 - Asegura navegación por teclado.
 - No dependas solo del color para estados.
 
-## Tests: HOOT (Odoo 19) — NO QUnit
-Ver [testing.md](testing.md). En Odoo 19 el framework web es **HOOT**
+## Tests: HOOT (Odoo 20) — NO QUnit
+Ver [testing.md](testing.md). En Odoo 20 el framework web es **HOOT**
 (`@odoo/hoot`, `@odoo/hoot-dom`, `@odoo/hoot-mock`). QUnit solo existe en código
 heredado bajo `static/tests/legacy/`. Consulta los helpers reales en el fuente
 (`odoo/addons/web/static/tests/`) antes de escribir — no inventes APIs.

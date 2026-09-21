@@ -1,11 +1,11 @@
-# docs/ — Estándares de desarrollo · Odoo **19.0** EE
+# docs/ — Estándares de desarrollo · Odoo **20.0** EE
 
 **Única fuente de verdad** de los estándares de desarrollo para esta versión de Odoo
-(19.0). Los agentes IA y los comandos del flujo Spec-Driven los consultan aquí; el
+(20.0). Los agentes IA y los comandos del flujo Spec-Driven los consultan aquí; el
 `CLAUDE.md` de este entorno referencia estos documentos en vez de duplicar reglas.
 
 > Estructura estandarizada con la plantilla del sistema `odoo-openspec` (modelo
-> *self-contained*: este `docs/` contiene el estándar **completo** de la versión 19.0).
+> *self-contained*: este `docs/` contiene el estándar **completo** de la versión 20.0).
 
 ## Índice
 
@@ -26,13 +26,13 @@
 - [dev-environment-optimization.md](dev-environment-optimization.md) — Postgres dev mode, `uv`, templates de DB, VSCode, Git, pytest-odoo, etc.
 - [submodule.md](submodule.md) — (Anexo operativo) Gestión de submódulos git y Fail2ban del entorno.
 
-## Específico de Odoo 19.0
+## Específico de Odoo 20.0
 - Tests web: **HOOT** (`@odoo/hoot`), **NO QUnit** (solo heredado en `static/tests/legacy/`).
 - Frontend: **OWL 2** (`@odoo/owl`).
-- `version` del manifest con formato **`19.0.x.y.z`**; `license` **`OPL-1`** y `author` **`"Focuz AI S.A.C."`** (siempre).
+- `version` del manifest con formato **`20.0.x.y.z`**; `license` **`OPL-1`** y `author` **`"Focuz AI S.A.C."`** (siempre).
 - Formato: estándar **OCA** (ruff/ruff-format, line-length **120** en este entorno).
 - Para APIs dudosas, verifica contra el fuente de **esta** versión (community/enterprise), de solo lectura.
 
 ## Fuentes oficiales
-- Coding guidelines: https://www.odoo.com/documentation/master/contributing/development/coding_guidelines.html
-- Git guidelines: https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html
+- Coding guidelines: https://www.odoo.com/documentation/20.0/contributing/development/coding_guidelines.html
+- Git guidelines: https://www.odoo.com/documentation/20.0/contributing/development/git_guidelines.html

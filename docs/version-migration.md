@@ -32,7 +32,7 @@ Esta guía cubre la migración de **código** entre series Odoo y los scripts de
 
 - La carpeta usa la **versión corta** = el `version` del manifest sin la serie:
   `migrations/1.1/`. El motor antepone la serie en curso (`convert_version`) y evita
-  re-ejecuciones al cambiar de serie. La forma completa (`19.0.x.y`) queda **fijada**
+  re-ejecuciones al cambiar de serie. La forma completa (`20.0.x.y`) queda **fijada**
   a esa serie — no la uses para migraciones reutilizables.
 - Carpeta especial `0.0.0`: corre en **cualquier** cambio de versión del módulo.
 - Existen además el directorio hermano `upgrades/` (equivalente a `migrations/`) y
@@ -52,4 +52,4 @@ core entre series, nunca como dependencia ni como fuente de scripts a copiar.
 ## Commit
 
 - Usa el tag `[MIG]`.
-- Ejemplo: `[MIG] my_module: migration to 19.0`.
+- Ejemplo: `[MIG] my_module: migration to 20.0`.

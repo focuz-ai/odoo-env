@@ -1,6 +1,6 @@
-<h1>Odoo master — Entorno de desarrollo (omaster-env)</h1>
+<h1>Odoo 20 — Entorno de desarrollo (o20-env)</h1>
 
-Entorno de desarrollo de **Odoo master (Enterprise)** con VS Code / Cursor, pensado para varios clientes y proyectos en
+Entorno de desarrollo de **Odoo 20 (Enterprise)** con VS Code / Cursor, pensado para varios clientes y proyectos en
 paralelo. Aquí vive el servidor Odoo, las dependencias Python, la configuración del IDE y los addons que desarrollamos
 (foco en localización peruana `l10n_pe`).
 
@@ -53,7 +53,7 @@ paralelo. Aquí vive el servidor Odoo, las dependencias Python, la configuració
 
 Si es tu primera vez con Odoo y este repo, sigue este orden:
 
-1. **Clonar** `omaster-env` (rama `main`) y abrir la carpeta **`omaster-env`** o `omaster-env.code-workspace` en Cursor/VS Code — no
+1. **Clonar** `o20-env` (rama `20.0`) y abrir la carpeta **`o20-env`** o `o20-env.code-workspace` en Cursor/VS Code — no
    abras solo un subrepo (`odoo-l10n-pe`, etc.).
 2. **Copiar plantillas:** `.env`, `config/<cliente>/dev.conf`, `.vscode/launch.json`.
 3. **Sistema:** `./setup_env.sh` (Python 3.12, libs de Odoo, PostgreSQL client, wkhtmltopdf).
@@ -104,8 +104,8 @@ src/
 **Clonar y configurar:**
 
 ```bash
-git clone -b main git@github.com:focuz-ai/odoo-env.git omaster-env
-cd omaster-env
+git clone -b 20.0 git@github.com:focuz-ai/odoo-env.git o20-env
+cd o20-env
 cp .env.example .env
 # odools.toml es opcional/obsoleto — Odoo IDE ≥0.40 usa pyrightconfig.json
 cp config/dev.conf.example config/<client>/dev.conf
@@ -136,7 +136,7 @@ Editar `launch.json` y reemplazar los placeholders:
 
 **Configuración del workspace (settings.json):**
 
-Abre **`omaster-env.code-workspace`** (recomendado) o la carpeta **`omaster-env`** como workspace en Cursor/VS Code — no un
+Abre **`o20-env.code-workspace`** (recomendado) o la carpeta **`o20-env`** como workspace en Cursor/VS Code — no un
 subrepo suelto.
 
 El archivo `.vscode/settings.json` ya viene preconfigurado con:
@@ -152,7 +152,7 @@ El archivo `.vscode/settings.json` ya viene preconfigurado con:
 **Setup del editor (una vez):**
 
 ```bash
-cd omaster-env
+cd o20-env
 npm ci                  # Instala Prettier en node_modules/
 pre-commit install      # Hooks al commitear (Ruff + pylint-odoo)
 ```
@@ -182,7 +182,7 @@ Python y Prettier conviven sin conflicto: cada tipo de archivo tiene su formatea
 ## 1. Requisitos previos
 
 - **Node.js 18+** y **npm** instalados en el sistema (`node --version`, `npm --version`).
-- Abrir el workspace desde la **raíz `omaster-env`** (o `omaster-env.code-workspace`). Si abres solo un subrepo, Prettier no
+- Abrir el workspace desde la **raíz `o20-env`** (o `o20-env.code-workspace`). Si abres solo un subrepo, Prettier no
   encuentra `node_modules/` ni `prettier.config.cjs`.
 
 ## 2. Instalación
@@ -190,7 +190,7 @@ Python y Prettier conviven sin conflicto: cada tipo de archivo tiene su formatea
 Desde la raíz del entorno (una vez por clone o tras actualizar `package.json`):
 
 ```bash
-cd omaster-env
+cd o20-env
 npm ci
 ```
 
@@ -277,18 +277,18 @@ npm run format:file -- src/dev/focuz-ai/l10n-pe/mi_modulo/views/
 
 ### ¿Qué pasa con addons en subrepos?
 
-La config de `omaster-env` aplica a todo lo bajo `src/dev/` y `src/projects/` **si abriste el workspace raíz**. Un repo
+La config de `o20-env` aplica a todo lo bajo `src/dev/` y `src/projects/` **si abriste el workspace raíz**. Un repo
 puede tener su propio `prettier.config.cjs` en su raíz; Prettier usa el config más cercano al archivo.
 
 ## 6. Troubleshooting
 
 | Síntoma                                     | Solución                                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------------------- |
-| "Cannot find module 'prettier'"             | `npm ci` en la raíz de `omaster-env`                                                |
+| "Cannot find module 'prettier'"             | `npm ci` en la raíz de `o20-env`                                                |
 | Prettier no formatea al guardar             | Verifica extensión instalada; abre **Output → Prettier**                        |
 | Formatea con reglas raras                   | Confirma `prettier.configPath`: `prettier.config.cjs` (relativo, sin variables) |
 | Solo falla en XML                           | Falta `@prettier/plugin-xml` → vuelve a correr `npm ci`                         |
-| Funciona en un archivo pero no en otro repo | Abre `omaster-env` completo, no un subfolder suelto                                 |
+| Funciona en un archivo pero no en otro repo | Abre `o20-env` completo, no un subfolder suelto                                 |
 
 Más detalle en [CLAUDE.md — Linting & Pre-commit](CLAUDE.md#linting--pre-commit).
 
@@ -414,7 +414,7 @@ Archivo de muestra `.env`
 
 ```bash
 # Odoo
-ODOO_TAG=master
+ODOO_TAG=20.0
 
 # Usuario de GitHub y token de acceso para clonar repositorios privados
 GITHUB_USER=Hchumpitaz
@@ -463,10 +463,10 @@ chmod +x setup_env.sh
 
 **Versiones de wkhtmltopdf:**
 
-| ODOO_TAG            | wkhtmltox  |
-| ------------------- | ---------- |
-| 14.0 - 19.0, master | 0.12.6.1-3 |
-| 12.0 - 13.0         | 0.12.5-1   |
+| ODOO_TAG    | wkhtmltox  |
+| ----------- | ---------- |
+| 14.0 - 20.0 | 0.12.6.1-3 |
+| 12.0 - 13.0 | 0.12.5-1   |
 
 **⚠️ Advertencia de seguridad para Python <3.12:**
 
@@ -563,7 +563,7 @@ wkhtmltopdf --version
 # Clonar repositorios de Odoo
 
 El script `clone-addons.sh` clona **Odoo Community, Enterprise y Themes** desde los repos oficiales de Odoo (rama
-`ODOO_TAG` del `.env`, normalmente `master`).
+`ODOO_TAG` del `.env`, normalmente `20.0`).
 
 ```bash
 chmod +x clone-addons.sh
@@ -603,9 +603,9 @@ chmod +x clone-addons.sh
 >
 > Si prefieres `pip` clásico, sustituye `uv pip` por `pip` en los comandos siguientes.
 
-## Odoo 19 con Python 3.12 (recomendado)
+## Odoo 20 con Python 3.12 (recomendado)
 
-**Python 3.12** es la versión activa del `.venv` y la recomendada para Odoo 19: permite parchear CVEs en urllib3,
+**Python 3.12** es la versión activa del `.venv` y la recomendada para Odoo 20: permite parchear CVEs en urllib3,
 cryptography, signxml, etc. (ver [CLAUDE.md](CLAUDE.md#security-vulnerabilities-and-mitigations)).
 
 ```bash
@@ -810,7 +810,7 @@ my_module/
 # Contribuir a Odoo
 
 Este proyecto usa forks de Odoo para facilitar contribuciones upstream. Seguimos las
-[Odoo Git Guidelines](https://www.odoo.com/documentation/master/contributing/development/git_guidelines.html).
+[Odoo Git Guidelines](https://www.odoo.com/documentation/20.0/contributing/development/git_guidelines.html).
 
 ## Formato de Commits
 
@@ -893,7 +893,7 @@ git push origin master
 | Recurso                                                                      | Contenido                                                   |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | [CLAUDE.md](CLAUDE.md)                                                       | Entorno completo: Python, IDE, DB, seguridad, Prettier/Ruff |
-| [docs/](docs/README.md)                                                      | Estándares de código Odoo 19                                |
+| [docs/](docs/README.md)                                                      | Estándares de código Odoo 20                                |
 | [docs/dev-environment-optimization.md](docs/dev-environment-optimization.md) | uv, Postgres dev, templates DB                              |
 | [docs/submodule.md](docs/submodule.md)                                       | Submódulos git (p. ej. `odoo-oca`)                          |
 
