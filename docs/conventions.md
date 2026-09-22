@@ -44,7 +44,7 @@ my_module/
 ├── static/
 │   ├── description/icon.png
 │   └── src/{js,scss,xml}/   # OWL 2, SCSS, plantillas QWeb-JS
-├── migrations/<version>/    # scripts si cambia el esquema
+├── migrations/<version>/    # scripts si cambia el esquema (forma corta, ver «Datos y migración»)
 ├── tests/
 └── i18n/                 # .pot / .po
 ```
@@ -52,7 +52,11 @@ my_module/
 ## Manifest (`__manifest__.py`)
 - `license`: **`OPL-1`** siempre (estándar del proyecto; no AGPL/LGPL de OCA ni OEEL-1 de EE).
 - `author`: **`"Focuz AI S.A.C."`**; `website` de Focuz.
-- `version` con formato **`19.0.x.y.z`**.
+- `version` en formato corto **`x.y.z`** (estilo Enterprise, p.ej. `"1.0.0"`; Odoo antepone la serie y lo
+  compara como `19.0.1.0.0`). z = corrección, y = mejora compatible, x = ruptura. Nunca el `19.0.x.y.z`
+  de OCA en el manifest.
+- `countries` (códigos ISO en lista, p.ej. `["pe"]`) en todo módulo de localización, justo tras `name`:
+  alimenta la bandera en Apps y acota el `auto_install` a bases con una compañía de ese país.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
 - `auto_install` acepta **lista de dependencias-gatillo** para módulos-unión:
@@ -197,19 +201,44 @@ Herencia:
 ## Lógica y traducciones
 - Lógica de negocio en los modelos, **nunca en las vistas**.
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
-  cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
+  cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`.
 - Locale canónico para PE: **`es_419`** — todos los módulos `l10n_pe_*` del fuente
   publican solo `i18n/es_419.po`. No crees `es_PE.po`.
 
-> **Transición temporal — `.pot` no bloqueante en CI.** Mientras el export de i18n por
-> serie se termina de estandarizar en los repos, un `.pot` desactualizado se reporta
-> como warning y documentación, pero no bloquea el build. El estándar sigue vigente y
-> debe corregirse antes de release si el cambio añade o modifica cadenas traducibles.
+### El `.pot` lo genera CI, no tú
+
+**No regeneres el `.pot` a mano para "dejarlo al día".** El CI es el **único escritor**:
+tras los tests hace push de un commit `[UPD] Update <addon>.pot` por módulo, y solo
+cuando las cadenas realmente cambiaron. Los `.po` (`es_419.po`) sí son tuyos.
+
+Antes existía un check de frescura que comparaba tu `.pot` contra el del CI. Se eliminó
+porque **no podía pasar nunca**: los términos que exporta un módulo dependen de qué
+*otros* módulos estén instalados, así que tu BD de desarrollo y la BD de test del CI
+producen archivos distintos del mismo código. Con un único productor esa divergencia no
+existe. (Es el modelo de OCA: `OCA/oca-ci` → `bin/oca_export_and_commit_pot`.)
+
+Si quieres ver el efecto de un cambio antes de pushear, regenera en local **con la misma
+herramienta que el CI** — nunca con el export crudo `odoo-bin i18n export`, que
+reintroduce las cabeceras `POT-Creation-Date`/`PO-Revision-Date` y devuelve el churn:
+
+```bash
+pip install click-odoo-contrib
+click-odoo-makepot -c <config> -d <db> --addons-dir . -m <módulos> --msgmerge-if-new-pot
+```
+
+Un módulo sin cadenas traducibles **no lleva `.pot`** (la herramienta lo elimina); tampoco
+`i18n/` si no tiene traducciones. En la suite PE esto está implementado en
+`l10n-pe/.github/workflows/ci.yml`; los demás repos lo adoptan al clonar esa capa.
 
 ## Datos y migración
 - Registros editables por el usuario con `noupdate="1"`.
-- Cambios de esquema → script en `migrations/<version>/` con la **versión corta** del
-  manifest, p.ej. `migrations/1.1/` (ver [version-migration.md](version-migration.md)).
+- Cambios de esquema → script en `migrations/<versión>/`. Forma **corta** (`migrations/1.1.0/`, la del
+  manifest sin serie) como estándar: Odoo la compara solo por la parte del módulo (`compare()` en
+  `modules/migration.py`, «majorless»), así que **no se re-ejecuta al cambiar de serie** y la carpeta
+  sobrevive al forward-port sin renombrar. La forma completa (`migrations/19.0.1.1.0/`) también es
+  válida pero queda fijada a esa serie. Los scripts solo corren en un `-u` explícito, para las carpetas
+  `instalada < carpeta <= actual`; `parse_version` ignora ceros finales (`1.0` == `1.0.0`); el manifest
+  debe quedar ≥ la carpeta mayor que el módulo trae (ver [version-migration.md](version-migration.md)).
 
 ## Permisos de archivo
 Directorios `755`, archivos `644`.
