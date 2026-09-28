@@ -168,8 +168,13 @@ entre 1 y 6 clases por módulo y sus clases contables llevan 7,2 tests de media.
   18+ el `freeze_time` de `odoo.tests` como decorador de clase congela también los
   fixtures de `setUpClass`.
 - **Sin dependencia de la demo**: EE tiene 7 referencias a registros demo entre 6.102
-  `env.ref`. La carga de demo depende de la serie (19 no la instala por defecto) y del
-  `dev.conf`; el test debe pasar igual con y sin ella.
+  `env.ref`; el test debe pasar igual con y sin ella.
+- **El entorno sí carga la demo.** El gate y la CI instalan con demo (en 19, que ya no la
+  instala por defecto, con `--with-demo`). Con las tablas contables analizadas casi vacías
+  tras instalar, Postgres elige planes patológicos para las Commons contables: en `l10n-pe`
+  la suite completa tardó 94 min sin demo y 15,6 min con demo, con los mismos tests y las
+  mismas queries (una sola query de `AccountTestInvoicingCommon` pasaba de milisegundos a
+  71 s por clase). La demo es el entorno, no el fixture.
 
 ```python
 # tests/common.py: fixture compartido del módulo (sin métodos test_*)
@@ -278,10 +283,12 @@ comando. `result.summary` trae `tests`, `failed`, `errors`, `failures` (ids),
 `slowest_classes`.
 
 ### Gate completo
-**`/odoo-verify-build`** (`odoo-harness verify --change <id> --full`) instala (o
+**`/odoo-verify-build`** (`odoo-harness verify --change <id> --full`) instala con demo (o
 actualiza, si la BD base ya los trae) los módulos afectados y corre solo sus tests **en
 una pasada** sobre una BD desechable (vacía, o duplicada de la BD base `test_template`
-si el repo la declara), mide la cobertura de esos módulos y limpia la BD. Bloquea si hay
+si el repo la declara; en 19, créala con demo), mide la cobertura de esos módulos y
+limpia la BD. Cada corrida de tests del harness (`test` y `verify`) usa puertos HTTP
+propios: no choca con un Odoo de desarrollo abierto. Bloquea si hay
 tests en rojo, líneas ERROR/CRITICAL en el log fuera de los tests (misma lista `ignore`
 que `checklog-odoo.cfg`), 0 tests en un módulo con archivos de test, un log sin la línea
 final de tests, un timeout de la pasada o cobertura bajo `fail_under` (sin `fail_under`
@@ -345,8 +352,9 @@ el agente **ejecuta** el gate, no lo delega (ver `AGENTS.md §Disciplina del flu
   "/web:WebSuite.test_js[<texto>]"`; `<texto>` filtra por nombre de `QUnit.module`.
 - **Tours**: registro en `web_tour.tours`, pasos en el bundle `web.assets_tests`; se
   lanzan desde un `HttpCase` con `self.start_tour(url, "nombre_tour", login=...)`.
-- **Demo**: las BD nuevas la cargan por defecto (salvo `without_demo` en el `dev.conf`);
-  los tests no dependen de ella.
+- **Demo**: las BD nuevas la cargan por defecto; no la desactives (`without_demo`) en el
+  gate ni en la CI: sin ella las Commons contables se vuelven mucho más lentas (§3). Los
+  tests no dependen de ella.
 - **Tiempo**: `from freezegun import freeze_time` (17 no trae un `freeze_time` propio).
 - **Loader**: ejecuta también los métodos `test_*` heredados, así que un test en la
   Common corre una vez por subclase.
