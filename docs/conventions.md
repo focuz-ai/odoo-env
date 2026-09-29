@@ -57,6 +57,9 @@ my_module/
   de OCA en el manifest.
 - `countries` (códigos ISO en lista, p.ej. `["pe"]`) en todo módulo de localización, justo tras `name`:
   alimenta la bandera en Apps y acota el `auto_install` a bases con una compañía de ese país.
+- `development_status`: **obligatorio** — la CI corre `manifestoo check-dev-status`, que falla si falta. Valores:
+  `Alpha`, `Beta`, `Production/Stable`, `Mature`. Módulo nuevo → `Beta`; súbelo a `Production/Stable` tras su
+  aceptación en producción. Un addon no puede declarar más madurez que sus dependencias.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
 - `auto_install` acepta **lista de dependencias-gatillo** para módulos-unión:

@@ -52,6 +52,10 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 - No commitees directo en `19.0` ni en `main`.
 - El flujo es `tmp.<serie> -> staging.<serie> -> <serie> -> main`.
 - La CI corre los tests solo en `tmp.*`.
+- Desde una rama o worktree propio (p.ej. `tmp.19.0-<ticket>`), empuja a `tmp.19.0`: la CI calcula
+  `staging.<lo que sigue a tmp.>` como destino del auto-PR y `staging.19.0-<ticket>` no existe.
+  `git fetch origin && git merge-base --is-ancestor origin/tmp.19.0 HEAD && git push origin HEAD:tmp.19.0`;
+  luego borra la rama y el worktree.
 
 ## Config de git
 Define `user.email` y `user.name` en tu git local antes de commitear:
