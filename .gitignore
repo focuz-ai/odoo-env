@@ -110,4 +110,4 @@ coverage.lcov
 
 files/
 scripts/
-_tmp/
+.tmp/
