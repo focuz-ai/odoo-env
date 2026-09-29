@@ -38,6 +38,7 @@ o19-env/
 | Carpeta       | Contenido típico                        |
 | ------------- | --------------------------------------- |
 | `l10n-pe`     | Localización peruana (EDI, PLE, nómina) |
+| `l10n-pe-knw` | Documentación Knowledge de l10n PE      |
 | `enterprise`  | Módulos EE propios (focuz-ai)           |
 | `etl`         | Integraciones ETL                       |
 | `ifrs`        | IFRS / reportes                         |
@@ -562,6 +563,7 @@ Library stubs not installed for "dateutil"
     "design-themes",
     "vendor/OCA",
     "src/dev/focuz-ai/l10n-pe",
+    "src/dev/focuz-ai/l10n-pe-knw",
     "src/dev/focuz-ai/enterprise",
     "src/dev/focuz-ai/odoo-oca",
     "src/dev/focuz-ai/etl",

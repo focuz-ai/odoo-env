@@ -29,6 +29,7 @@
     "${workspaceFolder}/design-themes",
     "${workspaceFolder}/vendor/OCA",
     "${workspaceFolder}/src/dev/focuz-ai/l10n-pe",
+    "${workspaceFolder}/src/dev/focuz-ai/l10n-pe-knw",
     "${workspaceFolder}/src/dev/focuz-ai/enterprise",
     "${workspaceFolder}/src/dev/focuz-ai/odoo-oca"
   ],

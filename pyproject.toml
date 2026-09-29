@@ -24,7 +24,7 @@ check_untyped_defs = false
 [tool.pyright]
 include = ["odoo", "enterprise", "design-themes", "vendor/OCA", "src/dev", "src/projects"]
 exclude = ["**/node_modules", "**/__pycache__", "**/.*", "**/i18n", "**/static/lib", "src/migrate", "documentation", "industry", "_tmp", "reports"]
-extraPaths = ["odoo", "odoo/addons", "enterprise", "design-themes", "vendor/OCA", "src/dev/focuz-ai/l10n-pe", "src/dev/focuz-ai/enterprise", "src/dev/focuz-ai/odoo-oca"]
+extraPaths = ["odoo", "odoo/addons", "enterprise", "design-themes", "vendor/OCA", "src/dev/focuz-ai/l10n-pe", "src/dev/focuz-ai/l10n-pe-knw", "src/dev/focuz-ai/enterprise", "src/dev/focuz-ai/odoo-oca"]
 
 venvPath = "."
 venv = ".venv"
