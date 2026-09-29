@@ -363,11 +363,12 @@ Mejor DX que `--test-enable`: filtros más finos, output legible, integración c
 ```bash
 uv pip install pytest-odoo
 
-# pytest-odoo requiere que el paquete `odoo` sea importable:
-uv pip install -e ./odoo
+# pytest-odoo requiere que el paquete `odoo` sea importable.
+# editable_mode=compat evita el finder PEP 660: sin esto, odoo.addons.__path__
+# incluye `__editable__.odoo-19.0.finder.__path_hook__` y `odoo-bin` avisa
+# "addons path is not a directory".
+uv pip install -e ./odoo --config-settings editable_mode=compat
 ```
-
-> El editable install agrega Odoo como namespace package al `.venv`. No interfiere con el flujo normal de `python odoo/odoo-bin ...`.
 
 ### Uso
 
@@ -483,6 +484,6 @@ python odoo/odoo-bin -c config/l10n-pe/dev.conf --dev=xml,reload,qweb
 | 5 | VSCode `files.watcherExclude` | menos CPU del file watcher | ✅ aplicado en `.vscode/settings.json` |
 | 6 | Git `fsmonitor` + `untrackedCache` | `git status` instantáneo (~100ms) | ✅ aplicado en `odoo/`, `enterprise/`, `design-themes/` |
 | 7 | Filestore: cleanup huérfanos + tmpfs/per-client docs | 129 GB recuperables identificados | ✅ script + doc (no `--apply` aún) |
-| 8 | `pytest-odoo` | mejor DX en tests | ✅ instalado (con `pip install -e ./odoo`) |
+| 8 | `pytest-odoo` | mejor DX en tests | ✅ instalado (`uv pip install -e ./odoo --config-settings editable_mode=compat`) |
 | 9 | `pylint-odoo` en pre-commit | atrapa antipatrones Odoo | ✅ instalado y configurado (sin `--all-files` aún) |
 | 10 | Hot reload (`--dev=reload`) | sin reiniciar servidor | ✅ cubierto por #4 |
