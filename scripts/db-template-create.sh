@@ -53,7 +53,10 @@ fi
 # --- 2. Crear DB e instalar módulos -----------------------------------------
 $PSQL -c "CREATE DATABASE \"$TEMPLATE_NAME\" OWNER $DB_USER;"
 echo -e "\e[36m▶ Instalando $MODULES (puede tardar varios minutos)...\e[0m"
-python odoo/odoo-bin -c "$CONFIG" -d "$TEMPLATE_NAME" -i "$MODULES" --stop-after-init --no-http
+# Use the env venv even when it is not activated (a bare `python` is not on PATH here);
+# fall back to whatever python is active.
+PY="$(cd "$(dirname "$0")/.." && pwd)/.venv/bin/python"; [[ -x "$PY" ]] || PY=python
+"$PY" odoo/odoo-bin -c "$CONFIG" -d "$TEMPLATE_NAME" -i "$MODULES" --stop-after-init --no-http
 
 # --- 3. Marcar como template y bloquear conexiones --------------------------
 $PSQL -c "ALTER DATABASE \"$TEMPLATE_NAME\" ALLOW_CONNECTIONS = false;"
