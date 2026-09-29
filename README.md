@@ -194,7 +194,7 @@ Configurar `ODOO_RC` según el cliente activo en `.vscode/settings.json`:
 ```json
 "claudeCode.environmentVariables": [
     "ODOO_RC=${workspaceFolder}/config/<client>/dev.conf",
-    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/odoo-enterprise",
+    "PYTHONPATH=${workspaceFolder}/odoo:${workspaceFolder}/enterprise",
     "LANG=es_PE.UTF-8",
     "TZ=America/Lima"
 ]
@@ -373,7 +373,7 @@ chmod +x clone-addons.sh
 
 | Opción | Descripción |
 |--------|-------------|
-| `-s, --sync` | Sincronizar forks con upstream Odoo (fetch, merge, push) |
+| `-s, --sync` | Sincronizar un fork con upstream Odoo (fetch, merge, push); no aplica en 17.0 |
 | `-h, --help` | Mostrar ayuda del script |
 
 **Ejemplos:**
@@ -385,11 +385,14 @@ chmod +x clone-addons.sh
 
 **Repositorios clonados:**
 
-| Carpeta local | Fork (focuz-ai) | Upstream (Odoo) |
-|---------------|-----------------|-----------------|
-| `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
-| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| Carpeta local | Origen del clone | Upstream (Odoo) |
+|---------------|------------------|-----------------|
+| `odoo/` | odoo/odoo (upstream directo) | — |
+| `enterprise/` | odoo/enterprise (upstream directo) | — |
+| `design-themes/` | odoo/design-themes (upstream directo) | — |
+
+> En 17.0 los tres repos se clonan de upstream: no hay fork que sincronizar con `--sync`. Los nombres de
+> carpeta locales salen de `.env` (`ENTERPRISE_ADDONS`, `THEMES_ADDONS`).
 
 > **Nota:** La opción `--sync` requiere credenciales de GitHub configuradas en `.env` (GITHUB_USER y GITHUB_ACCESS_TOKEN).
 

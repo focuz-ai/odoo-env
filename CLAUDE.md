@@ -11,8 +11,8 @@ This is an Odoo 17.0 development environment (o17-env) configured for multi-clie
 ```
 o17-env/
 ├── odoo/              # Odoo Community (cloned)
-├── odoo-enterprise/   # Odoo Enterprise (cloned)
-├── odoo-themes/       # Odoo Themes (cloned)
+├── enterprise/        # Odoo Enterprise (cloned)
+├── design-themes/     # Odoo Themes (cloned)
 ├── config/            # Per-client config files (dev.conf, main.conf)
 │   └── <client>/      # Client-specific configurations
 ├── src/
@@ -208,26 +208,31 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 
 | Option | Description |
 |--------|-------------|
-| `-s, --sync` | Sync focuz-ai forks with upstream Odoo (fetch, merge, push) |
+| `-s, --sync` | Sync a focuz-ai fork with upstream Odoo (fetch, merge, push); not applicable in 17.0 |
 | `-h, --help` | Show help message |
 
 ### Repositories Managed
 
-| Local Folder | Fork (focuz-ai) | Upstream (Odoo) |
-|--------------|-----------------|-----------------|
-| `odoo/` | focuz-ai/odoo | odoo/odoo |
-| `odoo-enterprise/` | focuz-ai/odoo-enterprise | odoo/enterprise |
-| `odoo-themes/` | focuz-ai/odoo-design-themes | odoo/design-themes |
+| Local Folder | Cloned From | Upstream (Odoo) |
+|--------------|-------------|-----------------|
+| `odoo/` | odoo/odoo (upstream directo) | — |
+| `enterprise/` | odoo/enterprise (upstream directo) | — |
+| `design-themes/` | odoo/design-themes (upstream directo) | — |
+
+> Los nombres de carpeta locales salen de `.env` (`ENTERPRISE_ADDONS`, `THEMES_ADDONS`).
 
 ### Sync Functionality (--sync)
 
-When executed with `--sync`, the script:
-1. Clones repositories from focuz-ai forks
-2. Adds upstream Odoo remotes automatically
+> In 17.0 `clone-addons.txt` clones all three repositories directly from upstream, so there is no fork to sync:
+> skip `--sync` (it would try to push to odoo/enterprise).
+
+When executed with `--sync` on a fork, the script:
+1. Clones the repositories listed in `clone-addons.txt`
+2. Adds the upstream Odoo remote to the enterprise clone automatically
 3. Fetches latest changes from upstream
 4. Creates missing branches from upstream if needed (e.g., 17.0)
 5. Merges upstream changes into the fork
-6. Pushes updates back to focuz-ai repositories
+6. Pushes updates back to the fork (`origin`)
 
 ### Requirements
 
@@ -241,9 +246,9 @@ GITHUB_ACCESS_TOKEN=ghp_your_token
 
 ```bash
 # Format: <type> <repo_url> <condition>
-public https://github.com/focuz-ai/odoo true
-themes https://github.com/focuz-ai/odoo-design-themes true
-enterprise https://github.com/focuz-ai/odoo-enterprise true
+public https://github.com/odoo/odoo true
+themes https://github.com/odoo/design-themes true
+enterprise https://github.com/odoo/enterprise true
 ```
 
 ## Database Configuration
@@ -361,7 +366,7 @@ Ambos archivos tienen configuraciones similares para consistencia:
     "reportMissingModuleSource": false,
     "reportUnknownMemberType": false,
     "reportUnknownArgumentType": false,
-    "extraPaths": ["odoo", "odoo/addons", "odoo-enterprise"]
+    "extraPaths": ["odoo", "odoo/addons", "enterprise"]
 }
 ```
 
@@ -384,8 +389,8 @@ name = "Odoo 17.0"
 odoo_path = "${workspaceFolder}/odoo"
 addons_paths = [
     "${workspaceFolder}/odoo/addons",
-    "${workspaceFolder}/odoo-enterprise",
-    "${workspaceFolder}/odoo-themes",
+    "${workspaceFolder}/enterprise",
+    "${workspaceFolder}/design-themes",
 ]
 ```
 
@@ -558,7 +563,7 @@ Variables de entorno para desarrollo Odoo. Copiar de `.env.example` y configurar
 ```bash
 # Odoo Runtime Configuration
 ODOO_RC=config/<client>/dev.conf
-PYTHONPATH=odoo:odoo-enterprise
+PYTHONPATH=odoo:enterprise
 
 # Locale Settings (Peruvian Spanish)
 LANG=es_PE.UTF-8

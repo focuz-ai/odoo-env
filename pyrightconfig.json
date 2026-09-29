@@ -1,8 +1,8 @@
 {
     "include": [
         "odoo",
-        "odoo-enterprise",
-        "odoo-themes",
+        "enterprise",
+        "design-themes",
         "src"
     ],
     "exclude": [
@@ -14,8 +14,8 @@
     "extraPaths": [
         "odoo",
         "odoo/addons",
-        "odoo-enterprise",
-        "odoo-themes"
+        "enterprise",
+        "design-themes"
     ],
     "venvPath": ".",
     "venv": ".venv",
