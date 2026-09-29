@@ -15,13 +15,28 @@ Entorno de desarrollo de Odoo con IDE Visual Studio
   - [Instalación manual](#instalación-manual)
 - [Clonar repositorios de Odoo](#clonar-repositorios-de-odoo)
 - [Crear entorno virtual e instalar dependencias](#crear-entorno-virtual-e-instalar-dependencias)
+  - [Odoo 16 con Python 3.12 (Recomendado)](#odoo-16-con-python-312-recomendado)
+  - [Odoo 17+ con Python 3.13](#odoo-17-con-python-313)
+  - [Desactivar entorno virtual](#desactivar-entorno-virtual)
 - [Extras de Odoo](#extras-de-odoo)
   - [Scaffold](#scaffold)
   - [Shell](#shell)
   - [Shell para usar IPython como REPL](#shell-para-usar-ipython-como-repl)
   - [Modos de desarrollo](#modos-de-desarrollo)
 - [Errores comunes](#errores-comunes)
+  - [InterfaceError: connection already closed](#interfaceerror-connection-already-closed)
   - [OSError: \[Errno 24\] inotify instance limit reached](#oserror-errno-24-inotify-instance-limit-reached)
+- [Coding Guidelines](#coding-guidelines)
+  - [Estructura de Modelos](#estructura-de-modelos)
+  - [Convenciones de Nombres](#convenciones-de-nombres)
+  - [Reglas Críticas](#reglas-críticas)
+  - [Estructura de Módulo](#estructura-de-módulo)
+- [Contribuir a Odoo](#contribuir-a-odoo)
+  - [Formato de Commits](#formato-de-commits)
+  - [Tags Disponibles](#tags-disponibles)
+  - [Workflow para Contribuir](#workflow-para-contribuir)
+  - [Firmar el CLA](#firmar-el-cla)
+  - [Sincronizar Fork con Upstream](#sincronizar-fork-con-upstream)
 - [Documentación adicional](#documentación-adicional)
 - [Fuentes](#fuentes)
 - [Contribuciones](#contribuciones)
@@ -38,7 +53,7 @@ config/
 ### Estructura de módulos
 ```
 src/
-├── dev/                      # Development Addons 
+├── dev/                      # Development Addons
 │   └── focuz-ai/             # Organization
 │       ├── repository_1/     # repository 1
 │       └── repository_2/     # repository 2
@@ -46,7 +61,7 @@ src/
     ├── client_1/             # Client 1
     │   ├── dev/              # Staging branch
     │   ├── main/             # Main branch
-    │   └── temp/             # Temp branch        
+    │   └── temp/             # Temp branch
     └── client_2/             # Client 2
 ```
 # Guía de configuración rápida:
@@ -390,7 +405,8 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 
 # Instalar dependencias
-pip install --upgrade pip setuptools wheel
+pip install --upgrade pip wheel
+pip install 'setuptools<81'
 pip install -r odoo/requirements.txt
 pip install -r requirements.txt
 
