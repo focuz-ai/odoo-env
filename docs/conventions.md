@@ -50,8 +50,11 @@ my_module/
 ```
 
 ## Manifest (`__manifest__.py`)
-- `license`: **`OPL-1`** siempre (estándar del proyecto; no AGPL/LGPL de OCA ni OEEL-1 de EE).
-- `author`: **`"Focuz AI S.A.C."`**; `website` de Focuz.
+- `license`: **`OPL-1`** en módulos propios; se acepta **`LGPL-3`** (p.ej. módulos para OCA upstream). No OEEL-1 de EE.
+- `author`, `maintainer` y `company`: **`"Focuz AI S.A.C."`**; `website`: **`"https://focuz.io"`** (ya no `focuzai.com`).
+- `module_type`: **`"official"`**. `company` y `module_type` son metadatos de Focuz que Odoo ignora: `company` no es
+  clave de manifest, y `module_type` es un campo de `base_import_module` (17+, `official` por defecto) que Odoo no lee
+  del manifest. El scaffold del harness ya pone las cinco claves.
 - `version` en formato corto **`x.y.z`** (estilo Enterprise, p.ej. `"1.0.0"`; Odoo antepone la serie y lo
   compara como `19.0.1.0.0`). z = corrección, y = mejora compatible, x = ruptura. Nunca el `19.0.x.y.z`
   de OCA en el manifest.
