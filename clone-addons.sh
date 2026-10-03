@@ -198,13 +198,6 @@ msg() {
         yelow) echo "\e[33m ${msg} \e[0m" ;;
     esac
 }
-delete_repository(){
-    local repo_name=$1
-    if [ -d $repo_name ]; then
-        echo -e "\e[33mDelete repository: ${repo_name} 🔴\e[0m"
-        rm -rf $repo_name || { log "Error eliminando el repositorio ${repo_name}"; exit 1; }
-    fi
-}
 
 # Function to clone and copy modules based on conditions
 clone_and_copy_modules() {
@@ -220,9 +213,15 @@ clone_and_copy_modules() {
     # Clone and copy logic for enterprise repository
     if [[ $repo_type == "enterprise" && $check == true ]]; then
         if [ -n "$GITHUB_USER" ] && [ -n "$GITHUB_ACCESS_TOKEN" ]; then
-            delete_repository $ENTERPRISE_ADDONS
-            $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
-            echo -e "\e[32mClone repository ${ENTERPRISE_ADDONS} 🆗\e[0m"
+            if [ -d "${ENTERPRISE_ADDONS}/.git" ] && git -C "$ENTERPRISE_ADDONS" rev-parse --verify HEAD >/dev/null 2>&1; then
+                echo -e "\e[32mRepository ${ENTERPRISE_ADDONS} already cloned; skipping download 🆗\e[0m"
+            elif [ -e "$ENTERPRISE_ADDONS" ]; then
+                echo -e "\e[31mRepository ${ENTERPRISE_ADDONS} exists but has no completed clone; inspect it before retrying.\e[0m"
+                exit 1
+            else
+                $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
+                echo -e "\e[32mClone repository ${ENTERPRISE_ADDONS} 🆗\e[0m"
+            fi
             # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
             if [ "$SYNC_ENABLED" = true ]; then
                 sync_fork_with_upstream $ENTERPRISE_ADDONS
@@ -241,20 +240,22 @@ clone_and_copy_modules() {
                 fi
             done
         fi
-        # Delete repository
         if [[ $repo_type == "themes" ]]; then
             repo_name=$THEMES_ADDONS
         fi
-        if [[ $should_clone == true && -d "$repo_name" ]]; then
-            delete_repository $repo_name
-        fi
-        # Clone the repo if should_clone is true and it's not already cloned
-        if [[ $should_clone == true && ! -d "$repo_name" ]]; then
-            if ! $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags 2>/dev/null; then
-                echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, trying default branch...\e[0m"
-                $clone_cmd --depth 1 --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
+        if [[ $should_clone == true ]]; then
+            if [ -d "$repo_name/.git" ] && git -C "$repo_name" rev-parse --verify HEAD >/dev/null 2>&1; then
+                echo -e "\e[32mRepository ${repo_name} already cloned; skipping download 🆗\e[0m"
+            elif [ -e "$repo_name" ]; then
+                echo -e "\e[31mRepository ${repo_name} exists but has no completed clone; inspect it before retrying.\e[0m"
+                exit 1
+            else
+                if ! $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags 2>/dev/null; then
+                    echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, trying default branch...\e[0m"
+                    $clone_cmd --depth 1 --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
+                fi
+                echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
             fi
-            echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
             # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
             if [ "$SYNC_ENABLED" = true ]; then
                 sync_fork_with_upstream $repo_name
