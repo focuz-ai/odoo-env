@@ -235,6 +235,12 @@ Escalera de coste, de barato a caro; baja un peldaño solo si el escenario lo ex
   [orm-performance.md](orm-performance.md) §Medir el rendimiento). Estos tests son
   baratos y se quedan en `standard`: marcados `-standard` no corren nunca (en `l10n-pe`,
   5 de 7). Un tag propio sirve para seleccionarlos además, no para esconderlos.
+- **PDF real (wkhtmltopdf)**: un test que fuerza el render
+  (`with_context(force_report_rendering=True)`) lo hace dentro de
+  `with self.allow_pdf_render():` (`HttpCase` ya lo hace en su `setUp`). Sin él,
+  wkhtmltopdf pide los assets al servidor de test, que espera el lock del modo test que
+  retiene el propio test: la corrida se cuelga. La CI no tiene wkhtmltopdf y salta el
+  test, así que solo se ve en la suite local.
 
 ## 5. Tags y selección
 - Los tags por defecto son `standard` y `at_install`. **`at_install`** para lógica
@@ -302,6 +308,17 @@ consumida por `setUpClass`) y `slowest_classes` (clases más caras, con su
 fusiónalas: unir las 4 clases de un módulo de `l10n-pe` en 1 bajó su tiempo un 31 % y
 sus queries un 58 %. Es evidencia para el `odoo-tests-reviewer`, no un umbral.
 
+### Suite completa local
+La CI de `tmp.19.0` solo prueba los addons afectados ([git-guidelines.md](git-guidelines.md)
+§Ramas y PR): la suite completa la corre el developer antes del push con
+**`odoo-harness suite`**. Instala con demo todos los addons del repo en una BD desechable
+y corre sus tests en una pasada sobre el árbol del commit; se niega con cambios sin
+commitear o si el `addons_path` del `dev.conf` no incluye el repo (desde un worktree,
+`--conf`). En verde guarda un sello del árbol que exige el hook `pre-push`. Claves en el
+`openspec/config.yaml` del repo: `suite_test_tags` (p. ej. `-external_l10n`) y
+`suite_coverage` (`gate` o `report`); y, para la CI, `ci_extra_repos`, `ci_test_tags` y
+`ci_coverage`.
+
 ### Reporte de verificación (trazabilidad de la ejecución)
 Cada corrida de un gate se **persiste** en `openspec/changes/<id>/reports/`, escrita
 por `odoo-harness` como par JSON + Markdown nombrado por el gate: `verify-full.md`
@@ -322,6 +339,10 @@ el agente **ejecuta** el gate, no lo delega (ver `AGENTS.md §Disciplina del flu
   ramas de permisos) como un escenario que falta o código muerto.
 
 ## 8. Tests de frontend (web client)
+- Los tests de navegador (`browser_js` de HOOT y `start_tour`) necesitan Chrome y el
+  paquete Python `websocket-client`; sin él Odoo los salta con un `WARNING`
+  («websocket-client module is not installed») que `checklog-odoo` no trata como fallo.
+  La CI del scaffolding lo instala: si un log de CI muestra ese aviso, no corrieron.
 - Usa el **framework JS de la versión activa** y sus helpers (en series recientes HOOT:
   `@odoo/hoot`, `@odoo/hoot-dom`, `@odoo/hoot-mock`; en anteriores, QUnit). Nombres,
   bundles (`web.assets_unit_tests` / `web.assets_tests` en series con HOOT) y la forma

@@ -52,6 +52,19 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 - No commitees directo en `19.0` ni en `main`.
 - El flujo es `tmp.<serie> -> staging.<serie> -> <serie> -> main`.
 - La CI corre los tests solo en `tmp.*`.
+- La CI de `tmp.19.0` prueba solo los addons afectados por el push (los cambiados y los
+  del repo que dependen de ellos) que traen `tests/`. Corre la suite completa si cambian
+  `.github/workflows/`, `requirements*.txt`, `checklog-odoo.cfg`, `pyproject.toml` u
+  `openspec/config.yaml`, o sin diff utilizable; si el push no toca addons, no prueba nada.
+- **Antes de cada push a `tmp.19.0`, suite completa en local**: `odoo-harness suite`
+  (todos los addons del repo, con demo, en una BD desechable, sobre el commit ya hecho).
+  En verde sella el árbol y el hook `pre-push` (`pre-commit install --hook-type
+  pre-push`) deja empujar; sin sello, lo bloquea. Desde un worktree pasa `--conf` con una
+  copia del `dev.conf` que apunte al worktree. Vale el sello de un árbol que solo difiere
+  en `openspec/` (salvo `openspec/config.yaml`), `docs/`, `*.md` de la raíz o `.pot`.
+  Nunca `--no-verify`.
+- Cuando haya recursos de GitHub, lo idóneo es correr además la suite completa en los PR
+  de release a `19.0` y `main`.
 - Desde una rama o worktree propio (p.ej. `tmp.19.0-<ticket>`), empuja a `tmp.19.0`: la CI calcula
   `staging.<lo que sigue a tmp.>` como destino del auto-PR y `staging.19.0-<ticket>` no existe.
   `git fetch origin && git merge-base --is-ancestor origin/tmp.19.0 HEAD && git push origin HEAD:tmp.19.0`;

@@ -975,6 +975,18 @@ max_cron_threads = 0
 
 > **Note:** Use `max_cron_threads = 1` only when testing cron jobs, without `--dev=all`.
 
+**XML-RPC / JSON-RPC responden 404 en el servidor de desarrollo**
+
+Desde Odoo 18 esas rutas viven en el módulo server-wide `rpc`. Un `dev.conf` heredado con
+`server_wide_modules = base,web` lo deja fuera (`odoo-harness doctor` lo avisa). Añádelo:
+
+```ini
+server_wide_modules = base,rpc,web
+```
+
+Los tests del harness (`odoo-harness test/verify/suite`) ya lo cargan con `--load` y fijan `--db-filter` a su BD, así
+que no dependen de esto.
+
 **OSError: [Errno 24] inotify instance limit reached**
 
 ```bash
