@@ -249,9 +249,12 @@ Escalera de coste, de barato a caro; baja un peldaño solo si el escenario lo ex
   `AccountTestInvoicingCommon`), tours (142 de 142) u overrides de otros módulos.
 - **Módulos `l10n_*`**: `('post_install_l10n', 'post_install', '-at_install')`, como
   exige el lint de Odoo (`test_lint/tests/test_l10n.py`). `post_install_l10n` es un tag
-  de selección, **nunca para excluir tests de CI**: la CI del scaffolding selecciona por
-  módulo (`/modulo`) y los ejecuta. Si la suite es lenta, reduce clases de fixture (§3);
-  no la saques de CI (en `l10n-pe`, el 51 % de los tests quedó fuera así).
+  de selección, **no una forma de sacar tests del CI**: la CI del scaffolding selecciona
+  por módulo (`/modulo`) y los ejecuta. Si la suite es lenta, reduce clases de fixture
+  (§3). Excluirlo con `ci_test_tags` solo vale como **excepción temporal del repo**, con
+  el motivo y el criterio de vuelta escritos en su `docs/TESTING.md`; mientras dure, esas
+  clases corren en la suite local del pre-push (en `l10n-pe` llegó a dejar fuera el 51 %
+  de los tests).
 - Tests contra servicios reales: `('-standard', 'external')` (§2 Golden-file).
 - Selectores `--test-tags` (`[-][tag][/módulo][:Clase][.método]`) para el loop interno:
   `odoo-harness test --module MÓDULO --tags /MÓDULO:Clase.test_metodo --json`, o
