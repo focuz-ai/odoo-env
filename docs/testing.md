@@ -301,7 +301,8 @@ propios: no choca con un Odoo de desarrollo abierto. Bloquea si hay
 tests en rojo, líneas ERROR/CRITICAL en el log fuera de los tests (misma lista `ignore`
 que `checklog-odoo.cfg`), 0 tests en un módulo con archivos de test, un log sin la línea
 final de tests, un timeout de la pasada o cobertura bajo `fail_under` (sin `fail_under`
-en la config, o sin Python medible en los módulos, la cobertura se informa sin gatear). Es precondición de
+en la config, con `suite_coverage: report` o sin Python medible en los módulos, la cobertura se
+informa sin gatear, con avisos por módulo bajo `fail_under`). Es precondición de
 `/odoo-adversarial-review`. Los tests se apoyan en savepoints y en esa BD desechable:
 nunca mutan la BD de desarrollo.
 
@@ -319,7 +320,8 @@ y corre sus tests en una pasada sobre el árbol del commit; se niega con cambios
 commitear o si el `addons_path` del `dev.conf` no incluye el repo (desde un worktree,
 `--conf`). En verde guarda un sello del árbol que exige el hook `pre-push`. Claves en el
 `openspec/config.yaml` del repo: `suite_test_tags` (p. ej. `-external_l10n`) y
-`suite_coverage` (`gate` o `report`); y, para la CI, `ci_extra_repos`, `ci_test_tags` y
+`suite_coverage` (`gate`, o `report`: la cobertura se mide e informa sin umbral en `suite` y en `verify`, como
+el runbot de Odoo; §7); y, para la CI, `ci_extra_repos`, `ci_test_tags` y
 `ci_coverage`.
 
 ### Reporte de verificación (trazabilidad de la ejecución)
@@ -335,9 +337,13 @@ el agente **ejecuta** el gate, no lo delega (ver `AGENTS.md §Disciplina del flu
 - El gate mide la cobertura solo de los módulos afectados, con la config del repo
   (`pyproject.toml` del scaffolding o `.coveragerc`), y **falla bajo `fail_under`**.
   El umbral se sube con el tiempo; bajarlo es una decisión del repo, no del agente.
+- Un repo puede dejar la cobertura solo informativa (`suite_coverage: report`), como Odoo (runbot publica el
+  informe sin umbral) y OCA (Codecov no bloquea): `fail_under` pasa a ser la línea de los avisos por addon, y la
+  decisión queda en el `docs/TESTING.md` del repo.
 - No persigas el 100 % ni escribas tests para cubrir líneas (§2): prioriza ramas de
   negocio y de seguridad; los getters triviales se excluyen en `omit`/`exclude_also`.
-- El `odoo-tests-reviewer` verifica que la cobertura se midió y cumple el umbral, y
+- El `odoo-tests-reviewer` verifica que la cobertura se midió y, si el repo la gatea, que
+  cumple el umbral (con cobertura informativa, un aviso del addon tocado es una señal), y
   trata la lógica de negocio sin cubrir (computes, constraints, flujos de estado,
   ramas de permisos) como un escenario que falta o código muerto.
 
