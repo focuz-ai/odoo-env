@@ -33,7 +33,7 @@ my_module/
 ├── demo/                 # solo datos demo (nunca en data/)
 ├── models/               # un archivo por modelo principal: sale_order.py
 ├── controllers/
-├── wizard/               # TransientModel + sus vistas
+├── wizard/               # TransientModel + sus vistas (singular, como el core)
 ├── security/             # ir.model.access.csv + *_groups.xml + *_security.xml
 ├── views/                # <modelo>_views.xml
 ├── report/               # *.py (SQL views) + *_templates.xml (QWeb)
@@ -51,6 +51,9 @@ my_module/
 - `version` con formato **`16.0.x.y.z`**.
 - `summary` corto (una línea); `category` adecuada; `installable: True`; `application` según el caso.
 - `depends` completos (incluye dependencias EE reales).
+- `auto_install` admite **lista de gatillos** (`'auto_install': ['account_edi']`): el
+  módulo glue se auto-instala solo cuando esos depends están instalados.
+- `sequence` (entero) opcional para ordenar el módulo en Apps.
 - `data` en orden correcto: **security antes** de las vistas que lo usan.
 - `assets` declarados en el bundle correcto (ver [frontend-owl.md](frontend-owl.md)).
 - Datos demo en `demo`, nunca en `data`.
@@ -171,8 +174,9 @@ Naming de XML IDs: menús `<modelo>_menu`; vistas `<modelo>_view_<tipo>`; action
 
 Herencia:
 - Mismo `id` base + `name` `…form.inherit.<modulo>` + `inherit_id` correcto.
-- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`); evita `replace`
-  frágil (rompe ante cambios upstream). No dupliques IDs.
+- Usa `xpath`/`position` (`after`/`before`/`inside`/`attributes`/`move`). `replace`
+  es legítimo pero exige juicio: nodo mínimo y razón documentada (oculta las
+  extensiones upstream de ese nodo). No dupliques IDs.
 
 ## SCSS
 - Prefijo obligatorio `o_<modulo>`; variables SCSS scoped (`$-padding`) y CSS vars
@@ -184,10 +188,13 @@ Herencia:
 - Lógica de negocio en los modelos, **nunca en las vistas**.
 - Cadenas de cara al usuario con `_()` (server) / `_t` (web client). No concatenes
   cadenas traducibles; usa parámetros: `_('Record %s!', record.name)`. Regenera `.pot`.
+- Locale español del proyecto en 16: **`es.po`** (así traduce `l10n_pe_edi` en esta
+  serie; `es_419` recién aparece en 17 — no lo uses aquí).
 
 ## Datos y migración
 - Registros editables por el usuario con `noupdate="1"`.
-- Cambios de esquema → script en `migrations/<version>/` (ver [testing.md](testing.md)).
+- Cambios de esquema → script en `migrations/<versión-corta>/` (nombrado de la carpeta
+  y hooks en [version-migration.md](version-migration.md)).
 
 ## Permisos de archivo
 Directorios `755`, archivos `644`.

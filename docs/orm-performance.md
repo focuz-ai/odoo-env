@@ -12,6 +12,8 @@
   lee (si no, valores obsoletos).
 - `store=True` solo con depends estables; cuida los recomputes masivos.
 - Usa `@api.depends_context` cuando el resultado depende del contexto.
+- Compute almacenado que actúa como default en `create` → añade `precompute=True`
+  (16): se calcula antes del INSERT y evita el UPDATE extra.
 
 ## Recordsets
 - `ensure_one()` cuando el método asume un único registro.
@@ -19,6 +21,8 @@
 
 ## Índices y búsqueda
 - `index=True` en campos usados en filtros/búsquedas frecuentes y en `_order`.
+- En 16 también existen `index='btree_not_null'` (campo mayormente NULL que se filtra
+  por no-nulo; patrón masivo en `account`) e `index='trigram'` (búsquedas `ilike`).
 - Evita buscar por campos computados no almacenados.
 
 ## Medir rendimiento
@@ -33,13 +37,18 @@
 
 ## SQL crudo
 - `self.env.cr.execute` solo si es imprescindible.
-- **Siempre parametrizado** (nunca f-strings con entrada del usuario).
-- El SQL crudo se salta ACL/record rules y multi-compañía: valídalo a mano (ver
+- **Siempre parametrizado con `%s`** (nunca f-strings ni `%`/`format` sobre la query;
+  el componedor `odoo.tools.SQL` es de series posteriores — no existe en 16).
+- **Antes de leer** con SQL: `flush_model()` / `env.flush_all()` (el ORM escribe
+  perezoso). **Tras escribir** con SQL: `invalidate_model()` / `invalidate_recordset()`
+  (`invalidate_cache()` está deprecado en 16).
+- El SQL crudo se salta ACL/record rules y multi-compañía: filtra `company_id` con la
+  lista explícita de compañías permitidas y valida permisos a mano (ver
   [security.md](security.md)).
 
 ## Transacciones y savepoints
 ```python
-# ❌ NUNCA commit manual
+# ❌ commit manual en flujo de request o en tests
 self.env.cr.commit()        # PROHIBIDO (lo gestiona el framework)
 
 # ✅ Savepoints para aislar excepciones sin corromper la transacción principal
@@ -50,6 +59,10 @@ except SpecificException:
     handle_error()
 # ⚠️ Máximo ~64 savepoints por transacción (límite PostgreSQL)
 ```
+- Excepción única al commit manual: **crons batch** de integración pueden hacer
+  `self.env.cr.commit()` por lote procesado (patrón `account_edi`/`mail.mail`),
+  siempre con el registro en estado consistente y desactivado en tests
+  (`getattr(threading.current_thread(), 'testing', False)`).
 
 ## Excepciones
 ```python
@@ -63,6 +76,9 @@ except ValidationError:
 except UserError as e:
     raise UserError(_('Error: %s', e))
 ```
+Excepción única al catch genérico: **aislamiento por ítem** en crons/integraciones
+(patrón `mail.mail.send`): `except Exception` que registra el fallo en el registro y
+continúa con el resto del lote — nunca un `pass` silencioso.
 
 ## onchange vs compute
 - `onchange` es solo UI. La lógica que debe garantizarse también vía API/import va en

@@ -8,12 +8,21 @@
 ## Registry y assets
 - Registra en la categoría correcta:
   `registry.category("fields" | "view_widgets" | "services" | "actions" | ...)`.
+- Para extender componentes existentes: `patch(Componente.prototype, "nombre", {...})`
+  (`@web/core/utils/patch`; en 16 la firma lleva el **nombre del patch** como segundo
+  argumento).
 - Declara los assets en el bundle adecuado desde `__manifest__.py`:
-  `web.assets_backend` (backend), `web.assets_frontend` (web público/portal).
+  `web.assets_backend` (backend), `web.assets_frontend` (web público/portal),
+  `web.assets_tests` (tours) y `web.qunit_suite_tests` (QUnit). En 16 **no existen**
+  `web.assets_backend_lazy` ni `web.assets_unit_tests` (series posteriores).
 - Respeta el orden de assets.
 
 ## Widgets de campo personalizados
-- Extiende `standardFieldProps` y registra en `registry.category("fields")`.
+- Componente OWL con `props = { ...standardFieldProps, ... }` y **estáticos sobre la
+  clase**: `template`, `supportedTypes`, `extractProps`; se registra la clase
+  directamente: `registry.category("fields").add("mi_widget", MyField)` (así
+  `char_field.js` en 16; el descriptor-objeto `{ component, ... }` es de series
+  posteriores — no aplica).
 - **Frontera con backend**: el campo Python lo define el desarrollador backend; tú
   posees el componente OWL, su registro y los assets. El handoff es el
   `__manifest__.py`/registry.
