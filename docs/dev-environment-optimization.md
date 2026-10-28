@@ -62,7 +62,8 @@ contenedor (`down` → `up -d`).
 ## 2. `uv` como gestor de paquetes
 
 **Ganancia esperada:** 10-100× en `pip install`, especialmente al alternar versiones
-de Python (ver recomendación de Python 3.12 para este repo en `CLAUDE.md`).
+de Python (ver recomendación de Python 3.11 para este repo — Odoo 16 — en `CLAUDE.md`;
+3.12+ rompe el firmado EDI).
 
 `uv` es un drop-in replacement de `pip` escrito en Rust por Astral. Mismo
 `requirements.txt`, misma sintaxis, misma resolución de dependencias.
