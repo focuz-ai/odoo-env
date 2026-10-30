@@ -216,8 +216,9 @@ Herencia:
 **No regeneres el `.pot` a mano para "dejarlo al día".** El CI es el **único escritor**:
 tras los tests hace push de un commit `[UPD] Update <addon>.pot` por módulo, y solo
 cuando las cadenas realmente cambiaron. Exporta solo los addons que cambian en el push
-(todos sin diff utilizable: disparo manual, rama nueva o force push). Los `.po`
-(`es_419.po`) sí son tuyos.
+más los que `staging.19.0` aún no tiene, para que un push cuyo run falló o se canceló
+no se quede sin `.pot` (todos sin diff utilizable: disparo manual, rama nueva o force
+push). Los `.po` (`es_419.po`) sí son tuyos.
 
 Antes existía un check de frescura que comparaba tu `.pot` contra el del CI. Se eliminó
 porque **no podía pasar nunca**: los términos que exporta un módulo dependen de qué

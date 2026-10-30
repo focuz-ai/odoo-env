@@ -53,9 +53,11 @@ References (task-123, Fixes #123, Closes #123, opw-123, etc.)
 - El flujo es `tmp.<serie> -> staging.<serie> -> <serie> -> main`.
 - La CI corre los tests solo en `tmp.*`.
 - La CI de `tmp.19.0` prueba solo los addons afectados por el push (los cambiados y los
-  del repo que dependen de ellos) que traen `tests/`. Corre la suite completa si cambian
+  del repo que dependen de ellos) que traen `tests/`. Los cambiados se miden contra el
+  commit anterior y contra `staging.19.0`: un push cuyo run falló o se canceló no llega a
+  staging, y el siguiente prueba también sus addons. Corre la suite completa si cambian
   `.github/workflows/`, `requirements*.txt`, `checklog-odoo.cfg`, `pyproject.toml` u
-  `openspec/config.yaml`, o sin diff utilizable; si el push no toca addons, no prueba nada.
+  `openspec/config.yaml`, o sin diff utilizable; sin addons cambiados, no prueba nada.
 - **Antes de cada push a `tmp.19.0`, suite completa en local**: `odoo-harness suite`
   (todos los addons del repo, con demo, en una BD desechable, sobre el commit ya hecho).
   En verde sella el árbol y el hook `pre-push` (`pre-commit install --hook-type
