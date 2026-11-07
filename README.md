@@ -572,18 +572,27 @@ chmod +x clone-addons.sh
 
 **Opciones disponibles:**
 
-| Opción       | Descripción                                                        |
-| ------------ | ------------------------------------------------------------------ |
-| `-s, --sync` | Sincronizar `origin` con upstream Odoo (fetch, merge, push a fork) |
-| `-h, --help` | Mostrar ayuda del script                                           |
+| Opción         | Descripción                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| `-u, --update` | Además actualiza los repos ya clonados a la punta de su rama       |
+| `-s, --sync`   | Sincronizar `origin` con upstream Odoo (fetch, merge, push a fork) |
+| `-h, --help`   | Mostrar ayuda del script                                           |
 
 **Ejemplos:**
 
 ```bash
-./clone-addons.sh              # Solo clonar repositorios
+./clone-addons.sh              # Solo clonar lo que falta (los repos existentes no se tocan)
+./clone-addons.sh --update     # Clonar lo que falta y actualizar lo existente
 ./clone-addons.sh --sync       # Clonar y sincronizar fork con upstream
 ./clone-addons.sh --help       # Mostrar ayuda
 ```
+
+**`--update`:** descarga solo el snapshot nuevo (`fetch --depth 1`), así que el historial local del repo queda en 1
+commit (`git -C odoo fetch --deepen=50` si lo necesitas). Salta, con aviso y resumen al final, los repos con commits
+locales o cambios sin commitear (haz `git stash` y vuelve a ejecutar).
+
+> **Remotes SSH:** si actualizas por SSH con mala conexión, añade `ServerAliveInterval 15` al `Host github.com` de
+> `~/.ssh/config` para que una conexión muerta falle y el script reintente en vez de quedarse colgado.
 
 **Repositorios clonados** (según `clone-addons.txt`):
 

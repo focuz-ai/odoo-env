@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # =============================================================================
-# clone-addons.sh - Clone Odoo repositories and optionally sync with upstream
+# clone-addons.sh - Clone Odoo repositories, update them and optionally sync with upstream
 # =============================================================================
 
 SCRIPT_NAME=$(basename "$0")
 CONFIG_FILE="clone-addons.txt"
 SYNC_ENABLED=false
+UPDATE_ENABLED=false
 
 # Show help message
 show_help() {
@@ -14,14 +15,20 @@ show_help() {
 Usage: ${SCRIPT_NAME} [OPTIONS]
 
 Clone Odoo repositories configured in ${CONFIG_FILE}.
+Without options, missing repositories are cloned and existing ones are left untouched.
 
 OPTIONS:
-    -s, --sync     Sync focuz-ai forks with upstream Odoo repositories
+    -u, --update    Also update already-cloned repositories to the tip of their branch.
+                    Shallow repos fetch only the new snapshot (--depth 1), so their local
+                    history becomes a single commit. Repos with local commits or
+                    uncommitted changes are skipped (listed at the end).
+    -s, --sync      Sync focuz-ai forks with upstream Odoo repositories
                     (fetches latest changes, merges, and pushes to fork)
     -h, --help      Show this help message and exit
 
 EXAMPLES:
-    ${SCRIPT_NAME}              Clone repositories only
+    ${SCRIPT_NAME}              Clone missing repositories only
+    ${SCRIPT_NAME} --update     Clone missing repositories and update existing ones
     ${SCRIPT_NAME} --sync       Clone and sync with upstream Odoo
 
 CONFIGURATION:
@@ -53,6 +60,10 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         -s|--sync)
             SYNC_ENABLED=true
+            shift
+            ;;
+        -u|--update)
+            UPDATE_ENABLED=true
             shift
             ;;
         -h|--help)
@@ -96,6 +107,9 @@ export GIT_HTTP_LOW_SPEED_TIME=${GIT_HTTP_LOW_SPEED_TIME:-60}
 export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.version GIT_CONFIG_VALUE_0=HTTP/1.1
 
 LOG_FILE=$(pwd)/clone.log
+
+SKIPPED=()
+trap 'if [ ${#SKIPPED[@]} -gt 0 ]; then echo -e "\e[33m⚠️  Skipped:\e[0m"; printf "   - %s\n" "${SKIPPED[@]}"; fi' EXIT
 
 # Odoo upstream repositories mapping (local_dir -> upstream_url)
 declare -A ODOO_UPSTREAM=(
@@ -217,6 +231,11 @@ retry() {
 
 is_clone() { [ -d "$1/.git" ] && git -C "$1" rev-parse -q --verify HEAD >/dev/null 2>&1; }
 
+skip() {
+    SKIPPED+=("$1: $2")
+    echo -e "\e[33m⚠️  Skipping $1: $2\e[0m"
+}
+
 # Repository URL with the credentials its type needs
 auth_url() {
     local repo_type=$1 repo_url=$2
@@ -254,11 +273,54 @@ clone_repo() {
     mv "$tmp" "$dir"
 }
 
-# Clone <dir> if missing; with --sync, sync it.
+# Bring an existing clone to the tip of its upstream. Called from `||`: set -e does not apply here.
+update_repo() {
+    local dir=$1 b remote merge track old
+    b=$(git -C "$dir" symbolic-ref --short -q HEAD) || { skip "$dir" "detached HEAD"; return 0; }
+    remote=$(git -C "$dir" config "branch.$b.remote") && merge=$(git -C "$dir" config "branch.$b.merge") &&
+        track=$(git -C "$dir" rev-parse --symbolic-full-name '@{upstream}' 2>/dev/null) ||
+        { skip "$dir" "branch $b has no upstream"; return 0; }
+    [ "$(git -C "$dir" rev-list --count "$track..HEAD")" = 0 ] ||
+        { skip "$dir" "local commits not in $track"; return 0; }
+    git -C "$dir" update-index -q --refresh
+    git -C "$dir" diff-index --quiet HEAD -- ||
+        { skip "$dir" "uncommitted changes (commit or stash them, then re-run)"; return 0; }
+    old=$(git -C "$dir" rev-parse HEAD)
+    echo -e "\e[36m🔄 Updating ${dir}...\e[0m"
+    if [ "$(git -C "$dir" rev-parse --is-shallow-repository)" = true ]; then
+        # depth 1: only what differs from the local snapshot (never more than a pull); --ff-only cannot
+        # work on shallow repos (the new commit has no local ancestors). --refmap= keeps the upstream ref
+        # still until the reset is done: if interrupted in between, the upstream never points to a commit
+        # without local ancestors (which would report "local commits" forever).
+        retry git -C "$dir" fetch --depth 1 --no-tags --refmap= "$remote" "$merge" || return 1
+        git -C "$dir" reset -q --keep FETCH_HEAD ||
+            { skip "$dir" "reset failed (untracked files in the way? see git error above)"; return 0; }
+        git -C "$dir" update-ref "$track" HEAD
+    else
+        # Full clone (e.g. after --sync): keep it full.
+        retry git -C "$dir" fetch --no-tags "$remote" "$merge" || return 1
+        git -C "$dir" merge -q --ff-only FETCH_HEAD || { skip "$dir" "cannot fast-forward"; return 0; }
+    fi
+    if [ "$old" = "$(git -C "$dir" rev-parse HEAD)" ]; then
+        echo -e "\e[32m${dir} already up to date 🆗\e[0m"
+    else
+        echo -e "\e[32m${dir} updated → $(git -C "$dir" log -1 --format='%h %s') 🆗\e[0m"
+    fi
+}
+
+# Clone <dir> if missing; with --update, update it; with --sync, sync it.
 ensure_repo() {
     local dir=$1 url=$2
     if is_clone "$dir"; then
-        echo -e "\e[32mRepository ${dir} already cloned; skipping download 🆗\e[0m"
+        if [ "$UPDATE_ENABLED" = true ]; then
+            update_repo "$dir" || {
+                log "Error updating ${dir}"
+                echo -e "\e[31m❌ Error updating ${dir}\e[0m"
+                exit 1
+            }
+        else
+            echo -e "\e[32mRepository ${dir} already cloned; skipping download 🆗\e[0m"
+        fi
     elif [ -e "$dir" ] || [ -L "$dir" ]; then   # -L: dangling symlink (e.g. unmounted drive)
         echo -e "\e[31mRepository ${dir} exists but has no completed clone; inspect it before retrying.\e[0m"
         exit 1

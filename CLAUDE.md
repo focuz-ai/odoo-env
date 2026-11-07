@@ -247,7 +247,8 @@ These vulnerabilities cannot be patched in Python <3.12 due to Odoo's dependency
 
 ## Clone Addons Script
 
-The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz-ai forks with upstream Odoo.
+The `clone-addons.sh` script clones Odoo repositories, optionally updates them and syncs focuz-ai forks with upstream
+Odoo.
 
 ### Usage
 
@@ -255,8 +256,11 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 # Show help
 ./clone-addons.sh --help
 
-# Clone repositories only (default)
+# Clone missing repositories only (default; existing ones are not touched)
 ./clone-addons.sh
+
+# Clone missing repositories and update existing ones
+./clone-addons.sh --update
 
 # Clone and sync with upstream Odoo
 ./clone-addons.sh --sync
@@ -264,11 +268,14 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 
 ### Options
 
-| Option       | Description                                                 |
-| ------------ | ----------------------------------------------------------- |
-| `-s, --sync` | Sync focuz-ai forks with upstream Odoo (fetch, merge, push) |
-| `-h, --help` | Show help message                                           |
+| Option         | Description                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| `-u, --update` | Also update existing clones to the tip of their branch (`fetch --depth 1` + `reset --keep`) |
+| `-s, --sync`   | Sync focuz-ai forks with upstream Odoo (fetch, merge, push)                                 |
+| `-h, --help`   | Show help message                                                                           |
 
+- **`--update`:** shallow repos keep a 1-commit history afterwards (`git -C odoo fetch --deepen=N` to recover it). Repos
+  with local commits or uncommitted changes are skipped and listed at the end.
 - **Network:** dead HTTP(S) connections abort after 60 s at 0 B/s and are retried (5 attempts); git uses HTTP/1.1 to
   avoid `curl 92 HTTP/2` errors on flaky links. For SSH remotes, set `ServerAliveInterval 15` in `~/.ssh/config`.
 
