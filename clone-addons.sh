@@ -368,7 +368,8 @@ update_repo() {
     if [ "$old" = "$(git -C "$dir" rev-parse HEAD)" ]; then
         echo -e "\e[32m${dir} already up to date 🆗\e[0m"
     else
-        echo -e "\e[32m${dir} updated → $(git -C "$dir" log -1 --format='%h %s') 🆗\e[0m"
+        # The subject comes from the remote: printf %s (not echo -e) and no control chars.
+        printf '\e[32m%s updated → %s 🆗\e[0m\n' "$dir" "$(git -C "$dir" log -1 --format='%h %s' | tr -d '[:cntrl:]')"
     fi
 }
 
