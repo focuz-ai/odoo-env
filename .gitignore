@@ -56,6 +56,7 @@ odoo/
 enterprise/
 design-themes/
 industry/
+*.partial/
 clone.log
 env/
 env-*/

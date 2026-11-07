@@ -269,6 +269,9 @@ The `clone-addons.sh` script clones Odoo repositories and optionally syncs focuz
 | `-s, --sync` | Sync focuz-ai forks with upstream Odoo (fetch, merge, push) |
 | `-h, --help` | Show help message                                           |
 
+- **Network:** dead HTTP(S) connections abort after 60 s at 0 B/s and are retried (5 attempts); git uses HTTP/1.1 to
+  avoid `curl 92 HTTP/2` errors on flaky links. For SSH remotes, set `ServerAliveInterval 15` in `~/.ssh/config`.
+
 ### Repositories Managed
 
 Por defecto `clone-addons.txt` clona **directamente desde upstream Odoo** (rama `ODOO_TAG` del `.env`):

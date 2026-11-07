@@ -16,7 +16,7 @@ Usage: ${SCRIPT_NAME} [OPTIONS]
 Clone Odoo repositories configured in ${CONFIG_FILE}.
 
 OPTIONS:
-    -s, --sync      Sync focuz-ai forks with upstream Odoo repositories
+    -s, --sync     Sync focuz-ai forks with upstream Odoo repositories
                     (fetches latest changes, merges, and pushes to fork)
     -h, --help      Show this help message and exit
 
@@ -66,8 +66,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Before sourcing: with CRLF, bash would print "$'\r': command not found" first.
+if grep -q $'\r' .env "$CONFIG_FILE" 2>/dev/null; then
+    echo -e "\e[31m❌ CRLF line endings in .env or ${CONFIG_FILE}; run: sed -i 's/\\\\r\$//' .env ${CONFIG_FILE}\e[0m"
+    exit 1
+fi
+
 source .env
 set -e
+
+# Defaults documented in --help; no trailing slash (used as ODOO_UPSTREAM keys and "<dir>.partial").
+ENTERPRISE_ADDONS=${ENTERPRISE_ADDONS:-enterprise}
+ENTERPRISE_ADDONS=${ENTERPRISE_ADDONS%/}
+THEMES_ADDONS=${THEMES_ADDONS:-design-themes}
+THEMES_ADDONS=${THEMES_ADDONS%/}
+THIRD_PARTY_ADDONS=${THIRD_PARTY_ADDONS:-vendor}
+
+# A broken <dir>/.git or a half-made .partial must not resolve to the o19-env repo itself
+# (git walks up the parents and we would reset/fetch it).
+export GIT_CEILING_DIRECTORIES=$PWD
+# Bad credentials fail fast instead of prompting inside retry().
+export GIT_TERMINAL_PROMPT=${GIT_TERMINAL_PROMPT:-0}
+# Abort only DEAD connections: servers send a keepalive every 5 s, so 0 B/s for 60 s is not a slow
+# download. A higher threshold would kill live slow downloads (and the retry starts from zero).
+export GIT_HTTP_LOW_SPEED_LIMIT=${GIT_HTTP_LOW_SPEED_LIMIT:-1}
+export GIT_HTTP_LOW_SPEED_TIME=${GIT_HTTP_LOW_SPEED_TIME:-60}
+# HTTP/1.1 avoids "curl 92 HTTP/2 stream was not closed cleanly" on flaky networks; git makes few large
+# requests and gains nothing from HTTP/2. Reaches every git call, including internal lazy fetches.
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.version GIT_CONFIG_VALUE_0=HTTP/1.1
 
 LOG_FILE=$(pwd)/clone.log
 
@@ -171,32 +197,82 @@ sync_fork_with_upstream() {
     popd > /dev/null
 }
 
-# Function to construct the clone command
-construct_clone_command() {
-    local repo_type=$1
-    local repo_url=$2
-    case $repo_type in
-        private) echo "git clone https://${GITHUB_USER}:${GITHUB_ACCESS_TOKEN}@${repo_url#https://}" ;;
-        enterprise) echo "git clone https://${ENTERPRISE_USER}:${ENTERPRISE_ACCESS_TOKEN}@${repo_url#https://} ${ENTERPRISE_ADDONS}" ;;
-        themes) echo "git clone $repo_url ${THEMES_ADDONS}" ;;
-        public) echo "git clone $repo_url" ;;
-    esac
-}
-
-# Función para escribir en el log
+# Función para escribir en el log (nunca la URL: puede llevar el token)
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> $LOG_FILE
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
-# Función para enviar mensaje
-msg() {
-    local color=$1
-    local msg=$2
-    case $color in
-        red) echo "\e[32m ${msg} \e[0m" ;;
-        blue) echo "\e[31m ${msg} \e[0m" ;;
-        yelow) echo "\e[33m ${msg} \e[0m" ;;
+# Run a command up to 5 times, waiting 15/30/45/60 s between attempts.
+retry() {
+    local n
+    for n in 1 2 3 4 5; do
+        "$@" && return 0
+        if [ "$n" -lt 5 ]; then
+            echo -e "\e[33m⚠️  Attempt $n failed; retrying in $((n * 15))s...\e[0m" >&2
+            sleep $((n * 15))
+        fi
+    done
+    return 1
+}
+
+is_clone() { [ -d "$1/.git" ] && git -C "$1" rev-parse -q --verify HEAD >/dev/null 2>&1; }
+
+# Repository URL with the credentials its type needs
+auth_url() {
+    local repo_type=$1 repo_url=$2
+    case $repo_type in
+        private) echo "https://${GITHUB_USER}:${GITHUB_ACCESS_TOKEN}@${repo_url#https://}" ;;
+        enterprise) echo "https://${ENTERPRISE_USER}:${ENTERPRISE_ACCESS_TOKEN}@${repo_url#https://}" ;;
+        *) echo "$repo_url" ;;
     esac
+}
+
+# One clone attempt: <url> <dir> [branch]. Runs inside retry(), where set -e does NOT apply:
+# every step must be chained.
+clone_once() {
+    local -a opts=(--depth 1 --single-branch --no-tags ${3:+--branch "$3"})
+    rm -rf "$2" && git clone "${opts[@]}" "$1" "$2"
+}
+
+# Clone into <dir>.partial and rename at the end, so an interrupted clone never looks "already cloned".
+clone_repo() {
+    local dir=$1 url=$2 tmp="$1.partial" branch=$ODOO_TAG refs
+    [ -n "$ODOO_TAG" ] || { echo -e "\e[31m❌ ODOO_TAG is empty in .env\e[0m"; return 1; }
+    # Empty output = branch/tag does not exist; error = network (retried, never falls back to master).
+    refs=$(retry git ls-remote "$url" "refs/heads/$ODOO_TAG" "refs/tags/$ODOO_TAG") || return 1
+    if [ -z "$refs" ]; then
+        # odoo/enterprise/themes: the default branch is never valid, except with --sync (which then
+        # creates the branch from upstream).
+        if [ -n "${ODOO_UPSTREAM[$dir]:-}" ] && [ "$SYNC_ENABLED" != true ]; then
+            echo -e "\e[31m❌ ${ODOO_TAG} not found in the remote of ${dir}\e[0m"
+            return 1
+        fi
+        echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, using default branch...\e[0m"
+        branch=""
+    fi
+    retry clone_once "$url" "$tmp" "$branch" || return 1
+    mv "$tmp" "$dir"
+}
+
+# Clone <dir> if missing; with --sync, sync it.
+ensure_repo() {
+    local dir=$1 url=$2
+    if is_clone "$dir"; then
+        echo -e "\e[32mRepository ${dir} already cloned; skipping download 🆗\e[0m"
+    elif [ -e "$dir" ] || [ -L "$dir" ]; then   # -L: dangling symlink (e.g. unmounted drive)
+        echo -e "\e[31mRepository ${dir} exists but has no completed clone; inspect it before retrying.\e[0m"
+        exit 1
+    else
+        clone_repo "$dir" "$url" || {
+            log "Error cloning ${dir}"
+            echo -e "\e[31m❌ Error cloning ${dir} (re-run to retry)\e[0m"
+            exit 1
+        }
+        echo -e "\e[32mClone repository ${dir} 🆗\e[0m"
+    fi
+    if [ "$SYNC_ENABLED" = true ]; then
+        sync_fork_with_upstream "$dir"
+    fi
 }
 
 # Function to clone and copy modules based on conditions
@@ -204,76 +280,58 @@ clone_and_copy_modules() {
     local repo_type=$1
     local repo_url=$2
     local check=$3
-    local clone_cmd=$(construct_clone_command $repo_type $repo_url)
-    local repo_name=$(basename -s .git "$repo_url")
+    local dir
 
     shift 2
     local modules_conditions=("$@")
 
-    # Clone and copy logic for enterprise repository
-    if [[ $repo_type == "enterprise" && $check == true ]]; then
-        if [ -n "$GITHUB_USER" ] && [ -n "$GITHUB_ACCESS_TOKEN" ]; then
-            if [ -d "${ENTERPRISE_ADDONS}/.git" ] && git -C "$ENTERPRISE_ADDONS" rev-parse --verify HEAD >/dev/null 2>&1; then
-                echo -e "\e[32mRepository ${ENTERPRISE_ADDONS} already cloned; skipping download 🆗\e[0m"
-            elif [ -e "$ENTERPRISE_ADDONS" ]; then
-                echo -e "\e[31mRepository ${ENTERPRISE_ADDONS} exists but has no completed clone; inspect it before retrying.\e[0m"
-                exit 1
-            else
-                $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
-                echo -e "\e[32mClone repository ${ENTERPRISE_ADDONS} 🆗\e[0m"
-            fi
-            # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
-            if [ "$SYNC_ENABLED" = true ]; then
-                sync_fork_with_upstream $ENTERPRISE_ADDONS
-            fi
-        fi
-    else
-        # Determine if any module has a true condition
-        local should_clone=false
-        if [[ ${#modules_conditions[@]} -eq 1 ]]; then
-            [[ ${modules_conditions[0]} == true ]] && should_clone=true
-        else
-            for (( i=1; i<${#modules_conditions[@]}; i+=2 )); do
-                if [[ ${modules_conditions[i]} == true ]]; then
-                    should_clone=true
-                    break
-                fi
-            done
-        fi
-        if [[ $repo_type == "themes" ]]; then
-            repo_name=$THEMES_ADDONS
-        fi
-        if [[ $should_clone == true ]]; then
-            if [ -d "$repo_name/.git" ] && git -C "$repo_name" rev-parse --verify HEAD >/dev/null 2>&1; then
-                echo -e "\e[32mRepository ${repo_name} already cloned; skipping download 🆗\e[0m"
-            elif [ -e "$repo_name" ]; then
-                echo -e "\e[31mRepository ${repo_name} exists but has no completed clone; inspect it before retrying.\e[0m"
-                exit 1
-            else
-                if ! $clone_cmd --depth 1 --branch ${ODOO_TAG} --single-branch --no-tags 2>/dev/null; then
-                    echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, trying default branch...\e[0m"
-                    $clone_cmd --depth 1 --single-branch --no-tags || { log "Error clonando el repositorio ${clone_cmd}"; exit 1; }
-                fi
-                echo -e "\e[32mClone repository ${repo_name} 🆗\e[0m"
-            fi
-            # Sync fork with upstream Odoo and push to focuz-ai (only if --sync flag is set)
-            if [ "$SYNC_ENABLED" = true ]; then
-                sync_fork_with_upstream $repo_name
-            fi
-        fi
+    case $repo_type in
+        enterprise) dir=$ENTERPRISE_ADDONS ;;
+        themes) dir=$THEMES_ADDONS ;;
+        *) dir=$(basename -s .git "$repo_url") ;;
+    esac
 
-        # Copy the modules if the condition is true
-        if [[ $should_clone == true ]]; then
-            for (( i=0; i<${#modules_conditions[@]}; i+=2 )); do
-                local module=${modules_conditions[i]}
-                local condition=${modules_conditions[i+1]}
-                if [[ $condition == true ]]; then
-                    echo -e "\e[32mCopying ${module} from ${repo_name} into ${THIRD_PARTY_ADDONS}"
-                    cp -r ${repo_name}/${module} ${THIRD_PARTY_ADDONS}/${module}
-                fi
-            done
-            # rm -rf ${repo_name}
+    if [[ $repo_type == "enterprise" ]]; then
+        [[ $check == true ]] || return 0
+        # Updating an existing clone uses the URL stored in its .git/config: no token needed.
+        if { [ -n "$ENTERPRISE_USER" ] && [ -n "$ENTERPRISE_ACCESS_TOKEN" ]; } || is_clone "$dir"; then
+            ensure_repo "$dir" "$(auth_url "$repo_type" "$repo_url")"
+        else
+            echo -e "\e[33m⚠️  Skipping ${dir}: no ENTERPRISE_USER/ENTERPRISE_ACCESS_TOKEN in .env\e[0m"
         fi
+        return 0
+    fi
+
+    # Determine if any module has a true condition
+    local should_clone=false
+    if [[ ${#modules_conditions[@]} -eq 1 ]]; then
+        [[ ${modules_conditions[0]} == true ]] && should_clone=true
+    else
+        for (( i=1; i<${#modules_conditions[@]}; i+=2 )); do
+            if [[ ${modules_conditions[i]} == true ]]; then
+                should_clone=true
+                break
+            fi
+        done
+    fi
+    [[ $should_clone == true ]] || return 0
+
+    ensure_repo "$dir" "$(auth_url "$repo_type" "$repo_url")"
+
+    # Copy the modules whose condition is true (never overwrite: vendor copies may carry local patches)
+    if [[ ${#modules_conditions[@]} -gt 1 ]]; then
+        for (( i=0; i<${#modules_conditions[@]}; i+=2 )); do
+            local module=${modules_conditions[i]}
+            local condition=${modules_conditions[i+1]}
+            if [[ $condition == true ]]; then
+                if [ -e "${THIRD_PARTY_ADDONS}/${module}" ]; then
+                    echo -e "\e[33m⚠️  ${THIRD_PARTY_ADDONS}/${module} exists; not overwritten (delete it to refresh)\e[0m"
+                else
+                    echo -e "\e[32mCopying ${module} from ${dir} into ${THIRD_PARTY_ADDONS}\e[0m"
+                    cp -r "${dir}/${module}" "${THIRD_PARTY_ADDONS}/${module}"
+                fi
+            fi
+        done
     fi
 }
 
@@ -298,13 +356,10 @@ expand_env_vars() {
     done <<< "$1"
 }
 
-mkdir -p ${THIRD_PARTY_ADDONS}
+mkdir -p "${THIRD_PARTY_ADDONS}"
 
 # Read the configuration file and process each line
 while IFS= read -r line; do
-    # echo "Linea: $line"
-    # mkdir -p ${ENTERPRISE_ADDONS}
-    mkdir -p ${THIRD_PARTY_ADDONS}
     [[ -z "$line" || "$line" == \#* ]] && continue
     echo "=================================================="
     echo $(expand_env_vars "$line")
