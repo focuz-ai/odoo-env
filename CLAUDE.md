@@ -262,6 +262,9 @@ Odoo.
 # Clone missing repositories and update existing ones
 ./clone-addons.sh --update
 
+# Slow connection: Spanish translations only, resumable batches
+./clone-addons.sh --slim
+
 # Clone and sync with upstream Odoo
 ./clone-addons.sh --sync
 ```
@@ -271,11 +274,14 @@ Odoo.
 | Option         | Description                                                                                 |
 | -------------- | ------------------------------------------------------------------------------------------- |
 | `-u, --update` | Also update existing clones to the tip of their branch (`fetch --depth 1` + `reset --keep`) |
-| `-s, --sync`   | Sync focuz-ai forks with upstream Odoo (fetch, merge, push)                                 |
+| `--slim`       | New clones: partial clone + sparse-checkout with only `i18n/es*.po` (~42% less, resumable)  |
+| `-s, --sync`   | Sync focuz-ai forks with upstream Odoo (fetch, merge, push); skipped on `--slim` clones     |
 | `-h, --help`   | Show help message                                                                           |
 
 - **`--update`:** shallow repos keep a 1-commit history afterwards (`git -C odoo fetch --deepen=N` to recover it). Repos
   with local commits or uncommitted changes are skipped and listed at the end.
+- **`--slim`:** ~259 MB instead of ~448 MB, fetched in ~7 MB batches; re-running resumes an interrupted `<dir>.partial`.
+  Requires git ≥ 2.31. Restore all languages with `git -C <repo> sparse-checkout disable`.
 - **Network:** dead HTTP(S) connections abort after 60 s at 0 B/s and are retried (5 attempts); git uses HTTP/1.1 to
   avoid `curl 92 HTTP/2` errors on flaky links. For SSH remotes, set `ServerAliveInterval 15` in `~/.ssh/config`.
 

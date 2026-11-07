@@ -8,6 +8,7 @@ SCRIPT_NAME=$(basename "$0")
 CONFIG_FILE="clone-addons.txt"
 SYNC_ENABLED=false
 UPDATE_ENABLED=false
+SLIM_ENABLED=false
 
 # Show help message
 show_help() {
@@ -22,13 +23,18 @@ OPTIONS:
                     Shallow repos fetch only the new snapshot (--depth 1), so their local
                     history becomes a single commit. Repos with local commits or
                     uncommitted changes are skipped (listed at the end).
+    --slim          New clones download only Spanish translations (i18n/es*.po) using a
+                    partial clone + sparse-checkout: ~42% less data, fetched in small
+                    resumable batches. Recommended on slow connections. Requires git >= 2.31.
+                    Restore all languages later with: git -C <repo> sparse-checkout disable
     -s, --sync      Sync focuz-ai forks with upstream Odoo repositories
-                    (fetches latest changes, merges, and pushes to fork)
+                    (fetches latest changes, merges, and pushes to fork; needs full clones)
     -h, --help      Show this help message and exit
 
 EXAMPLES:
     ${SCRIPT_NAME}              Clone missing repositories only
     ${SCRIPT_NAME} --update     Clone missing repositories and update existing ones
+    ${SCRIPT_NAME} --slim       Clone missing repositories with Spanish translations only
     ${SCRIPT_NAME} --sync       Clone and sync with upstream Odoo
 
 CONFIGURATION:
@@ -64,6 +70,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -u|--update)
             UPDATE_ENABLED=true
+            shift
+            ;;
+        --slim)
+            SLIM_ENABLED=true
             shift
             ;;
         -h|--help)
@@ -250,26 +260,77 @@ auth_url() {
 # every step must be chained.
 clone_once() {
     local -a opts=(--depth 1 --single-branch --no-tags ${3:+--branch "$3"})
+    if [ "$SLIM_ENABLED" = true ]; then
+        opts+=(--filter=blob:none --no-checkout)
+    fi
     rm -rf "$2" && git clone "${opts[@]}" "$1" "$2"
+}
+
+# Same command git runs internally for lazy fetches (promisor-remote.c), with explicit OIDs:
+# <dir> <remote> <oid>...
+fetch_blobs() {
+    local d=$1 r=$2
+    shift 2
+    printf '%s\n' "$@" | git -C "$d" -c fetch.negotiationAlgorithm=noop fetch "$r" \
+        --no-tags --no-write-fetch-head --recurse-submodules=no --filter=blob:none --stdin
+}
+
+# Download the missing blobs of the sparse set in batches of 2000 (~7 MB), so a dropped connection
+# only loses the current batch: <dir> <remote> <rev>. Pure optimization: whatever is still missing
+# is fetched by the following reset anyway.
+# ponytail: Spanish only; the awk filter mirrors the patterns written in clone_repo (change both).
+slim_prefetch() {
+    local d=$1 r=$2 i end
+    local -a oids
+    mapfile -t oids < <(comm -12 \
+        <(git -C "$d" -c core.quotePath=false ls-tree -r "$3" | awk -F'\t' '$1 ~ / blob / &&
+            ($2 !~ /(^|\/)i18n\/[^\/]*\.po$/ || $2 ~ /(^|\/)i18n\/es[^\/]*\.po$/) {split($1, a, " "); print a[3]}' | sort -u) \
+        <(git -C "$d" rev-list --objects --missing=print "$3" | sed -n 's/^?//p' | sort -u))
+    for ((i = 0; i < ${#oids[@]}; i += 2000)); do
+        end=$((i + 2000 < ${#oids[@]} ? i + 2000 : ${#oids[@]}))
+        echo -e "\e[36m   📦 ${d}: blobs $((i + 1))-${end} / ${#oids[@]}\e[0m"
+        retry fetch_blobs "$d" "$r" "${oids[@]:i:2000}" || return 1
+    done
 }
 
 # Clone into <dir>.partial and rename at the end, so an interrupted clone never looks "already cloned".
 clone_repo() {
-    local dir=$1 url=$2 tmp="$1.partial" branch=$ODOO_TAG refs
-    [ -n "$ODOO_TAG" ] || { echo -e "\e[31m❌ ODOO_TAG is empty in .env\e[0m"; return 1; }
-    # Empty output = branch/tag does not exist; error = network (retried, never falls back to master).
-    refs=$(retry git ls-remote "$url" "refs/heads/$ODOO_TAG" "refs/tags/$ODOO_TAG") || return 1
-    if [ -z "$refs" ]; then
-        # odoo/enterprise/themes: the default branch is never valid, except with --sync (which then
-        # creates the branch from upstream).
-        if [ -n "${ODOO_UPSTREAM[$dir]:-}" ] && [ "$SYNC_ENABLED" != true ]; then
-            echo -e "\e[31m❌ ${ODOO_TAG} not found in the remote of ${dir}\e[0m"
-            return 1
+    local dir=$1 url=$2 tmp="$1.partial" branch=$ODOO_TAG refs slim=$SLIM_ENABLED
+    # Resume a --slim .partial of the same URL even when re-run without --slim (otherwise we would throw
+    # away what was already downloaded, precisely for whoever has a bad connection).
+    if is_clone "$tmp" && [ "$(git -C "$tmp" config remote.origin.url)" = "$url" ] &&
+        [ "$(git -C "$tmp" config remote.origin.promisor)" = true ]; then
+        echo -e "\e[36m⏯️  Resuming ${tmp}\e[0m"
+        slim=true
+    else
+        [ -n "$ODOO_TAG" ] || { echo -e "\e[31m❌ ODOO_TAG is empty in .env\e[0m"; return 1; }
+        # Empty output = branch/tag does not exist; error = network (retried, never falls back to master).
+        refs=$(retry git ls-remote "$url" "refs/heads/$ODOO_TAG" "refs/tags/$ODOO_TAG") || return 1
+        if [ -z "$refs" ]; then
+            # odoo/enterprise/themes: the default branch is never valid, except with --sync (which then
+            # creates the branch from upstream).
+            if [ -n "${ODOO_UPSTREAM[$dir]:-}" ] && [ "$SYNC_ENABLED" != true ]; then
+                echo -e "\e[31m❌ ${ODOO_TAG} not found in the remote of ${dir}\e[0m"
+                return 1
+            fi
+            echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, using default branch...\e[0m"
+            branch=""
         fi
-        echo -e "\e[33m⚠️  Branch ${ODOO_TAG} not found, using default branch...\e[0m"
-        branch=""
+        retry clone_once "$url" "$tmp" "$branch" || return 1
     fi
-    retry clone_once "$url" "$tmp" "$branch" || return 1
+    if [ "$slim" = true ]; then
+        # Idempotent, so a resumed .partial gets it too. Non-cone patterns written by hand: git 2.34
+        # (Ubuntu 22.04) lacks `sparse-checkout set --no-cone`. log.showRoot=false: otherwise
+        # `git show`/`log -p` of the (shallow) root commit diffs against the empty tree and downloads
+        # every excluded .po. reset --hard (not read-tree): tolerates half-written files of a prior attempt.
+        git -C "$tmp" config core.sparseCheckout true &&
+            git -C "$tmp" config core.sparseCheckoutCone false &&
+            git -C "$tmp" config log.showRoot false &&
+            mkdir -p "$tmp/.git/info" &&
+            printf '%s\n' '/*' '!**/i18n/*.po' '**/i18n/es*.po' > "$tmp/.git/info/sparse-checkout" &&
+            slim_prefetch "$tmp" origin HEAD &&
+            git -C "$tmp" reset -q --hard HEAD || return 1
+    fi
     mv "$tmp" "$dir"
 }
 
@@ -293,6 +354,9 @@ update_repo() {
         # still until the reset is done: if interrupted in between, the upstream never points to a commit
         # without local ancestors (which would report "local commits" forever).
         retry git -C "$dir" fetch --depth 1 --no-tags --refmap= "$remote" "$merge" || return 1
+        if [ "$(git -C "$dir" config "remote.$remote.promisor")" = true ]; then
+            slim_prefetch "$dir" "$remote" FETCH_HEAD || return 1   # --slim repo: new blobs in batches
+        fi
         git -C "$dir" reset -q --keep FETCH_HEAD ||
             { skip "$dir" "reset failed (untracked files in the way? see git error above)"; return 0; }
         git -C "$dir" update-ref "$track" HEAD
@@ -333,7 +397,11 @@ ensure_repo() {
         echo -e "\e[32mClone repository ${dir} 🆗\e[0m"
     fi
     if [ "$SYNC_ENABLED" = true ]; then
-        sync_fork_with_upstream "$dir"
+        if [ "$(git -C "$dir" config remote.origin.promisor)" = true ]; then
+            skip "$dir" "--slim clone; --sync needs a full clone"
+        else
+            sync_fork_with_upstream "$dir"
+        fi
     fi
 }
 

@@ -572,17 +572,19 @@ chmod +x clone-addons.sh
 
 **Opciones disponibles:**
 
-| Opción         | Descripción                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `-u, --update` | Además actualiza los repos ya clonados a la punta de su rama       |
-| `-s, --sync`   | Sincronizar `origin` con upstream Odoo (fetch, merge, push a fork) |
-| `-h, --help`   | Mostrar ayuda del script                                           |
+| Opción         | Descripción                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `-u, --update` | Además actualiza los repos ya clonados a la punta de su rama                              |
+| `--slim`       | Clones nuevos solo con traducciones en español: ~42% menos descarga, en lotes reanudables |
+| `-s, --sync`   | Sincronizar `origin` con upstream Odoo (fetch, merge, push a fork)                        |
+| `-h, --help`   | Mostrar ayuda del script                                                                  |
 
 **Ejemplos:**
 
 ```bash
 ./clone-addons.sh              # Solo clonar lo que falta (los repos existentes no se tocan)
 ./clone-addons.sh --update     # Clonar lo que falta y actualizar lo existente
+./clone-addons.sh --slim       # Clonar lo que falta solo con traducciones en español
 ./clone-addons.sh --sync       # Clonar y sincronizar fork con upstream
 ./clone-addons.sh --help       # Mostrar ayuda
 ```
@@ -590,6 +592,12 @@ chmod +x clone-addons.sh
 **`--update`:** descarga solo el snapshot nuevo (`fetch --depth 1`), así que el historial local del repo queda en 1
 commit (`git -C odoo fetch --deepen=50` si lo necesitas). Salta, con aviso y resumen al final, los repos con commits
 locales o cambios sin commitear (haz `git stash` y vuelve a ejecutar).
+
+**Conexión lenta → `--slim`:** el clon normal baja ~448 MB en un único paquete por repo y, si la conexión se corta,
+empieza de cero. `--slim` baja ~259 MB (sin los `.po` de idiomas que no son español) en lotes de ~7 MB; si se corta,
+vuelve a ejecutar el script y continúa donde quedó. Requiere git ≥ 2.31. Para recuperar todos los idiomas en un repo:
+`git -C odoo sparse-checkout disable`. Tests core de Odoo que cargan otros idiomas (p. ej. `fr_FR`) fallarían en local;
+los de nuestros módulos no se ven afectados.
 
 > **Remotes SSH:** si actualizas por SSH con mala conexión, añade `ServerAliveInterval 15` al `Host github.com` de
 > `~/.ssh/config` para que una conexión muerta falle y el script reintente en vez de quedarse colgado.
