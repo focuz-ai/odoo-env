@@ -59,7 +59,7 @@
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,
-    "**/enterprise/**": true,
+    "enterprise/**": true,
     "**/industry/**": true,
     "**/design-themes/**": true,
     "**/.venv/**": true,
